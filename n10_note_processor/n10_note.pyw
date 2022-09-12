@@ -238,7 +238,7 @@ class N10NoteProcessor:
                 #print(image + ":" + str(os.path.getctime(image)))
                 #print(datetime.fromtimestamp(os.path.getctime(image)))
                 # url in <> to allow space in path names
-                self.image_list.append((os.path.getctime(image), "![](<" + image + ">)"))
+                self.image_list.append((os.path.getctime(image), "![x](<" + image + ">)"))
 
         self.image_list.sort()
         #print("images: ", self.image_list)
