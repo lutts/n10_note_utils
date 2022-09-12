@@ -36,8 +36,34 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
     #html = markdown2.markdown_path(markdown_filepath, 
     #                            extras={"tables":None, "strike":None, "task_list":None})
 
+    text = ""
     with open(markdown_filepath, 'r', encoding='utf-8') as m:
-        text = m.read()
+        for line in m:
+            if line[0:2] == "| ":
+                table_cells = line.split('|')
+                markdown_cells = []
+                for cell in table_cells:
+                    if not cell:
+                        markdown_cells.append(cell)
+                        continue
+
+                    if "{nl}" in cell:
+                        #print("new line")
+                        cell = cell.strip()
+                        cell = cell.replace("{nl}", "\n")
+                        cell = markdown.markdown(cell, encoding='utf-8',
+                                        extensions=['tables', ChecklistExtension()])
+                    
+                        cell = cell.replace("\n", "")
+                        markdown_cells.append(" " + cell + " ")
+                    else:
+                        markdown_cells.append(cell)
+
+                #print('orig line: ' + line)
+                line = "|".join(markdown_cells)
+                #print("mark line: " + line)
+
+            text += line
 
     html = markdown.markdown(text, encoding='utf-8',
                             extensions=['tables', ChecklistExtension()])
