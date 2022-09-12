@@ -157,6 +157,13 @@ class N10NoteProcessor:
     def write_block_list(self):
         self.append_prev_block_to_list()
 
+        # append the remained images at the end
+        if self.image_list:
+            self.block_list.append("")
+            for ts, img in self.image_list:
+                self.block_list.append(img)
+                self.block_list.append("")
+
         if self.block_list:
             last_line_is_empty = False
             no_duplicate_empty_line_block_list = ["# 摘自:" + self.book_title, ""]
@@ -169,12 +176,14 @@ class N10NoteProcessor:
                 else:
                     last_line_is_empty = False
 
-                # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
-                # multiple space between word reduce to one only
-                block = " ".join(block.split())
-                # add a space after some punctuations if there's no one
-                r = re.compile(r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^,;:?!.\s]+)')
-                block = r.sub(r'\1 \2', block)
+                if block[0:4] != "![](":
+                    # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
+                    # multiple space between word reduce to one only
+                    block = " ".join(block.split())
+                    # add a space after some punctuations if there's no one
+                    r = re.compile(r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^,;:?!.\s]+)')
+                    block = r.sub(r'\1 \2', block)
+
                 no_duplicate_empty_line_block_list.append(block)
 
             if not no_duplicate_empty_line_block_list:
@@ -196,13 +205,14 @@ class N10NoteProcessor:
         if curdir == "":
             curdir = "."
 
-        curdir = os.path.abspath(curdir)
+        # curdir = os.path.abspath(curdir)
         for image in os.listdir(curdir):
             # check if the image ends with png
             if (image.endswith(".png")):
                 #print(image + ":" + str(os.path.getctime(image)))
                 #print(datetime.fromtimestamp(os.path.getctime(image)))
-                self.image_list.append((os.path.getctime(image), image))
+                # url in <> to allow space in path names
+                self.image_list.append((os.path.getctime(image), "![](<" + image + ">)"))
 
         self.image_list.sort()
         #print("images: ", self.image_list)
@@ -265,7 +275,7 @@ class N10NoteProcessor:
                     ts = datetime_obj.timestamp()
                     if self.image_list:
                         if ts > self.image_list[0][0]:
-                            self.block_list.append("![](" + self.image_list[0][1] + ")")
+                            self.block_list.append(self.image_list[0][1])
                             self.block_list.append("")
                             del self.image_list[0]
 
