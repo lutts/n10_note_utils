@@ -18,6 +18,8 @@ from markdown_checklist.extension import ChecklistExtension
 # Class declarations
 
 # Function declarations
+
+
 def uniqe_name(expect_path):
     filename, extension = os.path.splitext(expect_path)
     counter = 1
@@ -28,9 +30,11 @@ def uniqe_name(expect_path):
 
     return expect_path
 
+
 def markdown_to_html(markdown_text):
     return markdown.markdown(cell, encoding='utf-8',
                              extensions=['tables', ChecklistExtension()])
+
 
 def convert_markdown_to_html(markdown_filepath, html_filepath=None):
     if not html_filepath:
@@ -53,7 +57,7 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
                         cell = cell.strip()
                         cell = cell.replace("{nl}", "\n")
                         cell = markdown_to_html(cell)
-                    
+
                         cell = cell.replace("\n", "")
                         markdown_cells.append(" " + cell + " ")
                     else:
@@ -99,13 +103,14 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
         n10notes_html.write(html)
         n10notes_html.write("</body></html>")
 
+
 class N10NoteProcessor:
     """
     这个类的用途：
     1. 去掉汉王N10摘抄文件中的多余空格和换行
     2. 将读书过程中的截图图片根据时间戳嵌入到笔记中
     3. 将手写笔记按照手工的时间戳加入到笔记中
-    
+
     注：汉王的手写笔记导出的文件是UTF-16 BE BOM的，需要事先转为UTF-8
 
     我们将整个摘抄文件分为`块`，每`块`都有特殊的开头，没有特殊开头的文本行
@@ -127,14 +132,16 @@ class N10NoteProcessor:
     软件中编辑
     """
 
-    HW_NOTES_HEADER_RE = re.compile(r"([0-9]{4})年([0-9]{2})月([0-9]){2}日 ([0-9]{2}):([0-9]{2}):([0-9]{2})  摘自<<(.*?)>> 第([0-9]+)页")
+    HW_NOTES_HEADER_RE = re.compile(
+        r"([0-9]{4})年([0-9]{2})月([0-9]){2}日 ([0-9]{2}):([0-9]{2}):([0-9]{2})  摘自<<(.*?)>> 第([0-9]+)页")
     MARKDOWN_MARKERS = ["* ", "- ", "+ ", "> ", '| ']
     MARKDOWN_ORDERED_LIST_RE = re.compile(r"[0-9]+\. ")
-    HAND_NOTES_HEADER_RE = re.compile(r"([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})-([0-9]{1,2}):([0-9]{1,2})")
+    HAND_NOTES_HEADER_RE = re.compile(
+        r"([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})-([0-9]{1,2}):([0-9]{1,2})")
 
-    def __init__(self, n10_notes_filepath, hand_notes_filepath=None, 
-                remove_header_line=False, 
-                markdown_filepath=None, html_filepath=None):
+    def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
+                 remove_header_line=False,
+                 markdown_filepath=None, html_filepath=None):
         self.block = ""
         self.block_list = []
         self.image_list = []
@@ -155,7 +162,6 @@ class N10NoteProcessor:
             self.html_filepath = html_filepath
         else:
             self.html_filepath = uniqe_name(split_filepath[0] + ".html")
-
 
     def line_is_markdown(self, line):
         if not line:
@@ -191,7 +197,8 @@ class N10NoteProcessor:
 
         if self.block_list:
             last_line_is_empty = False
-            no_duplicate_empty_line_block_list = ["# 摘自:" + self.book_title, ""]
+            no_duplicate_empty_line_block_list = [
+                "# 摘自:" + self.book_title, ""]
             for block in self.block_list:
                 if not block:
                     if last_line_is_empty:
@@ -206,7 +213,8 @@ class N10NoteProcessor:
                     # multiple space between word reduce to one only
                     block = " ".join(block.split())
                     # add a space after some punctuations if there's no one
-                    r = re.compile(r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^,;:?!.\s]+)')
+                    r = re.compile(
+                        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^,;:?!.\s]+)')
                     block = r.sub(r'\1 \2', block)
 
                 no_duplicate_empty_line_block_list.append(block)
@@ -217,13 +225,15 @@ class N10NoteProcessor:
             # markdownlint: markdown file should end with a single new line
             if no_duplicate_empty_line_block_list[-1]:
                 no_duplicate_empty_line_block_list.append("")
-            
+
             with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
-                n10notes_markdown.write("\n".join(no_duplicate_empty_line_block_list))
-            
+                n10notes_markdown.write(
+                    "\n".join(no_duplicate_empty_line_block_list))
+
             self.block_list = []
 
-            convert_markdown_to_html(self.markdown_filepath, self.html_filepath)
+            convert_markdown_to_html(
+                self.markdown_filepath, self.html_filepath)
 
     def get_images_in_directory(self):
         curdir = os.path.dirname(self.n10_notes_filepath)
@@ -235,9 +245,10 @@ class N10NoteProcessor:
             # check if the image ends with png
             if (image.endswith(".png")):
                 #print(image + ":" + str(os.path.getctime(image)))
-                #print(datetime.fromtimestamp(os.path.getctime(image)))
+                # print(datetime.fromtimestamp(os.path.getctime(image)))
                 # url in <> to allow space in path names
-                self.image_list.append((os.path.getctime(image), "![x](<" + image + ">)"))
+                self.image_list.append(
+                    (os.path.getctime(image), "![x](<" + image + ">)"))
 
         self.image_list.sort()
         #print("images: ", self.image_list)
@@ -248,32 +259,32 @@ class N10NoteProcessor:
 
         last_ts = 0
         cur_notes = []
-        
+
         with open(self.hand_notes_filepath, 'r', encoding="utf-8") as hand_notes:
             for line in hand_notes:
                 #print("hand note: " + line)
                 line = line.strip()
                 m = self.HAND_NOTES_HEADER_RE.match(line)
                 if m:
-                    datetime_obj = datetime(*[int(i) for i in 
+                    datetime_obj = datetime(*[int(i) for i in
                                             m.group(1, 2, 3, 4, 5)])
-                    #print(datetime_obj)
+                    # print(datetime_obj)
                     if cur_notes:
-                        self.hand_note_list.append( (last_ts, cur_notes) )
+                        self.hand_note_list.append((last_ts, cur_notes))
                         cur_notes = []
 
                     last_ts = datetime_obj.timestamp()
                 else:
                     if line:
                         cur_notes.append("> " + line)
-                    else: # avoid trailing space
+                    else:  # avoid trailing space
                         cur_notes.append(">")
 
         if cur_notes:
-            self.hand_note_list.append( (last_ts, cur_notes) )
+            self.hand_note_list.append((last_ts, cur_notes))
 
         self.hand_note_list.sort()
-        #print(self.hand_note_list)
+        # print(self.hand_note_list)
 
     def process(self):
         if not self.n10_notes_filepath:
@@ -286,7 +297,7 @@ class N10NoteProcessor:
 
         with open(self.n10_notes_filepath, 'r', encoding='utf_8_sig') as n10notes:
             for line in n10notes:
-                #print(line)
+                # print(line)
 
                 # only remove trailing whitespaces
                 line = line.rstrip()
@@ -294,9 +305,9 @@ class N10NoteProcessor:
                 notes_header = self.HW_NOTES_HEADER_RE.match(line)
                 if notes_header:
                     #print("header line: " + line)
-                    datetime_obj = datetime(*[int(i) for i in 
+                    datetime_obj = datetime(*[int(i) for i in
                                             notes_header.group(1, 2, 3, 4, 5, 6)])
-                    #print(datetime_obj)
+                    # print(datetime_obj)
                     ts = datetime_obj.timestamp()
                     if self.image_list:
                         if ts > self.image_list[0][0]:
@@ -316,7 +327,7 @@ class N10NoteProcessor:
 
                     if not self.remove_header_line:
                         #self.block = "<sub>" + line + "</sub>\n"
-                        #self.append_prev_block_to_list()
+                        # self.append_prev_block_to_list()
                         self.block = "(p" + notes_header.group(8) + ")"
                         last_line_is_header = True
 
@@ -338,8 +349,7 @@ class N10NoteProcessor:
                         self.block = line
                     else:
                         #print("normal line: " + line)
-                        
-                        
+
                         if self.block:
                             if self.block[-1] == "-":
                                 if len(self.block) > 1:
@@ -348,12 +358,13 @@ class N10NoteProcessor:
                             elif ord(self.block[-1]) < 128:
                                 # use space to join english lines
                                 self.block += " "
-                                
+
                         self.block += line
 
                     last_line_is_header = False
 
         self.write_block_list()
+
 
 def main():
     args = sys.argv[1:]
@@ -367,6 +378,7 @@ def main():
     else:
         processor = N10NoteProcessor(*args)
         processor.process()
+
 
 # Main body
 if __name__ == '__main__':
