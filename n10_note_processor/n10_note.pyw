@@ -28,13 +28,14 @@ def uniqe_name(expect_path):
 
     return expect_path
 
+def markdown_to_html(markdown_text):
+    return markdown.markdown(cell, encoding='utf-8',
+                             extensions=['tables', ChecklistExtension()])
+
 def convert_markdown_to_html(markdown_filepath, html_filepath=None):
     if not html_filepath:
         split_filepath = os.path.splitext(markdown_filepath)
         html_filepath = uniqe_name(split_filepath[0] + ".html")
-
-    #html = markdown2.markdown_path(markdown_filepath, 
-    #                            extras={"tables":None, "strike":None, "task_list":None})
 
     text = ""
     with open(markdown_filepath, 'r', encoding='utf-8') as m:
@@ -51,8 +52,7 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
                         #print("new line")
                         cell = cell.strip()
                         cell = cell.replace("{nl}", "\n")
-                        cell = markdown.markdown(cell, encoding='utf-8',
-                                        extensions=['tables', ChecklistExtension()])
+                        cell = markdown_to_html(cell)
                     
                         cell = cell.replace("\n", "")
                         markdown_cells.append(" " + cell + " ")
@@ -65,8 +65,7 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
 
             text += line
 
-    html = markdown.markdown(text, encoding='utf-8',
-                            extensions=['tables', ChecklistExtension()])
+    html = markdown_to_html(text)
 
     html_style = """
     <style>
