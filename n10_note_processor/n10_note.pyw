@@ -32,7 +32,7 @@ def uniqe_name(expect_path):
 
 
 def markdown_to_html(markdown_text):
-    return markdown.markdown(cell, encoding='utf-8',
+    return markdown.markdown(markdown_text, encoding='utf-8',
                              extensions=['tables', ChecklistExtension()])
 
 
@@ -197,8 +197,13 @@ class N10NoteProcessor:
 
         if self.block_list:
             last_line_is_empty = False
-            no_duplicate_empty_line_block_list = [
-                "# 摘自:" + self.book_title, ""]
+            if self.book_title:
+                no_duplicate_empty_line_block_list = [
+                    "# 摘自:" + self.book_title, ""]
+            else:
+                no_duplicate_empty_line_block_list = []
+            
+            emphasis_normalizer = re.compile(r'(?P<left>\*{1,2})(?P<word1>.*?)(?P<punc1>\(|\[|<|《)(?P<word2>.*?)(?P<punc2>\)|\]|>|》)(?P<right>\*{1,2})')
             for block in self.block_list:
                 if not block:
                     if last_line_is_empty:
@@ -216,6 +221,8 @@ class N10NoteProcessor:
                     r = re.compile(
                         r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^,;:?!.\s]+)')
                     block = r.sub(r'\1 \2', block)
+
+                block = emphasis_normalizer.sub('\g<left>\g<word1>\g<left>\g<punc1>\g<left>\g<word2>\g<right>\g<punc2>', block)
 
                 no_duplicate_empty_line_block_list.append(block)
 
