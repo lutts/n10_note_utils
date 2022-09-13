@@ -203,8 +203,8 @@ class N10NoteProcessor:
                 if not block:
                     if last_line_is_empty:
                         continue
-                    else:
-                        last_line_is_empty = True
+                    
+                    last_line_is_empty = True
                 else:
                     last_line_is_empty = False
 
