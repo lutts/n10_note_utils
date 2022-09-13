@@ -204,7 +204,7 @@ class N10NoteProcessor:
                 no_duplicate_empty_line_block_list = []
             
             emphasis_normalizer = re.compile(
-                r'(?P<left>\*{1,2})(?P<word1>.*?)(?P<punc1>\(|\[|<|《)(?P<word2>.*?)(?P<punc2>\)|\]|>|》)(?P<right>\*{1,2})')
+                r'(?P<left>\*{1,2})(?P<word1>.*?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.*?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
             for block in self.block_list:
                 if not block:
                     if last_line_is_empty:
