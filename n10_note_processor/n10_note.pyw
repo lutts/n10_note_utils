@@ -9,9 +9,12 @@ import sys
 import re
 import os
 from datetime import datetime
-import markdown
+#import markdown
 #import markdown2
-from markdown_checklist.extension import ChecklistExtension
+#from markdown_checklist.extension import ChecklistExtension
+#import mistletoe
+from markdown_it import MarkdownIt
+from mdit_py_plugins.tasklists import tasklists_plugin
 
 # Global variables
 
@@ -31,9 +34,23 @@ def uniqe_name(expect_path):
     return expect_path
 
 
+# def markdown_to_html_with_py_markdown(markdown_text):
+#    return markdown.markdown("".join(markdown_text), encoding='utf-8',
+#                             extensions=['tables', ChecklistExtension()])
+
+
+# def markdown_to_html_mistletoe(markdown_text):
+#    return mistletoe.markdown(markdown_text)
+
+
 def markdown_to_html(markdown_text):
-    return markdown.markdown(markdown_text, encoding='utf-8',
-                             extensions=['tables', ChecklistExtension()])
+    md = (
+        MarkdownIt()
+        .use(tasklists_plugin)
+        .enable('strikethrough')
+        .enable('table'))
+    # print(md.get_all_rules())
+    return md.render("".join(markdown_text))
 
 
 def convert_markdown_to_html(markdown_filepath, html_filepath=None):
@@ -41,7 +58,7 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
         split_filepath = os.path.splitext(markdown_filepath)
         html_filepath = uniqe_name(split_filepath[0] + ".html")
 
-    text = ""
+    text = []
     with open(markdown_filepath, 'r', encoding='utf-8') as m:
         for line in m:
             if line[0:2] == "| ":
@@ -55,8 +72,10 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
                     if "{nl}" in cell:
                         #print("new line")
                         cell = cell.strip()
-                        cell = cell.replace("{nl}", "\n")
-                        cell = markdown_to_html(cell)
+                        # cell = cell.replace("{nl}", "\n")
+                        inline_lines = cell.split("{nl}")
+                        cell = markdown_to_html(
+                            [l + "\n" for l in inline_lines])
 
                         cell = cell.replace("\n", "")
                         markdown_cells.append(" " + cell + " ")
@@ -67,7 +86,7 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
                 line = "|".join(markdown_cells)
                 #print("mark line: " + line)
 
-            text += line
+            text.append(line)
 
     html = markdown_to_html(text)
 
@@ -202,14 +221,14 @@ class N10NoteProcessor:
                     "# 摘自:" + self.book_title, ""]
             else:
                 no_duplicate_empty_line_block_list = []
-            
+
             emphasis_normalizer = re.compile(
                 r'(?P<left>\*{1,2})(?P<word1>.+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
             for block in self.block_list:
                 if not block:
                     if last_line_is_empty:
                         continue
-                    
+
                     last_line_is_empty = True
                 else:
                     last_line_is_empty = False
