@@ -8,6 +8,7 @@ Module documentation.
 import sys
 import re
 import os
+import logging
 from datetime import datetime
 #import markdown
 #import markdown2
@@ -49,7 +50,7 @@ def markdown_to_html(markdown_text):
         .use(tasklists_plugin)
         .enable('strikethrough')
         .enable('table'))
-    # print(md.get_all_rules())
+    logging.debug(md.get_all_rules())
     return md.render("".join(markdown_text))
 
 
@@ -70,7 +71,7 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
                         continue
 
                     if "{nl}" in cell:
-                        #print("new line")
+                        logging.debug("custom new line in table cell found")
                         cell = cell.strip()
                         # cell = cell.replace("{nl}", "\n")
                         inline_lines = cell.split("{nl}")
@@ -82,9 +83,9 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
                     else:
                         markdown_cells.append(cell)
 
-                #print('orig line: ' + line)
+                logging.debug('orig line: ' + line)
                 line = "|".join(markdown_cells)
-                #print("mark line: " + line)
+                logging.debug("mark line: " + line)
 
             text.append(line)
 
@@ -187,14 +188,14 @@ class N10NoteProcessor:
             return False
 
         if line[0] == "#":
-            #print("markdown chapter line: " + line)
+            logging.debug("markdown chapter line: " + line)
             return True
         # check if is markdown lists and blockquotes
         elif line[0:2] in self.MARKDOWN_MARKERS:
-            #print("line with markdown marker: " + line)
+            logging.debug("line with markdown marker: " + line)
             return True
         elif self.MARKDOWN_ORDERED_LIST_RE.match(line):
-            #print("markdown order list: " + line)
+            logging.debug("markdown order list: " + line)
             return True
 
         return False
@@ -272,14 +273,14 @@ class N10NoteProcessor:
         for image in os.listdir(curdir):
             # check if the image ends with png
             if (image.endswith(".png")):
-                #print(image + ":" + str(os.path.getctime(image)))
-                # print(datetime.fromtimestamp(os.path.getctime(image)))
+                logging.debug(image + ":" + str(os.path.getctime(image)))
+                logging.debug(datetime.fromtimestamp(os.path.getctime(image)))
                 # url in <> to allow space in path names
                 self.image_list.append(
                     (os.path.getctime(image), "![x](<" + image + ">)"))
 
         self.image_list.sort()
-        #print("images: ", self.image_list)
+        logging.debug("images: ", self.image_list)
 
     def read_hand_notes(self):
         if not self.hand_notes_filepath:
@@ -290,13 +291,13 @@ class N10NoteProcessor:
 
         with open(self.hand_notes_filepath, 'r', encoding="utf-8") as hand_notes:
             for line in hand_notes:
-                #print("hand note: " + line)
+                logging.debug("hand note: " + line)
                 line = line.strip()
                 m = self.HAND_NOTES_HEADER_RE.match(line)
                 if m:
                     datetime_obj = datetime(*[int(i) for i in
                                             m.group(1, 2, 3, 4, 5)])
-                    # print(datetime_obj)
+                    logging.debug(datetime_obj)
                     if cur_notes:
                         self.hand_note_list.append((last_ts, cur_notes))
                         cur_notes = []
@@ -312,7 +313,7 @@ class N10NoteProcessor:
             self.hand_note_list.append((last_ts, cur_notes))
 
         self.hand_note_list.sort()
-        # print(self.hand_note_list)
+        logging.debug(self.hand_note_list)
 
     def process(self):
         if not self.n10_notes_filepath:
@@ -325,17 +326,17 @@ class N10NoteProcessor:
 
         with open(self.n10_notes_filepath, 'r', encoding='utf_8_sig') as n10notes:
             for line in n10notes:
-                # print(line)
+                logging.debug("read notes line: " + line)
 
                 # only remove trailing whitespaces
                 line = line.rstrip()
                 # check if is header line
                 notes_header = self.HW_NOTES_HEADER_RE.match(line)
                 if notes_header:
-                    #print("header line: " + line)
+                    logging.debug("header line: " + line)
                     datetime_obj = datetime(*[int(i) for i in
                                             notes_header.group(1, 2, 3, 4, 5, 6)])
-                    # print(datetime_obj)
+                    logging.debug(datetime_obj)
                     ts = datetime_obj.timestamp()
                     if self.image_list:
                         if ts > self.image_list[0][0]:
@@ -366,17 +367,17 @@ class N10NoteProcessor:
                             self.block_list.append("")
                         self.block = line
                     elif not line:
-                        #print("empty line")
+                        logging.debug("empty line")
                         self.append_prev_block_to_list()
                         # empty line is remained
                         self.block_list.append("")
                         self.block = ""
                     elif line[0:4] == "    ":
-                        #print("indented line: " + line)
+                        logging.debug("indented line: " + line)
                         self.append_prev_block_to_list()
                         self.block = line
                     else:
-                        #print("normal line: " + line)
+                        logging.debug("normal line: " + line)
 
                         if self.block:
                             if self.block[-1] == "-":
