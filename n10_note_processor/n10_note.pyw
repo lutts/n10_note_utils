@@ -153,7 +153,7 @@ class N10NoteProcessor:
     """
 
     HW_NOTES_HEADER_RE = re.compile(
-        r"([0-9]{4})年([0-9]{2})月([0-9]){2}日 ([0-9]{2}):([0-9]{2}):([0-9]{2})  摘自<<(.*?)>> 第([0-9]+)页")
+        r"([0-9]{4})年([0-9]{2})月([0-9]{2})日 ([0-9]{2}):([0-9]{2}):([0-9]{2})  摘自<<(.*?)>> 第([0-9]+)页")
     MARKDOWN_MARKERS = ["* ", "- ", "+ ", "> ", '| ']
     MARKDOWN_ORDERED_LIST_RE = re.compile(r"[0-9]+\. ")
     HAND_NOTES_HEADER_RE = re.compile(
@@ -178,10 +178,14 @@ class N10NoteProcessor:
         else:
             self.markdown_filepath = uniqe_name(split_filepath[0] + ".md")
 
+        logging.debug("markdown text will write to " + self.markdown_filepath)
+
         if html_filepath:
             self.html_filepath = html_filepath
         else:
             self.html_filepath = uniqe_name(split_filepath[0] + ".html")
+
+        logging.debug("rendered html file will write to " + self.html_filepath)
 
     def line_is_markdown(self, line):
         if not line:
@@ -234,7 +238,7 @@ class N10NoteProcessor:
                 else:
                     last_line_is_empty = False
 
-                if block[0:4] != "![](":
+                if block[0:5] != "![x](":
                     # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
                     # multiple space between word reduce to one only
                     block = " ".join(block.split())
@@ -269,18 +273,24 @@ class N10NoteProcessor:
         if curdir == "":
             curdir = "."
 
+        logging.debug("get images in dir: " + curdir)
         # curdir = os.path.abspath(curdir)
         for image in os.listdir(curdir):
             # check if the image ends with png
             if (image.endswith(".png")):
-                logging.debug(image + ":" + str(os.path.getctime(image)))
-                logging.debug(datetime.fromtimestamp(os.path.getctime(image)))
+                fullpath = os.path.join(curdir, image)
+                try:
+                    logging.debug(image + " ctime:" + str(os.path.getctime(fullpath)))
+                    logging.debug(image + " ctime:" + str(datetime.fromtimestamp(os.path.getctime(fullpath))))
+                except Exception as e:
+                    logging.debug(e)
+
                 # url in <> to allow space in path names
                 self.image_list.append(
-                    (os.path.getctime(image), "![x](<" + image + ">)"))
+                    (os.path.getctime(fullpath), "![x](<" + image + ">)"))
 
         self.image_list.sort()
-        logging.debug("images: ", self.image_list)
+        logging.debug("images: " + str(self.image_list))
 
     def read_hand_notes(self):
         if not self.hand_notes_filepath:
@@ -316,6 +326,7 @@ class N10NoteProcessor:
         logging.debug(self.hand_note_list)
 
     def process(self):
+        logging.debug("start process notes file: " + self.n10_notes_filepath)
         if not self.n10_notes_filepath:
             return
 
@@ -339,6 +350,7 @@ class N10NoteProcessor:
                     logging.debug(datetime_obj)
                     ts = datetime_obj.timestamp()
                     if self.image_list:
+                        logging.debug("cur ts: " + str(ts) + ", first img ts: " + str(self.image_list[0][0]))
                         if ts > self.image_list[0][0]:
                             self.block_list.append(self.image_list[0][1])
                             self.block_list.append("")
@@ -401,6 +413,8 @@ def main():
     if not args:
         print('usage: python3 -m n10_note_processor <摘抄文件> [手写笔记导出文本文件]')
         sys.exit(1)
+
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
 
     if args[0].endswith(".md"):
         convert_markdown_to_html(args[0])

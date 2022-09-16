@@ -12,7 +12,7 @@ from n10_note import convert_markdown_to_html, N10NoteProcessor
 
 def main():
 
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.WARNING)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     logging.debug("----args-----")
     logging.debug("xxx".join(sys.argv))
 
@@ -62,6 +62,8 @@ def main():
 
         processor = N10NoteProcessor(notes_filepath, hand_notes_filepath)
         processor.process()
+
+        logging.debug("process done")
 
 
 # Main body
