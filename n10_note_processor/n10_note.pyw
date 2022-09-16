@@ -92,6 +92,8 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
     html = markdown_to_html(text)
 
     html_style = """
+    <head>
+    <meta charset="UTF-8">
     <style>
     blockquote {
         font: 14px/22px;
@@ -115,6 +117,7 @@ def convert_markdown_to_html(markdown_filepath, html_filepath=None):
         border: 1px solid #dddfe1;
     }
     </style>
+    </head>
     """
     with open(html_filepath, "w", encoding="utf-8") as n10notes_html:
         n10notes_html.write("<html>")
