@@ -8,14 +8,12 @@ import sys
 import os
 import logging
 
-from n10_note import convert_markdown_to_html, N10NoteProcessor
+from markdown_utils import markdown_file_to_html_file
+from n10_note import N10NoteProcessor
 
 def main():
 
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
-    logging.debug("----args-----")
-    logging.debug("xxx".join(sys.argv))
-
     args = sys.argv[1:]
 
     if not args:
@@ -25,7 +23,7 @@ def main():
     args = "".join(args)
     args = args.split("\n")
 
-    logging.debug("yyy".join(args))
+    logging.debug("###".join(args))
 
     if len(args) < 2:
         logging.debug("args len < 2")
@@ -43,7 +41,7 @@ def main():
         if '摘抄' in filename:
             notes_filepath = fullpath
         elif filename.endswith(".md"):
-            convert_markdown_to_html(fullpath)
+            markdown_file_to_html_file(fullpath)
             continue
         else:
             if not notes_filepath:

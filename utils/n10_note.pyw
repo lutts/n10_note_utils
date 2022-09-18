@@ -10,12 +10,8 @@ import re
 import os
 import logging
 from datetime import datetime
-#import markdown
-#import markdown2
-#from markdown_checklist.extension import ChecklistExtension
-#import mistletoe
-from markdown_it import MarkdownIt
-from mdit_py_plugins.tasklists import tasklists_plugin
+from markdown_utils import markdown_to_full_html, markdown_file_to_html_file
+
 
 # Global variables
 
@@ -33,98 +29,6 @@ def uniqe_name(expect_path):
         counter += 1
 
     return expect_path
-
-
-# def markdown_to_html_with_py_markdown(markdown_text):
-#    return markdown.markdown("".join(markdown_text), encoding='utf-8',
-#                             extensions=['tables', ChecklistExtension()])
-
-
-# def markdown_to_html_mistletoe(markdown_text):
-#    return mistletoe.markdown(markdown_text)
-
-
-def markdown_to_html(markdown_text):
-    md = (
-        MarkdownIt()
-        .use(tasklists_plugin)
-        .enable('strikethrough')
-        .enable('table'))
-    logging.debug(md.get_all_rules())
-    return md.render("".join(markdown_text))
-
-
-def convert_markdown_to_html(markdown_filepath, html_filepath=None):
-    if not html_filepath:
-        split_filepath = os.path.splitext(markdown_filepath)
-        html_filepath = uniqe_name(split_filepath[0] + ".html")
-
-    text = []
-    with open(markdown_filepath, 'r', encoding='utf-8') as m:
-        for line in m:
-            if line[0:2] == "| ":
-                table_cells = line.split('|')
-                markdown_cells = []
-                for cell in table_cells:
-                    if not cell:
-                        markdown_cells.append(cell)
-                        continue
-
-                    if "{nl}" in cell:
-                        logging.debug("custom new line in table cell found")
-                        cell = cell.strip()
-                        # cell = cell.replace("{nl}", "\n")
-                        inline_lines = cell.split("{nl}")
-                        cell = markdown_to_html(
-                            [l + "\n" for l in inline_lines])
-
-                        cell = cell.replace("\n", "")
-                        markdown_cells.append(" " + cell + " ")
-                    else:
-                        markdown_cells.append(cell)
-
-                logging.debug('orig line: ' + line)
-                line = "|".join(markdown_cells)
-                logging.debug("mark line: " + line)
-
-            text.append(line)
-
-    html = markdown_to_html(text)
-
-    html_style = """
-    <head>
-    <meta charset="UTF-8">
-    <style>
-    blockquote {
-        font: 14px/22px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        margin-left: 15px;
-        padding-left: 15px;
-        border-left: 3px solid #ccc;
-        }
-    table {
-        border-collapse: collapse;
-    }
-    table td {
-        padding: 8px;
-    }
-    table thead th {
-        font-weight: bold;
-        border: 1px solid #dddfe1;
-    }
-    table tbody td {
-        border: 1px solid #dddfe1;
-    }
-    </style>
-    </head>
-    """
-    with open(html_filepath, "w", encoding="utf-8") as n10notes_html:
-        n10notes_html.write("<html>")
-        n10notes_html.write(html_style)
-        n10notes_html.write("<body>")
-        n10notes_html.write(html)
-        n10notes_html.write("</body></html>")
 
 
 class N10NoteProcessor:
@@ -222,54 +126,22 @@ class N10NoteProcessor:
                 self.block_list.append(img)
                 self.block_list.append("")
 
-        if self.block_list:
-            last_line_is_empty = False
-            if self.book_title:
-                no_duplicate_empty_line_block_list = [
-                    "# 摘自:" + self.book_title, ""]
-            else:
-                no_duplicate_empty_line_block_list = []
+        if self.book_title:
+            self.block_list = ["# 摘自:" + self.book_title, ""] + self.block_list
 
-            emphasis_normalizer = re.compile(
-                r'(?P<left>\*{1,2})(?P<word1>.+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
-            for block in self.block_list:
-                if not block:
-                    if last_line_is_empty:
-                        continue
+        if not self.block_list:
+            return
 
-                    last_line_is_empty = True
-                else:
-                    last_line_is_empty = False
+        normalized_markdown_lines, full_html = markdown_to_full_html(self.block_list)
+        #self.block_list = []
 
-                if block[0:5] != "![x](":
-                    # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
-                    # multiple space between word reduce to one only
-                    block = " ".join(block.split())
-                    # add a space after some punctuations if there's no one
-                    r = re.compile(
-                        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^,;:?!.\s]+)')
-                    block = r.sub(r'\1 \2', block)
+        with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
+            n10notes_markdown.write(
+                "".join(normalized_markdown_lines))
 
-                block = emphasis_normalizer.sub(
-                    '\g<left>\g<word1>\g<left>\g<punc1>\g<left>\g<word2>\g<right>\g<punc2>', block)
+        with open(self.html_filepath, 'w', encoding="utf-8") as html_file:
+            html_file.write(full_html)
 
-                no_duplicate_empty_line_block_list.append(block)
-
-            if not no_duplicate_empty_line_block_list:
-                return
-
-            # markdownlint: markdown file should end with a single new line
-            if no_duplicate_empty_line_block_list[-1]:
-                no_duplicate_empty_line_block_list.append("")
-
-            with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
-                n10notes_markdown.write(
-                    "\n".join(no_duplicate_empty_line_block_list))
-
-            self.block_list = []
-
-            convert_markdown_to_html(
-                self.markdown_filepath, self.html_filepath)
 
     def get_images_in_directory(self):
         curdir = os.path.dirname(self.n10_notes_filepath)
@@ -420,7 +292,7 @@ def main():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
 
     if args[0].endswith(".md"):
-        convert_markdown_to_html(args[0])
+        markdown_file_to_html_file(args[0])
     else:
         processor = N10NoteProcessor(*args)
         processor.process()
