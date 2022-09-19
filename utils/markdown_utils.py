@@ -14,6 +14,7 @@ import re
 from markdown_it import MarkdownIt
 from mdit_py_plugins.tasklists import tasklists_plugin
 import hanzi
+import css_inline
 
 
 def uniqe_name(expect_path):
@@ -44,6 +45,32 @@ class markdown_processor:
     * remove unneeded whitespaces
     * emphasis normalizer
     * add a space after some punctuations if there's no one
+    """
+
+    css_style = """
+        <style>
+        blockquote {
+            font: 14px/22px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 15px;
+            padding-left: 15px;
+            border-left: 3px solid #ccc;
+            }
+        table {
+            border-collapse: collapse;
+        }
+        table td {
+            padding: 8px;
+        }
+        table thead th {
+            font-weight: bold;
+            border: 1px solid #dddfe1;
+        }
+        table tbody td {
+            border: 1px solid #dddfe1;
+        }
+        </style>
     """
 
     english_punctuation = '!"#$%&\'()*+,-./:;<=>?@\[\\\]^_`{|}~'
@@ -198,52 +225,20 @@ class markdown_processor:
         if not html_body:
             return None
 
-        html_style = """
-        <head>
-        <meta charset="UTF-8">
-        <style>
-        blockquote {
-            font: 14px/22px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            margin-left: 15px;
-            padding-left: 15px;
-            border-left: 3px solid #ccc;
-            }
-        table {
-            border-collapse: collapse;
-        }
-        table td {
-            padding: 8px;
-        }
-        table thead th {
-            font-weight: bold;
-            border: 1px solid #dddfe1;
-        }
-        table tbody td {
-            border: 1px solid #dddfe1;
-        }
-        </style>
-        </head>
-        """
-
-        full_html = "<html>" + html_style + "<body>" + html_body + "</body></html>"
+        full_html = '<html><head><meta charset="UTF-8">'
+        full_html += self.css_style
+        full_html += "</head><body>" + html_body + "</body></html>"
 
         return (normalized_markdown_lines, full_html)
 
 
     def markdown_to_html_with_inline_style(self, markdown_lines):
-        normalized_markdown_lines, html_body = self.markdown_to_raw_html(markdown_lines)
-
+        normalized_markdown_lines, html_body = self.markdown_to_full_html(markdown_lines)
         if not html_body:
             return None
-        
-        html_body = html_body.replace('<table style="', 'table style="border-collapse: collapse;')
-        html_body = html_body.replace('<td style="', '<td style="padding: 8px;border: 1px solid #dddfe1;')
-        html_body = html_body.replace('<th style="', '<th style="font-weight: bold;border: 1px solid #dddfe1;')
-        html_body = html_body.replace("<table>", '<table style="border-collapse: collapse;">')
-        html_body = html_body.replace("<td>", '<td style="padding: 8px;border: 1px solid #dddfe1;">')
-        html_body = html_body.replace("<th>", '<th style="font-weight: bold;border: 1px solid #dddfe1;">')
+
+        inliner = css_inline.CSSInliner(remove_style_tags=True)
+        html_body = inliner.inline(html_body)
 
         return (normalized_markdown_lines, html_body)
 
