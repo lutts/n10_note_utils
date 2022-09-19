@@ -73,6 +73,12 @@ some text with {braces} {} in it
 
 **心理学(psychology)**是关于**个体**的**行为**及**心智（mind）过程**的**科学研究**
 
+**reference list:** Reference list entries should have a hanging indent of 0.5 in
+ 
+中文:【不要加空格】
+ 
+英文:[紧跟标点也不要加空格]
+
 a.string,has;no:space?after   punctuation!another, string; has: space? after      puctuation! ok!
 
     test    multiple      space.

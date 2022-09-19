@@ -13,6 +13,7 @@ import re
 #import mistletoe
 from markdown_it import MarkdownIt
 from mdit_py_plugins.tasklists import tasklists_plugin
+import hanzi
 
 
 def uniqe_name(expect_path):
@@ -45,10 +46,13 @@ class markdown_processor:
     * add a space after some punctuations if there's no one
     """
 
+    english_punctuation = '!"#$%&\'()*+,-./:;<=>?@\[\\\]^_`{|}~'
+
     heading_whitespaces_re = re.compile(r" +")
     emphasis_normalizer_re = re.compile(
         r'(?P<left>\*{1,2})(?P<word1>.+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
-    space_after_punc_re = re.compile(r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^-\[,;:?!.\s]+)')
+    space_after_punc_re = re.compile(
+        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + '\s]+)')
     img_link_re = re.compile(r'(?P<linkhead>!{,1}\[.*\]\(<{,1})(?P<linkurl>.*?)(?P<linktail>>{,1}\)|>{,1} ".*?"\))')
     double_brace_re = re.compile(r'(?P<b>\{|\})')
 
