@@ -73,13 +73,13 @@ class markdown_processor:
         </style>
     """
 
-    english_punctuation = '!"#$%&\'()*+,-./:;<=>?@\[\\\]^_`{|}~'
+    english_punctuation = r'!"#$%&\'()*+,-./:;<=>?@\[\\\]^_`{|}~'
 
     heading_whitespaces_re = re.compile(r" +")
     emphasis_normalizer_re = re.compile(
         r'(?P<left>\*{1,2})(?P<word1>.+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
     space_after_punc_re = re.compile(
-        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + '\s]+)')
+        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
     img_link_re = re.compile(r'(?P<linkhead>!{,1}\[.*\]\(<{,1})(?P<linkurl>.*?)(?P<linktail>>{,1}\)|>{,1} ".*?"\))')
     double_brace_re = re.compile(r'(?P<b>\{|\})')
 
