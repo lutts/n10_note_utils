@@ -49,7 +49,7 @@ class markdown_processor:
     emphasis_normalizer_re = re.compile(
         r'(?P<left>\*{1,2})(?P<word1>.+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
     space_after_punc_re = re.compile(r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^-\[,;:?!.\s]+)')
-    img_link_re = re.compile(r'(?P<linkhead>!{,1}\[.*?\]\(<{,1})(?P<linkurl>.*?)(?P<linktail>>{,1}\)|>{,1} ".*?"\))')
+    img_link_re = re.compile(r'(?P<linkhead>!{,1}\[.*\]\(<{,1})(?P<linkurl>.*?)(?P<linktail>>{,1}\)|>{,1} ".*?"\))')
     double_brace_re = re.compile(r'(?P<b>\{|\})')
 
     def __init__(self):
