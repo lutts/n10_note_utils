@@ -8,7 +8,7 @@ import sys
 import os
 import logging
 
-from markdown_utils import markdown_file_to_html_file
+from markdown_utils import markdown_processor
 from n10_note import N10NoteProcessor
 
 def main():
@@ -41,7 +41,7 @@ def main():
         if '摘抄' in filename:
             notes_filepath = fullpath
         elif filename.endswith(".md"):
-            markdown_file_to_html_file(fullpath)
+            markdown_processor().markdown_file_to_html_file(fullpath)
             continue
         else:
             if not notes_filepath:

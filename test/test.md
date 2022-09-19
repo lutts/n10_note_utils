@@ -1,8 +1,10 @@
+# test title
+
 Cells can vary in width and do not need to be perfectly aligned within columns. There must be at least three hyphens in each column of the header row.
 
 | Command | Description |
 | --- | --- |
-| git status | * List all new{nl}* modified files |
+| git status | List all new or modified files |
 | git diff | To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].{nl}{nl}* [x] #739{nl}* [ ] https://github.com/octo-org/octo-repo/issues/740{nl}* [ ] Add delight to the experience when all tasks are complete :tada:{nl}    {nl}If a task list item description begins with a parenthesis, you'll need to escape it with \: |
     
 You can align text to the left, right, or center of a column by including colons : to the left, right, or on both sides of the hyphens within the header row.
@@ -33,6 +35,44 @@ If a task list item description begins with a parenthesis, you'll need to escape
 
 Parse ~~strikethrough~~ formatting
 
+![x](<./test    image.jpeg>)
+
+![x](<./test    image.jpeg> "image title")
+
+![x](./test_image.jpg)
+
+![x](./test_image.jpg "image title")
+
+[link](http://google.com)
+
+[link](<http://google.com/test page>)
+
+[link](http://google.com "google")
+
+[link](<http://google.com/test page> "google test page")
+
+some [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [link](<http://google.com> "google") or img ![x](<./hehe.png> "hehe"). that is it
+
+some text with {braces} {} in it
+
 这**是(is)**一个苹果。
 
+这*是(is)*一个苹果。
+
+这**是[is]**一个苹果。
+
+这**是【is】**一个苹果。
+
+这**是《is》**一个苹果。
+
+这**是<is>**一个苹果。
+
+这**是（is）**一个苹果。
+
 这**是**(**is**)一个苹果。
+
+**心理学(psychology)**是关于**个体**的**行为**及**心智（mind）过程**的**科学研究**
+
+a.string,has;no:space?after   punctuation!another, string; has: space? after      puctuation! ok!
+
+    test    multiple      space.

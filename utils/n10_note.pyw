@@ -10,7 +10,7 @@ import re
 import os
 import logging
 from datetime import datetime
-from markdown_utils import markdown_to_full_html, markdown_file_to_html_file
+from markdown_utils import markdown_processor
 
 
 # Global variables
@@ -132,7 +132,7 @@ class N10NoteProcessor:
         if not self.block_list:
             return
 
-        normalized_markdown_lines, full_html = markdown_to_full_html(self.block_list)
+        normalized_markdown_lines, full_html = markdown_processor().markdown_to_full_html(self.block_list)
         #self.block_list = []
 
         with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
@@ -290,9 +290,10 @@ def main():
         sys.exit(1)
 
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
 
     if args[0].endswith(".md"):
-        markdown_file_to_html_file(args[0])
+        markdown_processor().markdown_file_to_html_file(args[0])
     else:
         processor = N10NoteProcessor(*args)
         processor.process()
