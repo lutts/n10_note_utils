@@ -106,7 +106,7 @@ def markdown_to_raw_html(markdown_lines):
     emphasis_normalizer_re = re.compile(
         r'(?P<left>\*{1,2})(?P<word1>.+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
     space_after_punc_re = re.compile(r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^-\[,;:?!.\s]+)')
-    img_re = re.compile(r'(?P<linkhead>!\[.*?\]\(<{,1})(?P<linkurl>.*?)(?P<linktail>>{,1}\)|>{,1} ".*?"\))')
+    img_link_re = re.compile(r'(?P<linkhead>!{,1}\[.*?\]\(<{,1})(?P<linkurl>.*?)(?P<linktail>>{,1}\)|>{,1} ".*?"\))')
     double_brace = re.compile(r'(?P<b>\{|\})')
 
     for line in markdown_lines:
@@ -127,11 +127,11 @@ def markdown_to_raw_html(markdown_lines):
         # markdownlint: no trailing spaces
         rstriped_line = line.rstrip()
 
-        images = img_re.findall(rstriped_line)
-        if images:
-            images = ["".join(i) for i in images]
+        image_or_links = img_link_re.findall(rstriped_line)
+        if image_or_links:
+            image_or_links = ["".join(i) for i in image_or_links]
             rstriped_line = double_brace.sub(r'\1\1', rstriped_line)
-            rstriped_line = img_re.sub('{}', rstriped_line)
+            rstriped_line = img_link_re.sub('{}', rstriped_line)
 
         # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
         # multiple space between word reduce to one only
@@ -148,8 +148,8 @@ def markdown_to_raw_html(markdown_lines):
         rstriped_line = emphasis_normalizer_re.sub(
                     '\g<left>\g<word1>\g<left>\g<punc1>\g<left>\g<word2>\g<right>\g<punc2>', rstriped_line)
 
-        if images:
-            rstriped_line = rstriped_line.format(*images)
+        if image_or_links:
+            rstriped_line = rstriped_line.format(*image_or_links)
 
         line = rstriped_line + "\n"
         normalized_markdown_lines.append(line)

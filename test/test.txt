@@ -43,6 +43,16 @@ Parse ~~strikethrough~~ formatting
 
 ![x](./test_image.jpg "image title")
 
+[link](http://google.com)
+
+[link](<http://google.com/test page>)
+
+[link](http://google.com "google")
+
+[link](<http://google.com/test page> "google test page")
+
+some [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [link](<http://google.com> "google") or img ![x](<./hehe.png> "hehe"). that is it
+
 some text with {braces} {} in it
 
 这**是(is)**一个苹果。
