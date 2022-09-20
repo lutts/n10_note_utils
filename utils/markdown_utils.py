@@ -50,7 +50,6 @@ class markdown_processor:
     css_style = """
         <style>
         blockquote {
-            font: 14px/22px;
             margin-top: 10px;
             margin-bottom: 10px;
             margin-left: 15px;
@@ -58,18 +57,24 @@ class markdown_processor:
             border-left: 3px solid #ccc;
             }
         table {
+            display: table;
+            margin-bottom: 1em;
             border-collapse: collapse;
         }
-        table td {
-            padding: 8px;
+        th, td {
+            padding: 5px 10px;
         }
         table thead th {
             font-weight: bold;
-            border: 1px solid #dddfe1;
+            border: 1px solid;
         }
         table tbody td {
-            border: 1px solid #dddfe1;
+            border: 1px solid;
         }
+
+        pre code {
+            margin-left:.375in;
+		}
         </style>
     """
 
@@ -106,34 +111,39 @@ class markdown_processor:
 
 
     def normalize_markdown_line(self, line):
-        # markdownlint: no trailing spaces
-        rstriped_line = line.rstrip()
+        heading_spaces = ""
+        m = self.heading_whitespaces_re.match(line)
+        if m:
+            heading_spaces = m.group()
 
-        image_or_links = self.img_link_re.findall(rstriped_line)
+        # indented code block, return the orignal line
+        if len(heading_spaces) >= 4:
+            return line
+
+        # markdownlint: no trailing spaces
+        striped_line = line.rstrip()
+
+        image_or_links = self.img_link_re.findall(striped_line)
         if image_or_links:
             image_or_links = ["".join(i) for i in image_or_links]
-            rstriped_line = self.double_brace_re.sub(r'\1\1', rstriped_line)
-            rstriped_line = self.img_link_re.sub('{}', rstriped_line)
+            striped_line = self.double_brace_re.sub(r'\1\1', striped_line)
+            striped_line = self.img_link_re.sub('{}', striped_line)
 
         # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
         # multiple space between word reduce to one only
-        heading_spaces = ""
-        m = self.heading_whitespaces_re.match(rstriped_line)
-        if m:
-            heading_spaces = m.group()
-        reduced_line = " ".join(rstriped_line.split())
-        rstriped_line = heading_spaces + reduced_line
+        reduced_line = " ".join(striped_line.split())
+        striped_line = heading_spaces + reduced_line
 
         # add a space after some punctuations if there's no one
-        rstriped_line = self.space_after_punc_re.sub(r'\1 \2', rstriped_line)
+        striped_line = self.space_after_punc_re.sub(r'\1 \2', striped_line)
 
-        rstriped_line = self.emphasis_normalizer_re.sub(
-                    '\g<left>\g<word1>\g<left>\g<punc1>\g<left>\g<word2>\g<right>\g<punc2>', rstriped_line)
+        striped_line = self.emphasis_normalizer_re.sub(
+                    '\g<left>\g<word1>\g<left>\g<punc1>\g<left>\g<word2>\g<right>\g<punc2>', striped_line)
 
         if image_or_links:
-            rstriped_line = rstriped_line.format(*image_or_links)
+            striped_line = striped_line.format(*image_or_links)
 
-        return rstriped_line + "\n"
+        return heading_spaces + striped_line + "\n"
 
 
     def process_newline_in_table_cell(self, markdown_line):

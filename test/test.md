@@ -86,3 +86,15 @@ some text with {braces} {} in it
 a.string,has;no:space?after   punctuation!another, string; has: space? after      puctuation! ok!
 
     test    multiple      space.
+
+below is a code block:
+
+    this         is      a   code block
+	should not normalize
+
+after code block
+
+this is a block quote
+
+> Sed laoreet luctus erat at rutrum. Proin velit metus, luctus in sapien in, tincidunt mattis ex. 
+> Praesent venenatis orci at sagittis eleifend. Nulla facilisi. In feugiat vehicula magna iaculis
