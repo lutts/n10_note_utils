@@ -237,7 +237,7 @@ class markdown_processor:
 
         full_html = '<html><head><meta charset="UTF-8">'
         full_html += self.css_style
-        full_html += "</head><body>" + html_body + "</body></html>"
+        full_html += "</head><body>\n" + html_body + "\n</body></html>"
 
         return (normalized_markdown_lines, full_html)
 
