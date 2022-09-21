@@ -59,11 +59,11 @@ SendMarkdownToOnenote()
 		 quoted_selectedfile := quote(SelectedFile)
 		 
 		fullexec_path := get_my_utils_path("utils\send_markdown_to_onenote_for_ahk.pyw")
-		RunWait, %fullexec_ppath% %quoted_selectedfile%
+		RunWait, %fullexec_path% %quoted_selectedfile%
 		
 		SplitPath, SelectedFile,, dir
 		dirname := quote(dir)
-		RunWait, C:\Users\lutts\AppData\Local\Microsoft\WindowsApps\python.exe -m http.server -d %dirname%
+		RunWait, python -m http.server -d %dirname%
 	}
 }
 
