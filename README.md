@@ -224,5 +224,5 @@ markdown语法简单，使得你可以在阅读器上就预先对笔记进行简
 如果你直接编辑markdown文件，而不是第一时间将笔记导入到Onenote或印象笔记等软件中，那么我这里还为你提供了一些方便的markdown转html的工具，方便你在处理完markdown后将最终结果导入到其他软件中，比如辅助记忆软件supermemo
 
 * **Caps Lock + o**: 将md文件渲染成html，放入剪贴板。会弹出一个文件选择框，选择需要处理的md文件即可。
-  * 如果你是导入到onenote，并且你的markdown中有本地图片，onenote是无法获取到这些图片的，因为程序会自带开启一个http服务器，方便onenote获取markdown中的图片。完事后，记得将http服务器的命行窗口手动关闭
+  * 如果你是导入到onenote，并且你的markdown中有本地图片，onenote是无法获取到这些图片的，因此程序会自动开启一个http服务器，方便onenote获取markdown中的图片。完事后，记得将http服务器的命行窗口手动关闭
 * **Caps Lock + m**: 将剪贴板里的markdown渲染成html，并重新放入剪贴板
