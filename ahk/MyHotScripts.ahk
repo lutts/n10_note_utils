@@ -8,7 +8,7 @@ quote(string) {
 }
 
 get_my_utils_path(filename) {
-	PYTHON_UTILS_DIR := "D:\Data\python\projects\my_utils\"
+	PYTHON_UTILS_DIR := "D:\Data\python\projects\note_utils\"
 	
 	fullpath :=  PYTHON_UTILS_DIR . filename
 	fullpath := quote(fullpath)
