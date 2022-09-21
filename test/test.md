@@ -94,6 +94,15 @@ below is a code block:
 
 after code block
 
+`````
+hoho    xxx
+````
+      haha
+`````test
+`````
+
+fenced code block is not touched
+
 this is a block quote
 
 > Sed laoreet luctus erat at rutrum. Proin velit metus, luctus in sapien in, tincidunt mattis ex. 

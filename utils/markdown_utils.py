@@ -71,10 +71,6 @@ class markdown_processor:
         table tbody td {
             border: 1px solid;
         }
-
-        pre code {
-            margin-left:.375in;
-		}
         </style>
     """
 
@@ -87,6 +83,7 @@ class markdown_processor:
         r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
     img_link_re = re.compile(r'(?P<linkhead>!{,1}\[.*\]\(<{,1})(?P<linkurl>.*?)(?P<linktail>>{,1}\)|>{,1} ".*?"\))')
     double_brace_re = re.compile(r'(?P<b>\{|\})')
+    code_fence_re = re.compile(r' {,3}(`{3,}|~{3,})(.*)')
 
     def __init__(self):
         pass
@@ -193,10 +190,30 @@ class markdown_processor:
         normalized_markdown_lines = []
         processed_markdown_lines = []
         last_line_is_empty = False
+        code_fence = None
 
         for line in markdown_lines:
-            striped_line = line.strip()
+            m = self.code_fence_re.match(line)
+            if m:
+                tmp_code_fence = m.group(1)
+                info_string = m.group(2).strip()
+                if code_fence:
+                    if code_fence in tmp_code_fence and not info_string:
+                        # end of fenced code block
+                        code_fence = None
+                else:
+                    # a new fenced block start
+                    code_fence = tmp_code_fence
 
+                normalized_markdown_lines.append(line)
+                processed_markdown_lines.append(line)
+                continue
+            elif code_fence:
+                normalized_markdown_lines.append(line)
+                processed_markdown_lines.append(line)
+                continue
+            
+            striped_line = line.strip()
             if not striped_line:
                 # markdownlint: no multiple consecutive blank lines
                 if not last_line_is_empty:
@@ -208,7 +225,6 @@ class markdown_processor:
                 continue
             else:
                 last_line_is_empty = False
-
 
             line = self.normalize_markdown_line(line)
  

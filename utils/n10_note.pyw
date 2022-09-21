@@ -65,6 +65,7 @@ class N10NoteProcessor:
     MARKDOWN_ORDERED_LIST_RE = re.compile(r"[0-9]+\. ")
     HAND_NOTES_HEADER_RE = re.compile(
         r"([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})-([0-9]{1,2}):([0-9]{1,2})")
+    code_fence_re = re.compile(r' {,3}(`{3,}|~{3,})(.*)')
 
     def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
                  remove_header_line=False,
@@ -76,6 +77,8 @@ class N10NoteProcessor:
         self.n10_notes_filepath = n10_notes_filepath
         self.hand_notes_filepath = hand_notes_filepath
         self.remove_header_line = remove_header_line
+
+        self.code_fence = None
 
         self.book_title = None
 
@@ -110,6 +113,27 @@ class N10NoteProcessor:
             return True
 
         return False
+
+    def line_is_in_code_fence(self, line):
+        m = self.code_fence_re.match(line)
+        if m:
+            tmp_code_fence = m.group(1)
+            info_string = m.group(2).strip()
+            if self.code_fence:
+                if self.code_fence in tmp_code_fence and not info_string:
+                    # end of fenced code block
+                    self.code_fence = None
+            else:
+                # a new fenced block start
+                self.code_fence = tmp_code_fence
+
+            
+            return True
+        elif self.code_fence:
+            return True
+        
+        return False
+
 
     def append_prev_block_to_list(self):
         if self.block:
@@ -208,11 +232,13 @@ class N10NoteProcessor:
         self.get_images_in_directory()
         self.read_hand_notes()
 
+        self.code_fence = None
         last_line_is_header = False
 
         with open(self.n10_notes_filepath, 'r', encoding='utf_8_sig') as n10notes:
             for line in n10notes:
                 logging.debug("read notes line: " + line)
+                orig_line = line
 
                 # only remove trailing whitespaces
                 line = line.rstrip()
@@ -248,10 +274,19 @@ class N10NoteProcessor:
                         last_line_is_header = True
 
                 else:
-                    if self.line_is_markdown(line):
+                    if self.line_is_in_code_fence(line):
                         self.append_prev_block_to_list()
                         if last_line_is_header:
                             self.block_list.append("")
+                        # fenced code block is untouched
+                        self.block_list.append(orig_line)
+                        self.block = ""
+                    elif self.line_is_markdown(line):
+                        self.append_prev_block_to_list()
+                        if last_line_is_header:
+                            self.block_list.append("")
+                        # this line is remained, the following lines is append to this line 
+                        # if they do not open another block 
                         self.block = line
                     elif not line:
                         logging.debug("empty line")
@@ -261,6 +296,8 @@ class N10NoteProcessor:
                         self.block = ""
                     elif line[0:4] == "    ":
                         logging.debug("indented line: " + line)
+                        # this line is remained, the following lines is append to this line 
+                        # if they do not open another block 
                         self.append_prev_block_to_list()
                         self.block = line
                     else:
