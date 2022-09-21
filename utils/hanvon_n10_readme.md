@@ -105,7 +105,7 @@ AutoHotKey可以从它官网下载：<https://www.autohotkey.com/>
 
 打开MyHotScripts.ahk，在第11行找到以下内容:
 
-```
+```txt
 PYTHON_UTILS_DIR := "D:\Data\python\projects\my_utils\"
 ```
 
@@ -160,11 +160,11 @@ C:\Users\lutts\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
 * 程序去掉多余的换行是非常智能的，如果你在记笔记的时候就使用markdown进行了初步处理，你会发现程序会保留你做的这些处理
   * 例如：你是程序员，摘抄了一段代码，你肯定是不希望这些代码里的换行符被去掉的，此时你就可以用fenced code block来把这段摘抄保护起来了
 
-### 手写笔记手写时间格式：
+### 手写笔记手写时间格式
 
 手写时间戳的时候，经过识别出来的格式要是下面这个样子的
 
-```
+```txt
 2022.9.14-13:56
 ```
 
@@ -187,7 +187,7 @@ markdown语法简单，使得你可以在阅读器上就预先对笔记进行简
 
 下面是一些markdown示例
 
-```
+```txt
 **加粗**
 
 *斜体*
