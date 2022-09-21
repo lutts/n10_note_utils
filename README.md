@@ -116,7 +116,7 @@ PYTHON_UTILS_DIR := "D:\Data\python\projects\my_utils\"
 如果需要在系统开机的时候自动启动，将MyHotScripts.ahk复制或者链接到以下目录：
 
 ```txt
-C:\Users\lutts\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+C:\Users\<你的用户名>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
 ```
 
 我的AHK文件的快捷键配置如下：
