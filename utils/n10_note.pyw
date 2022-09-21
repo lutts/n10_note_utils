@@ -11,6 +11,8 @@ import os
 import logging
 from datetime import datetime
 from markdown_utils import markdown_processor
+import css_inline
+from HTMLClipboard import PutHtml
 
 
 # Global variables
@@ -150,6 +152,12 @@ class N10NoteProcessor:
                 self.block_list.append(img)
                 self.block_list.append("")
 
+        if self.hand_note_list:
+            self.block_list.append("")
+            for ts, note in self.hand_note_list:
+                self.block_list.extend(note)
+                self.block_list.append("")
+
         if self.book_title:
             self.block_list = ["# 摘自:" + self.book_title, ""] + self.block_list
 
@@ -165,6 +173,10 @@ class N10NoteProcessor:
 
         with open(self.html_filepath, 'w', encoding="utf-8") as html_file:
             html_file.write(full_html)
+
+        inliner = css_inline.CSSInliner(remove_style_tags=True)
+        inlined_html = inliner.inline(full_html)
+        PutHtml(inlined_html, "".join(normalized_markdown_lines))
 
 
     def get_images_in_directory(self):
@@ -198,7 +210,7 @@ class N10NoteProcessor:
         last_ts = 0
         cur_notes = []
 
-        with open(self.hand_notes_filepath, 'r', encoding="utf-8") as hand_notes:
+        with open(self.hand_notes_filepath, 'r', encoding="utf-16be") as hand_notes:
             for line in hand_notes:
                 logging.debug("hand note: " + line)
                 line = line.strip()
