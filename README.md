@@ -75,7 +75,7 @@ genetics.
 * 如果你是程序员，安装了git，直接git clone即可
 * 如果你不是程序员，可以下载zip打包文件
 
-运行脚所需要的环境：python 3
+运行脚本所需要的环境：python 3
 
 ### python
 
