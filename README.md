@@ -187,6 +187,10 @@ C:\Users\<你的用户名>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
 
 markdown语法简单，使得你可以在阅读器上就预先对笔记进行简单的处理，用于突出一些重点等。因为汉王N10能直接编辑摘抄文件，加上markdown可以使得你记笔记的效果更加好
 
+我的程序使用了符合Commonmark的markdown标准，下面的链接里有简单的介绍
+
+<https://commonmark.org/help/>
+
 下面是一些markdown示例
 
 ```txt
