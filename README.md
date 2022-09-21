@@ -77,7 +77,7 @@ genetics.
 
 ### python
 
-如果你不是程序员，建议从Microsoft Store安装，安装完后就可以用了，不需要其他和工设置，方法如下
+如果你不是程序员，建议从Microsoft Store安装，安装完后就可以用了，不需要其他手工设置，方法如下
 
 1. 打开Microsoft Store
 2. 搜索`python`
