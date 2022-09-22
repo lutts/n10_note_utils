@@ -79,7 +79,7 @@ class markdown_processor:
 
     heading_whitespaces_re = regex.compile(r" +")
     emphasis_normalizer_re = regex.compile(
-        r'(?P<left>\*{1,2})(?P<word1>.+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
+        r'(?P<asterisks>\*{1,2})(?P<word1>[^*]+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P=asterisks)')
     space_after_punc_re = regex.compile(
         r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
     # regular expression to match markdown link ang image link
@@ -166,7 +166,7 @@ class markdown_processor:
         striped_line = self.space_after_punc_re.sub(r'\1 \2', striped_line)
 
         striped_line = self.emphasis_normalizer_re.sub(
-                    '\g<left>\g<word1>\g<left>\g<punc1>\g<left>\g<word2>\g<right>\g<punc2>', striped_line)
+                    '\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', striped_line)
 
         if image_or_links:
             striped_line = striped_line.format(*image_or_links)
