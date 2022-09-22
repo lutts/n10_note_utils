@@ -55,7 +55,21 @@ Parse ~~strikethrough~~ formatting
 
 [link](<http://google.com/test page> "google test page")
 
-some [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [link](<http://google.com> "google") or img ![x](<./hehe.png> "hehe"). that is it
+complex_link = r'[Link text with [brackets] inside](http://www.example.com "My \"title\"")'
+
+complex_img = r'![Link text with [brackets] inside](http://www.example.com/haha.png "My \"title\"")'
+
+img_as_link_text = r'[![img](xxx/yyy.png)](http://google.com "My \"title\"")'
+
+complex_link_angle = r'[Link text with [brackets] inside](<http://www.example.com> "My \"title\"")'
+
+complex_img_angle = r'![Link text with [brackets] inside](<http://www.example.com/haha.png> "My \"title\"")'
+
+img_as_link_text_angle = r'[![img](xxx/yyy.png)](<http://google.com> "My \"title\"")'
+
+bad_link = '[link](<http://google.com  "title")'
+
+multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [![img link](haha.png)](<http://google.com> "google") or img ![x](<./hehe.png> "hehe"). that is it'
 
 some text with {braces} {} in it
 

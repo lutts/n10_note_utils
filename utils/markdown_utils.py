@@ -6,7 +6,8 @@ Module documentation.
 import sys
 import os
 import logging
-import re
+#import re
+import regex
 #import markdown
 #import markdown2
 #from markdown_checklist.extension import ChecklistExtension
@@ -76,14 +77,41 @@ class markdown_processor:
 
     english_punctuation = r'!"#$%&\'()*+,-./:;<=>?@\[\\\]^_`{|}~'
 
-    heading_whitespaces_re = re.compile(r" +")
-    emphasis_normalizer_re = re.compile(
+    heading_whitespaces_re = regex.compile(r" +")
+    emphasis_normalizer_re = regex.compile(
         r'(?P<left>\*{1,2})(?P<word1>.+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P<right>\*{1,2})')
-    space_after_punc_re = re.compile(
+    space_after_punc_re = regex.compile(
         r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
-    img_link_re = re.compile(r'(?P<linkhead>!{,1}\[.*\]\(<{,1})(?P<linkurl>.*?)(?P<linktail>>{,1}\)|>{,1} ".*?"\))')
-    double_brace_re = re.compile(r'(?P<b>\{|\})')
-    code_fence_re = re.compile(r' {,3}(`{3,}|~{3,})(.*)')
+    # regular expression to match markdown link ang image link
+    # (?P<text_group>
+    #   \[
+    #     (?>
+    #       [^\[\]]+
+    #       |(?&text_group)
+    #     )*
+    #   \]
+    # )
+    # (?P<left_paren>\()
+    # (?P<left_angle><)?
+    # (?:
+    #   (?P<url>
+    #    (?(left_angle)
+    #     .*?>
+    # 	|\S*?
+    #     )
+    #   )
+    #     (?:
+    #       (?P<title_begin>[ ]")
+    #         (?P<title>
+    #           (?:[^"]|(?<=\\)")*?
+    #         )
+    #       (?P<title_end>")
+    #     )?
+    # (?P<right_paren>\))
+    # )
+    img_link_re = regex.compile(r'(!?)(?P<text_group>\[(?>[^\[\]]+|(?&text_group))*\])(?P<left_paren>\()(?P<left_angle><)?(?:(?P<url>(?(left_angle).*?>|\S*?))(?:(?P<title_begin>[ ]")(?P<title>(?:[^"]|(?<=\\)")*?)(?P<title_end>"))?(?P<right_paren>\)))')
+    double_brace_re = regex.compile(r'(?P<b>\{|\})')
+    code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
 
     def __init__(self):
         pass
@@ -108,12 +136,14 @@ class markdown_processor:
 
 
     def normalize_markdown_line(self, line):
+        logging.debug("normalize markdown line: " + line)
         heading_spaces = ""
         m = self.heading_whitespaces_re.match(line)
         if m:
             heading_spaces = m.group()
 
         # indented code block, return the orignal line
+        logging.debug("heading space len: " + str(len(heading_spaces)))
         if len(heading_spaces) >= 4:
             return line
 
@@ -123,6 +153,7 @@ class markdown_processor:
         image_or_links = self.img_link_re.findall(striped_line)
         if image_or_links:
             image_or_links = ["".join(i) for i in image_or_links]
+            logging.debug("found img or links: " + str(image_or_links))
             striped_line = self.double_brace_re.sub(r'\1\1', striped_line)
             striped_line = self.img_link_re.sub('{}', striped_line)
 
@@ -140,6 +171,7 @@ class markdown_processor:
         if image_or_links:
             striped_line = striped_line.format(*image_or_links)
 
+        logging.debug("normalized result: " + heading_spaces + striped_line + "\n")
         return heading_spaces + striped_line + "\n"
 
 
