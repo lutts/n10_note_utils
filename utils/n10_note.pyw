@@ -68,6 +68,7 @@ class N10NoteProcessor:
     HAND_NOTES_HEADER_RE = re.compile(
         r"([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})-([0-9]{1,2}):([0-9]{1,2})")
     code_fence_re = re.compile(r' {,3}(`{3,}|~{3,})(.*)')
+    front_matter_re = re.compile(r'-{3,}')
 
     def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
                  remove_header_line=False,
@@ -81,6 +82,8 @@ class N10NoteProcessor:
         self.remove_header_line = remove_header_line
 
         self.code_fence = None
+        self.front_matter = None
+        self.line_number = 0
 
         self.book_title = None
 
@@ -116,7 +119,29 @@ class N10NoteProcessor:
 
         return False
 
+
+    def line_is_in_front_matter(self, line):
+        if self.line_number == 1:
+            m = self.front_matter_re.match(line)
+            if m:
+                self.front_matter = m.group()
+                return True
+        elif self.front_matter:
+            m = self.front_matter_re.match(line)
+            if m:
+                if self.front_matter == m.group():
+                    # end of front matter
+                    self.front_matter = None
+            
+            return True
+        
+        return False
+
+
     def line_is_in_code_fence(self, line):
+        if self.line_is_in_front_matter(line):
+            return True
+
         m = self.code_fence_re.match(line)
         if m:
             tmp_code_fence = m.group(1)
@@ -157,9 +182,6 @@ class N10NoteProcessor:
             for ts, note in self.hand_note_list:
                 self.block_list.extend(note)
                 self.block_list.append("")
-
-        if self.book_title:
-            self.block_list = ["# 摘自:" + self.book_title, ""] + self.block_list
 
         if not self.block_list:
             return
@@ -245,10 +267,15 @@ class N10NoteProcessor:
         self.read_hand_notes()
 
         self.code_fence = None
+        self.front_matter = None
+        self.line_number = 0
+
         last_line_is_header = False
 
         with open(self.n10_notes_filepath, 'r', encoding='utf_8_sig') as n10notes:
             for line in n10notes:
+                self.line_number += 1
+
                 logging.debug("read notes line: " + line)
                 orig_line = line
 
@@ -278,19 +305,21 @@ class N10NoteProcessor:
 
                     if not self.book_title:
                         self.book_title = notes_header.group(7)
+                        self.block_list.append("# 摘自:" + self.book_title)
+                        self.block_list.append("")
 
                     if not self.remove_header_line:
                         #self.block = "<sub>" + line + "</sub>\n"
                         # self.append_prev_block_to_list()
                         self.block = "(p" + notes_header.group(8) + ")"
                         last_line_is_header = True
-
                 else:
                     if self.line_is_in_code_fence(line):
                         self.append_prev_block_to_list()
                         if last_line_is_header:
                             self.block_list.append("")
                         # fenced code block is untouched
+                        logging.debug("fenced code remained: " + orig_line)
                         self.block_list.append(orig_line)
                         self.block = ""
                     elif self.line_is_markdown(line):
