@@ -18,7 +18,7 @@ get_my_utils_path(filename) {
 ; 将剪贴板中的markdown文本转为html，再将html文本放回剪贴板
 ClipboardMarkdownToHtml()
 {
-	fullexec_path := get_my_utils_path("utils\markdown2clipboard.pyw")
+	fullexec_path := get_my_utils_path("src\markdown2clipboard.pyw")
 	RunWait, %fullexec_path%
 	ClipWait, 2, 1 ; wait until clipboard contains data
 }
@@ -38,7 +38,7 @@ N10NotesProcess()
 		files := quote(SelectedFiles)	
 		;MsgBox, The quoted string:`n%files%
 		
-		fullexec_path := get_my_utils_path("utils\n10_note_for_ahk.pyw")
+		fullexec_path := get_my_utils_path("src\n10_note_for_ahk.pyw")
 		RunWait, %fullexec_path% %files%
 	}
 }
@@ -58,7 +58,7 @@ SendMarkdownToOnenote()
 		 
 		 quoted_selectedfile := quote(SelectedFile)
 		 
-		fullexec_path := get_my_utils_path("utils\send_markdown_to_onenote_for_ahk.pyw")
+		fullexec_path := get_my_utils_path("src\send_markdown_to_onenote_for_ahk.pyw")
 		RunWait, %fullexec_path% %quoted_selectedfile%
 		
 		SplitPath, SelectedFile,, dir
