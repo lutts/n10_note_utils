@@ -37,9 +37,6 @@ def one_line_tex(tex, display_mode):
     for line in lines:
         one_line += line.strip()
 
-    # onenote do not allow whitespace in formula
-    one_line = "".join(one_line.split())
-
     if display_mode:
         return '$$' + one_line + '$$'
     else:
