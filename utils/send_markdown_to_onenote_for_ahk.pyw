@@ -9,7 +9,7 @@ import logging
 from markdown2clipboard import markdown_to_clipboard
 
 def main():
-    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     args = sys.argv[1:]
 
     if not args:
@@ -28,9 +28,9 @@ def main():
                 line = img_re.sub(r'\1http://localhost:8000/\2\3', line)
                 lines.append(line)
 
-        markdown_to_clipboard(lines)
+        markdown_to_clipboard(lines, onenote_mode=True)
     except Exception as e:
-        logging(str(e))
+        logging.debug(str(e))
 
 # Main body
 if __name__ == '__main__':

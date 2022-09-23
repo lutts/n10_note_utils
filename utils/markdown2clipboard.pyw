@@ -11,9 +11,9 @@ from markdown_utils import markdown_processor
 from HTMLClipboard import GetHtml, PutHtml, DumpHtml
 
 
-def markdown_to_clipboard(markdown_lines):
-    normalized_markdown_lines, html_body = markdown_processor().markdown_to_html_with_inline_style(markdown_lines)
-    PutHtml(html_body, "".join(normalized_markdown_lines))
+def markdown_to_clipboard(markdown_lines, onenote_mode=False):
+    html_body = markdown_processor(onenote_mode).markdown_to_html_with_inline_style(markdown_lines)
+    PutHtml(html_body, "".join(markdown_lines))
 
 
 if __name__ == "__main__":

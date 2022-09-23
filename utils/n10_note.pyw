@@ -6,13 +6,14 @@ Module documentation.
 
 # Imports
 import sys
-import re
+import regex
 import os
 import logging
 from datetime import datetime
 from markdown_utils import markdown_processor
 import css_inline
 from HTMLClipboard import PutHtml
+import hanzi
 
 
 # Global variables
@@ -61,14 +62,51 @@ class N10NoteProcessor:
     软件中编辑
     """
 
-    HW_NOTES_HEADER_RE = re.compile(
+    HW_NOTES_HEADER_RE = regex.compile(
         r"([0-9]{4})年([0-9]{2})月([0-9]{2})日 ([0-9]{2}):([0-9]{2}):([0-9]{2})  摘自<<(.*?)>> 第([0-9]+)页")
     MARKDOWN_MARKERS = ["* ", "- ", "+ ", "> ", '| ']
-    MARKDOWN_ORDERED_LIST_RE = re.compile(r"[0-9]+\. ")
-    HAND_NOTES_HEADER_RE = re.compile(
+    MARKDOWN_ORDERED_LIST_RE = regex.compile(r"[0-9]+\. ")
+    HAND_NOTES_HEADER_RE = regex.compile(
         r"([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})-([0-9]{1,2}):([0-9]{1,2})")
-    code_fence_re = re.compile(r' {,3}(`{3,}|~{3,})(.*)')
-    front_matter_re = re.compile(r'-{3,}')
+    code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
+    front_matter_re = regex.compile(r'-{3,}')
+
+    english_punctuation = r'!"#$%&\'()*+,-./:;<=>?@\[\\\]^_`{|}~'
+
+    heading_whitespaces_re = regex.compile(r" +")
+    emphasis_normalizer_re = regex.compile(
+        r'(?P<asterisks>\*{1,2})(?P<word1>[^*]+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P=asterisks)')
+    space_after_punc_re = regex.compile(
+        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
+    # regular expression to match markdown link ang image link
+    # (?P<text_group>
+    #   \[
+    #     (?>
+    #       [^\[\]]+
+    #       |(?&text_group)
+    #     )*
+    #   \]
+    # )
+    # (?P<left_paren>\()
+    # (?P<left_angle><)?
+    # (?:
+    #   (?P<url>
+    #    (?(left_angle)
+    #     .*?>
+    # 	|\S*?
+    #     )
+    #   )
+    #     (?:
+    #       (?P<title_begin>[ ]")
+    #         (?P<title>
+    #           (?:[^"]|(?<=\\)")*?
+    #         )
+    #       (?P<title_end>")
+    #     )?
+    # (?P<right_paren>\))
+    # )
+    img_link_re = regex.compile(r'(!?)(?P<text_group>\[(?>[^\[\]]+|(?&text_group))*\])(?P<left_paren>\()(?P<left_angle><)?(?:(?P<url>(?(left_angle).*?>|\S*?))(?:(?P<title_begin>[ ]")(?P<title>(?:[^"]|(?<=\\)")*?)(?P<title_end>"))?(?P<right_paren>\)))')
+    double_brace_re = regex.compile(r'(?P<b>\{|\})')
 
     def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
                  remove_header_line=False,
@@ -80,10 +118,6 @@ class N10NoteProcessor:
         self.n10_notes_filepath = n10_notes_filepath
         self.hand_notes_filepath = hand_notes_filepath
         self.remove_header_line = remove_header_line
-
-        self.code_fence = None
-        self.front_matter = None
-        self.line_number = 0
 
         self.book_title = None
 
@@ -101,6 +135,12 @@ class N10NoteProcessor:
             self.html_filepath = uniqe_name(split_filepath[0] + ".html")
 
         logging.debug("rendered html file will write to " + self.html_filepath)
+
+    
+    def reinit_state(self):
+        self.code_fence = None
+        self.front_matter = None
+        self.line_number = 0
 
     def line_is_markdown(self, line):
         if not line:
@@ -167,6 +207,47 @@ class N10NoteProcessor:
             self.block_list.append(self.block)
             self.block = ""
 
+
+    def normalize_line(self, line):
+        logging.debug("normalize line: " + line)
+        heading_spaces = ""
+        m = self.heading_whitespaces_re.match(line)
+        if m:
+            heading_spaces = m.group()
+
+        # indented code block, return the orignal line
+        logging.debug("heading space len: " + str(len(heading_spaces)))
+        if len(heading_spaces) >= 4:
+            return line
+
+        # markdownlint: no trailing spaces
+        striped_line = line.rstrip()
+
+        image_or_links = self.img_link_re.findall(striped_line)
+        if image_or_links:
+            image_or_links = ["".join(i) for i in image_or_links]
+            logging.debug("found img or links: " + str(image_or_links))
+            striped_line = self.double_brace_re.sub(r'\1\1', striped_line)
+            striped_line = self.img_link_re.sub('{}', striped_line)
+
+        # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
+        # multiple space between word reduce to one only
+        reduced_line = " ".join(striped_line.split())
+        striped_line = heading_spaces + reduced_line
+
+        # add a space after some punctuations if there's no one
+        striped_line = self.space_after_punc_re.sub(r'\1 \2', striped_line)
+
+        striped_line = self.emphasis_normalizer_re.sub(
+                    '\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', striped_line)
+
+        if image_or_links:
+            striped_line = striped_line.format(*image_or_links)
+
+        logging.debug("normalized result: " + heading_spaces + striped_line + "\n")
+        return heading_spaces + striped_line + "\n"
+
+
     def write_block_list(self):
         self.append_prev_block_to_list()
 
@@ -186,7 +267,38 @@ class N10NoteProcessor:
         if not self.block_list:
             return
 
-        normalized_markdown_lines, full_html = markdown_processor().markdown_to_full_html(self.block_list)
+        self.reinit_state()
+        normalized_markdown_lines = []
+        last_line_is_empty = False
+
+        for line in self.block_list:
+            self.line_number += 1
+
+            if self.line_is_in_code_fence(line):
+                logging.debug("fenced code remained: " + line)
+                normalized_markdown_lines.append(line)
+                continue
+            
+            striped_line = line.strip()
+            if not striped_line:
+                # markdownlint: no multiple consecutive blank lines
+                if not last_line_is_empty:
+                    # markdownlint: no trailing spaces
+                    normalized_markdown_lines.append("\n")
+                    last_line_is_empty = True
+                
+                continue
+            else:
+                last_line_is_empty = False
+
+            line = self.normalize_line(line)
+            normalized_markdown_lines.append(line)
+
+        # markdownlint: markdown file should end with a single new line
+        if not last_line_is_empty:
+            normalized_markdown_lines.append("\n")
+
+        full_html = markdown_processor().markdown_to_full_html(normalized_markdown_lines)
         #self.block_list = []
 
         with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
@@ -258,6 +370,7 @@ class N10NoteProcessor:
         self.hand_note_list.sort()
         logging.debug(self.hand_note_list)
 
+
     def process(self):
         logging.debug("start process notes file: " + self.n10_notes_filepath)
         if not self.n10_notes_filepath:
@@ -266,9 +379,7 @@ class N10NoteProcessor:
         self.get_images_in_directory()
         self.read_hand_notes()
 
-        self.code_fence = None
-        self.front_matter = None
-        self.line_number = 0
+        self.reinit_state()
 
         last_line_is_header = False
 
@@ -367,10 +478,11 @@ def main():
         print('usage: python3 -m n10_note_processor <摘抄文件> [手写笔记导出文本文件]')
         sys.exit(1)
 
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
     if args[0].endswith(".md"):
+        logging.debug("process markdown file: " + args[0])
         markdown_processor().markdown_file_to_html_file(args[0])
     else:
         processor = N10NoteProcessor(*args)
