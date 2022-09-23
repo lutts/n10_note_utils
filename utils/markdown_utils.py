@@ -15,8 +15,11 @@ import regex
 from markdown_it import MarkdownIt
 from mdit_py_plugins.tasklists import tasklists_plugin
 from mdit_py_plugins.front_matter import front_matter_plugin
+from mdit_py_plugins.dollarmath import dollarmath_plugin
 import hanzi
 import css_inline
+from markdown_it.common.utils import escapeHtml
+from katex_wrapper import tex2html
 
 
 def uniqe_name(expect_path):
@@ -28,6 +31,18 @@ def uniqe_name(expect_path):
         counter += 1
 
     return expect_path
+
+
+def katex_renderer(content, display_mode):
+    logging.debug("katex render coontent " + content + " with  display_mode " + str(display_mode))
+    options = {}
+    if display_mode['display_mode']:
+        options['display-mode'] = True
+
+    html = tex2html(content, options)
+
+    #logging.debug("tex " + content + " render to " + html)
+    return html
 
 
 # def render_markdown_with_py_markdown(markdown_text):
@@ -50,6 +65,7 @@ class markdown_processor:
     """
 
     css_style = """
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">
         <style>
         blockquote {
             margin-top: 10px;
@@ -139,6 +155,7 @@ class markdown_processor:
             MarkdownIt()
             .use(tasklists_plugin)
             .use(front_matter_plugin)
+            .use(dollarmath_plugin, renderer=katex_renderer)
             .enable('strikethrough')
             .enable('table'))
         logging.debug(md.get_all_rules())

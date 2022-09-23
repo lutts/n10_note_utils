@@ -1,0 +1,5 @@
+pyperclip
+markdown-it-py[plugins]
+css-inline
+regex
+pathlib2

@@ -104,6 +104,16 @@ genetics.
 
 这时候就可以从运行我的脚本了，但每次都要打开命令行，很不友好，因此建议再安装AutoHotKey
 
+如果需要Latex数学公式支持，你还需要安装Node.js, npm和Katex，方法如下:
+
+* 到Node.js官网<https://nodejs.org/en/download/>下载最新的node.js安装包
+* Node.js的安装包也会安装npm，因此不需要单独安装npm
+* 安装完Node.js后，执行`npm install -g katex`安装katex
+
+程序支持渲染Markdown文件里的Katex公式，也支持将剪贴板里的Katex公式转为图片，让你可以在不支持Katex的环境里也能查看公式
+
+快捷键: Caps Lock + l: 将剪贴板里的latex数学公式转换为图片
+
 ### AutoHotKey
 
 AutoHotKey的作用就是你可以定制一个快捷键来执行一些脚本，省得每次都要打开命令行
