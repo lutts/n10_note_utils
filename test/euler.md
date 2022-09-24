@@ -58,6 +58,114 @@ H_c&=\frac{1}{2n} \sum^n_{l=0}(-1)^{l}(n-{l})^{p-2}\sum_{l _1+\dots+ l _p=l}\pro
 \end{split}\end{equation}
 $$
 
+### Overriding default mathematical styles
+
+The canonical example is taken from page 142 of the TeXBook
+
+```
+a_0+{1\over a_1+
+      {1\over a_2+
+        {1 \over a_3 + 
+           {1 \over a_4}}}}
+```
+
+by default, this is typeset as:
+
+$$
+a_0+{1\over a_1+
+      {1\over a_2+
+        {1 \over a_3 + 
+           {1 \over a_4}}}}
+$$
+
+The default typesetting style can be amended by using the \displaystyle command:
+
+```
+a_0+{1\over\displaystyle a_1+
+      {1\over\displaystyle a_2+
+        {1 \over\displaystyle a_3 + 
+           {1 \over\displaystyle a_4}}}}
+```
+
+yielding
+
+$$
+a_0+{1\over\displaystyle a_1+
+      {1\over\displaystyle a_2+
+        {1 \over\displaystyle a_3 + 
+           {1 \over\displaystyle a_4}}}}
+$$
+
+Here’s another example which demonstrates the effect of \textstyle, \scriptstyle and \scriptscriptstyle:
+
+```
+\begin{eqnarray*}
+f(x) = \sum_{i=0}^{n} \frac{a_i}{1+x} \\
+\textstyle f(x) = \textstyle \sum_{i=0}^{n} \frac{a_i}{1+x} \\
+\scriptstyle f(x) = \scriptstyle \sum_{i=0}^{n} \frac{a_i}{1+x} \\
+\scriptscriptstyle f(x) = \scriptscriptstyle \sum_{i=0}^{n} \frac{a_i}{1+x}
+\end{eqnarray*}
+```
+
+which renders as
+
+$$
+\begin{array}{c}
+\displaystyle f(x) = \textstyle \sum_{i=0}^{n} \frac{a_i}{1+x} \\
+\textstyle f(x) = \textstyle \sum_{i=0}^{n} \frac{a_i}{1+x} \\
+\scriptstyle f(x) = \scriptstyle \sum_{i=0}^{n} \frac{a_i}{1+x} \\
+\scriptscriptstyle f(x) = \scriptscriptstyle \sum_{i=0}^{n} \frac{a_i}{1+x}
+\end{array}
+$$
+
+
+### Spacing in math mode
+
+$$
+S = \{ z \in \mathbb{C}\, |\, |z| < 1 \} \quad \textrm{and} \quad S_2=\partial{S}
+$$
+
+$$
+\begin{align*}
+f(x) &= x^2\! +3x\! +2 \\
+f(x) &= x^2+3x+2 \\
+f(x) &= x^2\, +3x\, +2 \\
+f(x) &= x^2\: +3x\: +2 \\
+f(x) &= x^2\; +3x\; +2 \\
+f(x) &= x^2\ +3x\ +2 \\
+f(x) &= x^2\quad +3x\quad +2 \\
+f(x) &= x^2\qquad +3x\qquad +2
+\end{align*}
+$$
+
+$$
+\begin{align*}
+3ax+4by=5cz\\
+3ax<4by+5cz
+\end{align*}
+$$
+
+
+### Arrays
+
+Arrays line items up in columns. Here are some basic steps for making arrays
+
+* Type \begin{array}.
+* Use an argument to describe how you want your table to be justified. Immediately following the \begin{array} command, add a set of brackets.
+
+    Inside the brackets, use the letters r (right), c (center), and l (left) for each column to describe how it will be formatted.
+
+    For example, if you have a three-column array and you want the text to be right-justified in the first column, centered in the second, and left-justified in the third, the argument would be {rcl}.
+* Type your data, using & to separate columns and \\ to move to the next row.
+* End the array with \end{array}.
+
+$$
+\begin{array}{lcl}
+f(x) & = & (a+b)^2 \\
+& = & a^2+2ab+b^2 \\
+\end{array}
+$$
+
 ### References
 
 <span id='1'>[1]  [Euler's identity](https://en.wikipedia.org/wiki/Euler%27s_identity)   
