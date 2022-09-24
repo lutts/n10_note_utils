@@ -9,7 +9,7 @@ import logging
 from markdown2clipboard import markdown_to_clipboard
 
 def main():
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     args = sys.argv[1:]
 
     if not args:
