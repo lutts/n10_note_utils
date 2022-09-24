@@ -35,7 +35,28 @@ $$\tag{lo} z = 3$$
 
 ## 3. Conclusion
 
-It has been shown, how Euler's identity makes a valid formula from five mathematical constants.
+It has been shown, how Euler's identity makes a valid formula from $A_1, A_2, \dotsc$ five mathematical constants.
+
+$$\frac{1}{\left(\sqrt{\phi\sqrt{5}}-\phi\right)e^{\frac{2}{5}\pi}}=
+ 1+\frac{e^{-2\pi}} {
+   1+\frac{e^{-4\pi}} {
+     1+\frac{e^{-6\pi}} {
+       1+\frac{e^{-8\pi}} {
+         1+\cdots
+       }
+     }
+   }
+}$$
+
+another
+
+$$
+\begin{equation}\tag{name}\begin{split}
+H_c&=\frac{1}{2n} \sum^n_{l=0}(-1)^{l}(n-{l})^{p-2}\sum_{l _1+\dots+ l _p=l}\prod^p_{i=1} \binom{n_i}{l _i}\\
+&\quad\cdot[(n-l )-(n_i-l _i)]^{n_i-l _i}\cdot
+\Bigl[(n-l )^2-\sum^p_{j=1}(n_i-l _i)^2\Bigr].
+\end{split}\end{equation}
+$$
 
 ### References
 

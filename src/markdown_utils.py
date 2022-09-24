@@ -31,11 +31,11 @@ def uniqe_name(expect_path):
 
     return expect_path
 
+latex_cmd_args_space_re = regex.compile(r'(?P<prev>[\]}])\s+(?P<next>[\[{])')
+
 def one_line_tex(tex, display_mode):
-    lines = tex.splitlines()
-    one_line = ""
-    for line in lines:
-        one_line += line.strip()
+    one_line = "".join(tex.splitlines())
+    one_line = latex_cmd_args_space_re.sub(r'\1\2', one_line)
 
     if display_mode:
         return '$$' + one_line + '$$'
