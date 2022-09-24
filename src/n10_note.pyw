@@ -107,6 +107,7 @@ class N10NoteProcessor:
     # )
     img_link_re = regex.compile(r'(!?)(?P<text_group>\[(?>[^\[\]]+|(?&text_group))*\])(?P<left_paren>\()(?P<left_angle><)?(?:(?P<url>(?(left_angle).*?>|\S*?))(?:(?P<title_begin>[ ]")(?P<title>(?:[^"]|(?<=\\)")*?)(?P<title_end>"))?(?P<right_paren>\)))')
     double_brace_re = regex.compile(r'(?P<b>\{|\})')
+    space_around_paren_re = regex.compile(r'(?:\s+)?([()])(?:\s+)?')
 
     def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
                  remove_header_line=False,
@@ -222,6 +223,11 @@ class N10NoteProcessor:
 
         # markdownlint: no trailing spaces
         striped_line = line.rstrip()
+
+        # 中文括号转英文括号
+        striped_line = striped_line.replace('（', '(')
+        striped_line = striped_line.replace('）', ')')
+        striped_line = self.space_around_paren_re.sub(r'\1', striped_line)
 
         image_or_links = self.img_link_re.findall(striped_line)
         if image_or_links:
