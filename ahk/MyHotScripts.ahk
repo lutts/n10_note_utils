@@ -15,6 +15,76 @@ get_my_utils_path(filename) {
     return fullpath
 }
 
+; window management
+#Up::WinMove A, ,0,0,A_ScreenWidth,(A_ScreenHeight-64)/2
+#Down::WinMove A, ,0,(A_ScreenHeight-64)/2,A_ScreenWidth,(A_ScreenHeight-64)/2
+
+CapsLock & 1:: send ①
+CapsLock & 2:: send ②
+CapsLock & 3:: send ③
+CapsLock & 4:: send ④
+CapsLock & 5:: send ⑤
+CapsLock & 6:: send ⑥
+CapsLock & 7:: send ⑦
+CapsLock & 8:: send ⑧
+CapsLock & 9:: send ⑨
+CapsLock & 0:: send ⑩
+
+; supermemo, 将element转为纯文本
+CapsLock & t::send ^+{F12}
+
+; Abbyy ScreenshotReader
+#Include %A_Scriptdir%\TrayIcon.ahk
+AbbyyScreenReaderOCRText()
+{
+    TrayIcon_Button("ScreenshotReader.exe", "L")
+    sleep, 100
+    SendInput, r
+}
+
+;CapsLock & c::AbbyyScreenReaderOCRText()
+
+; 去掉剪贴板中除纯属文本之外的其他格式，并删除掉空格及换行符
+PastePlainTextWithoutWhitespaces()
+{
+    clipboard := clipboard   ; Convert any copied files, HTML, or other formatted text to plain text.
+    clipboard := StrReplace(Clipboard, "`r`n")
+    ; 删除所有空格:
+    clipboard := StrReplace(clipboard, A_Space, "")
+    send, ^v
+	
+    ;sleep, 100
+    ;cliplen := StrLen(clipboard)
+    ;Send, {Shift down}{Left %cliplen%}{Shift up}
+    ;send, ^+n
+    ;sleep, 100
+    ;Send, {Right}
+}
+
+Capslock & v::PastePlainTextWithoutWhitespaces()
+
+TextOnlyPaste()
+{
+    clipboard := clipboard   ; Convert any copied files, HTML, or other formatted text to plain text.
+    send, ^v
+}
+
+Capslock & b::TextOnlyPaste()
+
+; 进入spotlight模式，方便进行阅读pacer
+Capslock & s::send ^!+P
+
+LookUpDictionary()
+{
+   Clipboard := "" ; clear clipboard
+   Send, ^c ; simulate Ctrl+C (=selection in clipboard)
+   ClipWait, 2, 1 ; wait until clipboard contains data
+   sleep, 200
+   Send, ^!+c
+}
+
+Capslock & d:: LookUpDictionary()
+
 ; 将剪贴板中的markdown文本转为html，再将html文本放回剪贴板
 ClipboardMarkdownToHtml()
 {
@@ -115,3 +185,29 @@ SendMarkdownToSupermemo()
 }
 
 CapsLock &  i:: SendMarkdownToSupermemo()
+
+SendMarkdownToTheBrain()
+{
+	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
+	if (SelectedFile = "")
+	{
+		return
+	}
+	else
+	{
+		 ;MsgBox, The user selected the following:`n%SelectedFile%
+		 
+		 quoted_selectedfile := quote(SelectedFile)
+		 
+		fullexec_path := get_my_utils_path("src\send_markdown_to_thebrain_from_ahk.pyw")
+		RunWait, %fullexec_path% %quoted_selectedfile%
+		
+		SplitPath, SelectedFile,, dir
+		dirname := quote(dir)
+		RunWait, python -m http.server -d %dirname%
+	}
+}
+
+CapsLock &  u:: SendMarkdownToTheBrain()	
+
+
