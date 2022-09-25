@@ -10,7 +10,7 @@ import regex
 import os
 import logging
 from datetime import datetime
-from markdown_utils import markdown_processor
+from markdown_utils import markdown_processor, uniqe_name
 import css_inline
 from HTMLClipboard import PutHtml
 import hanzi
@@ -21,18 +21,6 @@ import hanzi
 # Class declarations
 
 # Function declarations
-
-
-def uniqe_name(expect_path):
-    filename, extension = os.path.splitext(expect_path)
-    counter = 1
-
-    while os.path.exists(expect_path):
-        expect_path = filename + "(" + str(counter) + ")" + extension
-        counter += 1
-
-    return expect_path
-
 
 class N10NoteProcessor:
     """

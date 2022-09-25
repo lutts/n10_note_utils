@@ -9,6 +9,27 @@ import logging
 from markdown_utils import markdown_processor, markdown_processor_mode
 from HTMLClipboard import PutHtml
 
+def add_http_prefix_to_local_images(html):
+    #img1 = '<p><img src="test_image.jpg" alt="x" /></p>'
+    #img2 = '<p><img src="./test%20%20%20%20image.jpeg" alt="x" /></p>'
+    #img3 = '<p><img src="https://www.ncl.ucar.edu/Images/NCL_NCAR_NSF_banner.png" alt="x" /></p>'
+    #img4 = '<p>one <img src="1.png" /> two <img src="2.png" /> not <img src="https://g.com/3.png" /> end</p>'
+    img_re = re.compile(r'(?P<prefix><img[ ].*?src="(?!(?:http|ftp)s?://))(?P<imgurl>.*?)(?P<suffix>".*?>)')
+
+    html = "\n".join([img_re.sub(
+        r'\1http://localhost:8000/\2\3', l) for l in html.splitlines()])
+
+    #localhost_lines = []
+    #for line in html.splitlines():
+    #    logging.debug("pre localhost line: " + line)
+    #    line = img_re.sub(r'\1http://localhost:8000\2\3', line)
+    #    logging.debug("after localhost line: " + line)
+    #    localhost_lines.append(line)
+
+    #html = "\n".join(localhost_lines)
+
+    return html
+
 
 def send_markdown(filename: str, mode: markdown_processor_mode):
     try:
@@ -23,23 +44,7 @@ def send_markdown(filename: str, mode: markdown_processor_mode):
         processor = markdown_processor(mode, filename)
         html_body = processor.markdown_to_html_with_inline_style(markdown_lines)
 
-        #img1 = '<p><img src="test_image.jpg" alt="x" /></p>'
-        #img2 = '<p><img src="./test%20%20%20%20image.jpeg" alt="x" /></p>'
-        #img3 = '<p><img src="https://www.ncl.ucar.edu/Images/NCL_NCAR_NSF_banner.png" alt="x" /></p>'
-        #img4 = '<p>one <img src="1.png" /> two <img src="2.png" /> not <img src="https://g.com/3.png" /> end</p>'
-        img_re = re.compile(r'(?P<prefix><img[ ].*?src="(?!(?:http|ftp)s?://))(?P<imgurl>.*?)(?P<suffix>".*?>)')
-
-        html_body = "\n".join([img_re.sub(
-            r'\1http://localhost:8000/\2\3', l) for l in html_body.splitlines()])
-
-        #localhost_lines = []
-        #for line in html_body.splitlines():
-        #    logging.debug("pre localhost line: " + line)
-        #    line = img_re.sub(r'\1http://localhost:8000\2\3', line)
-        #    logging.debug("after localhost line: " + line)
-        #    localhost_lines.append(line)
-
-        #html_body = "\n".join(localhost_lines)
+        html_body = add_http_prefix_to_local_images(html_body)
         
         PutHtml(html_body, "".join(markdown_lines))
     except Exception as e:
