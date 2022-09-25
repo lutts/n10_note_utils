@@ -378,6 +378,9 @@ class markdown_processor:
 
 
     def markdown_file_to_html_file(self, markdown_filepath, html_filepath=None):
+        if not self.markdown_filepath:
+            self.markdown_filepath = markdown_filepath
+
         if not html_filepath:
             split_filepath = os.path.splitext(markdown_filepath)
             html_filepath = uniqe_name(split_filepath[0] + ".html")
@@ -387,6 +390,9 @@ class markdown_processor:
 
 
     def list_latex_equations(self, markdown_filepath):
+        if not self.markdown_filepath:
+            self.markdown_filepath = markdown_filepath
+            
         with open(markdown_filepath, 'r', encoding='utf-8') as m:
             self.markdown_to_raw_html(m.readlines())
 
