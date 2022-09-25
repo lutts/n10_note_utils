@@ -104,12 +104,6 @@ genetics.
 
 这时候就可以从运行我的脚本了，但每次都要打开命令行，很不友好，因此建议再安装AutoHotKey
 
-如果需要Latex数学公式支持，你还需要安装Node.js, npm和Katex，方法如下:
-
-* 到Node.js官网<https://nodejs.org/en/download/>下载最新的node.js安装包
-* Node.js的安装包也会安装npm，因此不需要单独安装npm
-* 安装完Node.js后，执行`npm install -g katex`安装katex
-
 ### AutoHotKey
 
 AutoHotKey的作用就是你可以定制一个快捷键来执行一些脚本，省得每次都要打开命令行
@@ -239,3 +233,25 @@ markdown语法简单，使得你可以在阅读器上就预先对笔记进行简
 * **Caps Lock + o**: 将md文件渲染成html，放入剪贴板。会弹出一个文件选择框，选择需要处理的md文件即可。
   * 如果你是导入到onenote，并且你的markdown中有本地图片，onenote是无法获取到这些图片的，因此程序会自动开启一个http服务器，方便onenote获取markdown中的图片。完事后，记得将http服务器的命行窗口手动关闭
 * **Caps Lock + m**: 将剪贴板里的markdown渲染成html，并重新放入剪贴板
+
+## 数学公式支持
+
+如果需要Latex数学公式支持，你还需要安装Node.js, npm和Katex，方法如下:
+
+* 到Node.js官网<https://nodejs.org/en/download/>下载最新的node.js安装包
+* Node.js的安装包也会安装npm，因此不需要单独安装npm
+* 安装完Node.js后，执行`npm install -g katex`安装katex
+
+对于Latex数学公式支持不怎么好的应用，比如OneNote，你可以选择在将markdown导入onenote时，将latex公式替换为图片
+
+程序本身不支持直接将latex公式转换为图片，因为太麻烦了，要支持好基本都需要安装Latex，这可是好几个GB的安装呀，划不来。
+
+程序采用的方案是分三步走：
+
+1. **Caps Lock + l**: 从md文件中将latex公式提取出来，并生成一个hash码，所有的公式放入一个latex_equations.txt文件中，并且是将inline和block的公式分开存放的，这是因为OneNote不支持在文字间inline图片，因此对于inline的latex公式，不能替换为图片。因为inline的公式一般都很简单，OneNote本身的Latex公式渲染器一般都能搞定
+2. 第二步，打开生成的latex_equations.txt文件，到一些在线的latex公式编辑器里转换化图片，比如[Apose](https://products.aspose.app/tex/equation-editor/png)。保存图片的时候，使用第一步生成的hash码作为文件名
+3. 第三步，**Caps Lock + o**选择md文件，此时就会将latex公式替换为图片了
+
+对于supermemo, theBrain等支持图片和文字内联(inline)的，还提供了另一个入口
+
+* **Caps Lock + i**: 发送到supermemo或theBrain，inline和block的公式都会使用你准备好的图片替代

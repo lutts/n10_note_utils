@@ -68,3 +68,50 @@ SendMarkdownToOnenote()
 }
 
 CapsLock &  o:: SendMarkdownToOnenote()
+
+ListMarkdownLatexEquations()
+{
+	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
+	if (SelectedFile = "")
+	{
+		return
+	}
+	else
+	{
+		 ;MsgBox, The user selected the following:`n%SelectedFile%
+		 
+		 quoted_selectedfile := quote(SelectedFile)
+		 
+		fullexec_path := get_my_utils_path("src\list_latex_equations.pyw")
+		RunWait, %fullexec_path% %quoted_selectedfile%
+		
+		SplitPath, SelectedFile,, dir
+		MsgBox, latex equations saved to %dir%\latex_equations.txt
+	}
+}
+
+CapsLock &  l:: ListMarkdownLatexEquations()
+
+SendMarkdownToSupermemo()
+{
+	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
+	if (SelectedFile = "")
+	{
+		return
+	}
+	else
+	{
+		 ;MsgBox, The user selected the following:`n%SelectedFile%
+		 
+		 quoted_selectedfile := quote(SelectedFile)
+		 
+		fullexec_path := get_my_utils_path("src\send_markdown_to_supermemo_from_ahk.pyw")
+		RunWait, %fullexec_path% %quoted_selectedfile%
+		
+		SplitPath, SelectedFile,, dir
+		dirname := quote(dir)
+		RunWait, python -m http.server -d %dirname%
+	}
+}
+
+CapsLock &  i:: SendMarkdownToSupermemo()
