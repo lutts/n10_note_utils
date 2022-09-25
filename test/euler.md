@@ -12,6 +12,16 @@
 
 Euler's identity makes a valid formula out of five mathematical constants.
 
+![x](test_image.jpg)
+
+another img
+
+![x](<./test    image.jpeg>)
+
+web image:
+
+![x](https://www.ncl.ucar.edu/Images/NCL_NCAR_NSF_banner.png)
+
 ## 1. Introduction
 
 Euler's identity is often cited as an example of deep mathematical beauty.

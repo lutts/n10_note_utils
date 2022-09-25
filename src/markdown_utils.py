@@ -19,6 +19,8 @@ from mdit_py_plugins.dollarmath import dollarmath_plugin
 import css_inline
 from markdown_it.common.utils import escapeHtml
 from katex_wrapper import tex2html
+from enum import Enum, auto
+import hashlib
 
 
 def uniqe_name(expect_path):
@@ -33,14 +35,14 @@ def uniqe_name(expect_path):
 
 latex_cmd_args_space_re = regex.compile(r'(?P<prev>[\]}])\s+(?P<next>[\[{])')
 
-def one_line_tex(tex, display_mode):
-    one_line = "".join(tex.splitlines())
-    one_line = latex_cmd_args_space_re.sub(r'\1\2', one_line)
+def multiline_tex_to_one_line(tex, display_mode):
+    one_line_tex = "".join(tex.splitlines())
+    one_line_tex = latex_cmd_args_space_re.sub(r'\1\2', one_line_tex)
 
     if display_mode:
-        return '$$' + one_line + '$$'
+        return '$$' + one_line_tex + '$$'
     else:
-        return '$' + one_line + '$'
+        return '$' + one_line_tex + '$'
 
 
 # def render_markdown_with_py_markdown(markdown_text):
@@ -50,6 +52,13 @@ def one_line_tex(tex, display_mode):
 
 # def render_markdown_with_mistletoe(markdown_text):
 #    return mistletoe.markdown(markdown_text)
+
+class markdown_processor_mode(Enum):
+    NORMAL = auto()
+    ONENOTE = auto()
+    SUPERMEMO = auto()
+    LIST_EQUATION = auto()
+
 
 class markdown_processor:
     """
@@ -96,8 +105,13 @@ class markdown_processor:
     code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
     front_matter_re = regex.compile(r'-{3,}')
 
-    def __init__(self, onenote_mode=False):
-        self.onenote_mode = onenote_mode
+    def __init__(self, mode: markdown_processor_mode = markdown_processor_mode.NORMAL,
+                 markdown_filepath: str = None):
+        self.mode = mode
+        self.inline_latex_equations = []
+        self.block_latex_equations = []
+        self.markdown_filepath = markdown_filepath
+        self.images_dict = {}
         self.reinit_state()
 
 
@@ -107,14 +121,74 @@ class markdown_processor:
         self.front_matter = None
         self.line_number = 0
 
+    
+    def get_images_in_directory(self):
+        if self.images_dict:
+            return
+
+        if not self.markdown_filepath:
+            return
+
+        curdir = os.path.dirname(self.markdown_filepath)
+        if curdir == "":
+            curdir = "."
+
+        logging.debug("get images in dir: " + curdir)
+        # curdir = os.path.abspath(curdir)
+        for image in os.listdir(curdir):
+            # check if the image ends with png
+            if (image.endswith(".png")):
+                hashdigest = os.path.splitext(image)[0]
+                logging.debug("found image file: " + image)
+                self.images_dict[hashdigest] = image
+
 
     def katex_renderer(self, content, display_mode):
         logging.debug("katex render coontent " + content + " with  display_mode " + str(display_mode))
-        
+        logging.debug("render mode: " + str(self.mode))
+
         is_display_mode = display_mode['display_mode']
 
-        if self.onenote_mode:
-            return one_line_tex(content, is_display_mode)
+        one_line_tex = ""
+        hexdigest = ""
+
+        if self.mode != markdown_processor_mode.NORMAL:
+            one_line_tex = multiline_tex_to_one_line(content, is_display_mode)
+            hash_object = hashlib.md5(one_line_tex.encode())
+            hexdigest = hash_object.hexdigest()
+            logging.debug("equation digest: " + hexdigest)
+        
+        if self.mode is markdown_processor_mode.ONENOTE:
+            if not is_display_mode:
+                return one_line_tex
+
+            self.get_images_in_directory()
+            
+            if hexdigest in self.images_dict:
+                return '<img src="' + self.images_dict[hexdigest] + '" />'
+            else:
+                return one_line_tex
+        elif self.mode is markdown_processor_mode.SUPERMEMO:
+            self.get_images_in_directory()
+
+            if hexdigest in self.images_dict:
+                if is_display_mode:
+                    return '<img src="' + self.images_dict[hexdigest] + '" />'
+                else:
+                    return '<img src="' + self.images_dict[hexdigest] + '" style="height:12pt; width:auto" />'
+            else:
+                return one_line_tex
+        elif self.mode is markdown_processor_mode.LIST_EQUATION:
+            if is_display_mode:
+                if hexdigest not in self.block_latex_equations:
+                    self.block_latex_equations.append('$$' + content + '$$')
+                    self.block_latex_equations.append(hexdigest)
+            else:
+                if hexdigest not in self.inline_latex_equations:
+                    self.inline_latex_equations.append('$' + content + "$")
+                    self.inline_latex_equations.append(hexdigest)
+            
+            return ""
 
         options = {}
         
@@ -310,3 +384,22 @@ class markdown_processor:
 
         with open(markdown_filepath, 'r', encoding='utf-8') as m:
             self.markdown_to_html_file(m.readlines(), html_filepath)
+
+
+    def list_latex_equations(self, markdown_filepath):
+        with open(markdown_filepath, 'r', encoding='utf-8') as m:
+            self.markdown_to_raw_html(m.readlines())
+
+        if not self.inline_latex_equations and not self.block_latex_equations:
+            return
+        
+        curdir = os.path.dirname(markdown_filepath)
+
+        latex_equations_filepath = os.path.join(curdir, 'latex_euqations.txt')
+        with open(latex_equations_filepath, 'w', encoding='utf-8') as equations:
+            if self.inline_latex_equations:
+                equations.write("------------inline equations-------------\n\n")
+                equations.write("\n\n".join(self.inline_latex_equations))
+            if self.block_latex_equations:
+                equations.write("\n\n------------block equations-------------\n\n")
+                equations.write("\n\n".join(self.block_latex_equations))

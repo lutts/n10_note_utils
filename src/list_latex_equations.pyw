@@ -2,13 +2,9 @@
 # -*- coding:utf-8 -*-
 
 import sys
-import os
-import re
 import logging
 
-from markdown_to_other_app import send_markdown
-from markdown_utils import markdown_processor_mode
-
+from markdown_utils import markdown_processor, markdown_processor_mode
 
 def main():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
@@ -20,9 +16,13 @@ def main():
 
     filename = args[0]
 
-    logging.debug("send " + filename + " to onenote")
-    send_markdown(filename, markdown_processor_mode.ONENOTE)
+    logging.debug("list latex equatioins from " + filename)
 
+    try:
+        processor = markdown_processor(markdown_processor_mode.LIST_EQUATION)
+        processor.list_latex_equations(filename)
+    except Exception as e:
+        logging.debug(str(e))
 
 # Main body
 if __name__ == '__main__':

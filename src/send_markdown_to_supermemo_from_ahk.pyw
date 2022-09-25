@@ -20,8 +20,8 @@ def main():
 
     filename = args[0]
 
-    logging.debug("send " + filename + " to onenote")
-    send_markdown(filename, markdown_processor_mode.ONENOTE)
+    logging.debug("send " + filename + " to supermemo")
+    send_markdown(filename, markdown_processor_mode.SUPERMEMO)
 
 
 # Main body
