@@ -212,17 +212,17 @@ class N10NoteProcessor:
         # markdownlint: no trailing spaces
         striped_line = line.rstrip()
 
-        # 中文括号转英文括号
-        striped_line = striped_line.replace('（', '(')
-        striped_line = striped_line.replace('）', ')')
-        striped_line = self.space_around_paren_re.sub(r'\1', striped_line)
-
         image_or_links = self.img_link_re.findall(striped_line)
         if image_or_links:
             image_or_links = ["".join(i) for i in image_or_links]
             logging.debug("found img or links: " + str(image_or_links))
             striped_line = self.double_brace_re.sub(r'\1\1', striped_line)
             striped_line = self.img_link_re.sub('{}', striped_line)
+        
+        # 中文括号转英文括号
+        striped_line = striped_line.replace('（', '(')
+        striped_line = striped_line.replace('）', ')')
+        striped_line = self.space_around_paren_re.sub(r'\1', striped_line)
 
         # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
         # multiple space between word reduce to one only
