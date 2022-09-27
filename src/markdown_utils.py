@@ -33,7 +33,9 @@ def uniqe_name(expect_path):
 
     return expect_path
 
+
 latex_cmd_args_space_re = regex.compile(r'(?P<prev>[\]}])\s+(?P<next>[\[{])')
+
 
 def multiline_tex_to_one_line(tex, display_mode):
     one_line_tex = "".join(tex.splitlines())
@@ -114,14 +116,12 @@ class markdown_processor:
         self.images_dict = {}
         self.reinit_state()
 
-
     def reinit_state(self):
         self.last_line_is_empty = False
         self.code_fence = None
         self.front_matter = None
         self.line_number = 0
 
-    
     def get_images_in_directory(self):
         if self.images_dict:
             return
@@ -142,9 +142,9 @@ class markdown_processor:
                 logging.debug("found image file: " + image)
                 self.images_dict[hashdigest] = image
 
-
     def katex_renderer(self, content, display_mode):
-        logging.debug("katex render coontent " + content + " with  display_mode " + str(display_mode))
+        logging.debug("katex render coontent " + content +
+                      " with  display_mode " + str(display_mode))
         logging.debug("render mode: " + str(self.mode))
 
         is_display_mode = display_mode['display_mode']
@@ -157,13 +157,13 @@ class markdown_processor:
             hash_object = hashlib.md5(one_line_tex.encode())
             hexdigest = hash_object.hexdigest()
             logging.debug("equation digest: " + hexdigest)
-        
+
         if self.mode is markdown_processor_mode.ONENOTE:
             if not is_display_mode:
                 return one_line_tex
 
             self.get_images_in_directory()
-            
+
             if hexdigest in self.images_dict:
                 return '<img src="' + self.images_dict[hexdigest] + '" />'
             else:
@@ -187,18 +187,17 @@ class markdown_processor:
                 if hexdigest not in self.inline_latex_equations:
                     self.inline_latex_equations.append('$' + content + "$")
                     self.inline_latex_equations.append(hexdigest)
-            
+
             return ""
 
         options = {}
-        
+
         if is_display_mode:
             options['display-mode'] = True
 
         html = tex2html(content, options)
         logging.debug("tex " + content + " render to " + html)
         return html
-
 
     def render_markdown_with_parser(self, markdown_lines):
         """
@@ -219,7 +218,6 @@ class markdown_processor:
         logging.debug(md.get_all_rules())
 
         return md.render("".join(markdown_lines))
-
 
     def process_newline_in_table_cell(self, markdown_line):
         if markdown_line.startswith("| "):
@@ -248,7 +246,6 @@ class markdown_processor:
         else:
             return markdown_line
 
-
     def line_is_in_front_matter(self, line):
         if self.line_number == 1:
             m = self.front_matter_re.match(line)
@@ -261,9 +258,9 @@ class markdown_processor:
                 if self.front_matter == m.group():
                     # end of front matter
                     self.front_matter = None
-            
+
             return True
-        
+
         return False
 
     def line_is_in_code_fence(self, line):
@@ -282,13 +279,11 @@ class markdown_processor:
                 # a new fenced block start
                 self.code_fence = tmp_code_fence
 
-            
             return True
         elif self.code_fence:
             return True
-        
-        return False
 
+        return False
 
     def markdown_to_raw_html(self, markdown_lines):
         """
@@ -316,7 +311,7 @@ class markdown_processor:
                 logging.debug("fenced code remained: " + line)
                 processed_markdown_lines.append(line)
                 continue
-            
+
             striped_line = line.strip()
             if not striped_line:
                 # markdownlint: no multiple consecutive blank lines
@@ -324,7 +319,7 @@ class markdown_processor:
                     # markdownlint: no trailing spaces
                     processed_markdown_lines.append("\n")
                     self.last_line_is_empty = True
-                
+
                 continue
             else:
                 self.last_line_is_empty = False
@@ -339,7 +334,6 @@ class markdown_processor:
         raw_html = self.render_markdown_with_parser(processed_markdown_lines)
         return raw_html
 
-
     def markdown_to_full_html(self, markdown_lines):
         if not markdown_lines:
             return None
@@ -353,7 +347,6 @@ class markdown_processor:
         full_html += "</head><body>\n" + html_body + "\n</body></html>"
 
         return full_html
-
 
     def markdown_to_html_with_inline_style(self, markdown_lines):
         html_body = self.markdown_to_full_html(markdown_lines)
@@ -376,7 +369,6 @@ class markdown_processor:
         with open(html_filepath, "w", encoding="utf-8") as html_file:
             html_file.write(full_html)
 
-
     def markdown_file_to_html_file(self, markdown_filepath, html_filepath=None):
         if not self.markdown_filepath:
             self.markdown_filepath = markdown_filepath
@@ -388,24 +380,25 @@ class markdown_processor:
         with open(markdown_filepath, 'r', encoding='utf-8') as m:
             self.markdown_to_html_file(m.readlines(), html_filepath)
 
-
     def list_latex_equations(self, markdown_filepath):
         if not self.markdown_filepath:
             self.markdown_filepath = markdown_filepath
-            
+
         with open(markdown_filepath, 'r', encoding='utf-8') as m:
             self.markdown_to_raw_html(m.readlines())
 
         if not self.inline_latex_equations and not self.block_latex_equations:
             return
-        
+
         curdir = os.path.dirname(markdown_filepath)
 
         latex_equations_filepath = os.path.join(curdir, 'latex_euqations.txt')
         with open(latex_equations_filepath, 'w', encoding='utf-8') as equations:
             if self.inline_latex_equations:
-                equations.write("------------inline equations-------------\n\n")
+                equations.write(
+                    "------------inline equations-------------\n\n")
                 equations.write("\n\n".join(self.inline_latex_equations))
             if self.block_latex_equations:
-                equations.write("\n\n------------block equations-------------\n\n")
+                equations.write(
+                    "\n\n------------block equations-------------\n\n")
                 equations.write("\n\n".join(self.block_latex_equations))
