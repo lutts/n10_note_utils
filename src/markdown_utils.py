@@ -329,6 +329,8 @@ class markdown_processor:
             else:
                 self.last_line_is_empty = False
 
+            line = line.replace('[x]', '[]')
+
             line = self.process_newline_in_table_cell(line)
             processed_markdown_lines.append(line)
 
