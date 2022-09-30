@@ -21,7 +21,7 @@ def main():
     filename = args[0]
 
     logging.debug("send " + filename + " to thebrain")
-    processor = markdown_processor(markdown_processor_mode.SUPERMEMO, filename)
+    processor = markdown_processor(markdown_processor_mode.THEBRAIN, filename)
     full_html = None
     with open(filename, 'r', encoding='utf-8') as m:
         full_html = processor.markdown_to_full_html(m.readlines())
@@ -29,7 +29,7 @@ def main():
     if not full_html:
         return
 
-    full_html = add_prefix_to_local_images(full_html)
+    full_html = add_prefix_to_local_images(full_html, markdown_processor_mode.THEBRAIN)
 
     split_filepath = os.path.splitext(filename)
     html_filepath = uniqe_name(split_filepath[0] + ".html")
