@@ -46,7 +46,7 @@ def add_prefix_to_local_images(html, mode, img_dir, img_prefix='http://localhost
                 else:
                     img_width /= 2
 
-                line = img_re.sub(r'\g<tag> width="' + str(img_width) +
+                line = img_re.sub(r'\g<tag> width="' + str(int(img_width)) +
                                   r'px" \g<src_prefix>' + img_prefix + r'\g<imgurl>\g<suffix>', line)
             else:
                 line = img_re.sub(r'\g<tag>\g<src_prefix>' + img_prefix + r'\g<imgurl>\g<suffix>', line)
