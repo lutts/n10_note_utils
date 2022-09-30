@@ -184,7 +184,7 @@ SendMarkdownToSupermemo()
 	}
 }
 
-CapsLock &  i:: SendMarkdownToSupermemo()
+CapsLock &  u:: SendMarkdownToSupermemo()
 
 SendMarkdownToTheBrain()
 {
@@ -208,6 +208,6 @@ SendMarkdownToTheBrain()
 	}
 }
 
-CapsLock &  u:: SendMarkdownToTheBrain()	
+CapsLock &  r:: SendMarkdownToTheBrain()	
 
 
