@@ -73,8 +73,9 @@ class markdown_processor:
     * add a space after some punctuations if there's no one
     """
 
+    katex_stylesheet='<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">'
+
     css_style = """
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">
         <style>
         body {
             font-size: 12pt;
@@ -121,6 +122,7 @@ class markdown_processor:
         self.code_fence = None
         self.front_matter = None
         self.line_number = 0
+        self.has_latex_equations = False
 
     def get_images_in_directory(self):
         if self.images_dict:
@@ -197,6 +199,8 @@ class markdown_processor:
 
         html = tex2html(content, options)
         logging.debug("tex " + content + " render to " + html)
+
+        self.has_latex_equations = True
         return html
 
     def render_markdown_with_parser(self, markdown_lines):
@@ -343,6 +347,10 @@ class markdown_processor:
             return None
 
         full_html = '<html><head><meta charset="UTF-8">'
+        
+        if self.has_latex_equations:
+            full_html += "\n" + self.katex_stylesheet + "\n"
+
         full_html += self.css_style
         full_html += "</head><body>\n" + html_body + "\n</body></html>"
 

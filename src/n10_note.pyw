@@ -483,7 +483,7 @@ def main():
         sys.exit(1)
 
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
-    logging.basicConfig(level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
 
     if args[0].endswith(".md"):
         logging.debug("process markdown file: " + args[0])
