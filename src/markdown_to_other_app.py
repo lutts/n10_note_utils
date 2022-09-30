@@ -40,8 +40,12 @@ def add_prefix_to_local_images(html, mode, img_dir, img_prefix='http://localhost
                 except:
                     pass
 
-            if img_width != 0:
-                img_width /= 2
+            if img_width > 400:
+                if img_width <= 600:
+                    img_width = img_width * 3 / 4;
+                else:
+                    img_width /= 2
+
                 line = img_re.sub(r'\g<tag> width="' + str(img_width) +
                                   r'px" \g<src_prefix>' + img_prefix + r'\g<imgurl>\g<suffix>', line)
             else:
