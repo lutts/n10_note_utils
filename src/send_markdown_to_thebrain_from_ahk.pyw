@@ -6,7 +6,7 @@ import os
 import logging
 
 from markdown_utils import markdown_processor, markdown_processor_mode, uniqe_name
-from markdown_to_other_app import add_http_prefix_to_local_images
+from markdown_to_other_app import add_prefix_to_local_images
 import webbrowser
 
 
@@ -29,7 +29,7 @@ def main():
     if not full_html:
         return
 
-    full_html = add_http_prefix_to_local_images(full_html)
+    full_html = add_prefix_to_local_images(full_html)
 
     split_filepath = os.path.splitext(filename)
     html_filepath = uniqe_name(split_filepath[0] + ".html")
