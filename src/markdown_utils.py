@@ -119,7 +119,6 @@ class markdown_processor:
         self.reinit_state()
 
     def reinit_state(self):
-        self.last_line_is_empty = False
         self.code_fence = None
         self.front_matter = None
         self.line_number = 0
@@ -317,26 +316,10 @@ class markdown_processor:
                 processed_markdown_lines.append(line)
                 continue
 
-            striped_line = line.strip()
-            if not striped_line:
-                # markdownlint: no multiple consecutive blank lines
-                if not self.last_line_is_empty:
-                    # markdownlint: no trailing spaces
-                    processed_markdown_lines.append("\n")
-                    self.last_line_is_empty = True
-
-                continue
-            else:
-                self.last_line_is_empty = False
-
             line = line.replace('[x]', '[]')
 
             line = self.process_newline_in_table_cell(line)
             processed_markdown_lines.append(line)
-
-        # markdownlint: markdown file should end with a single new line
-        if not self.last_line_is_empty:
-            processed_markdown_lines.append("\n")
 
         raw_html = self.render_markdown_with_parser(processed_markdown_lines)
         return raw_html
