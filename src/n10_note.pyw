@@ -50,54 +50,6 @@ class N10NoteProcessor:
     软件中编辑
     """
 
-    HW_NOTES_HEADER_RE = regex.compile(
-        r"([0-9]{4})年([0-9]{2})月([0-9]{2})日 ([0-9]{2}):([0-9]{2}):([0-9]{2})  摘自<<(.*?)>> 第([0-9]+)页")
-    MARKDOWN_MARKERS = ["* ", "- ", "+ ", "> ", '| ']
-    MARKDOWN_ORDERED_LIST_RE = regex.compile(r"[0-9]+\. ")
-    HAND_NOTES_HEADER_RE = regex.compile(
-        r"([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})-([0-9]{1,2}):([0-9]{1,2})")
-    code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
-    front_matter_re = regex.compile(r'-{3,}')
-
-    english_punctuation = r'!"#$%&\'()*+,-./:;<=>?@\[\\\]^_`{|}~'
-
-    heading_whitespaces_re = regex.compile(r" +")
-    emphasis_normalizer_re = regex.compile(
-        r'(?P<asterisks>\*{1,2})(?P<word1>[^*]+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P=asterisks)')
-    space_after_punc_re = regex.compile(
-        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
-    # regular expression to match markdown link ang image link
-    # (?P<text_group>
-    #   \[
-    #     (?>
-    #       [^\[\]]+
-    #       |(?&text_group)
-    #     )*
-    #   \]
-    # )
-    # (?P<left_paren>\()
-    # (?P<left_angle><)?
-    # (?:
-    #   (?P<url>
-    #    (?(left_angle)
-    #     .*?>
-    # 	|\S*?
-    #     )
-    #   )
-    #     (?:
-    #       (?P<title_begin>[ ]")
-    #         (?P<title>
-    #           (?:[^"]|(?<=\\)")*?
-    #         )
-    #       (?P<title_end>")
-    #     )?
-    # (?P<right_paren>\))
-    # )
-    img_link_re = regex.compile(
-        r'(!?)(?P<text_group>\[(?>[^\[\]]+|(?&text_group))*\])(?P<left_paren>\()(?P<left_angle><)?(?:(?P<url>(?(left_angle).*?>|\S*?))(?:(?P<title_begin>[ ]")(?P<title>(?:[^"]|(?<=\\)")*?)(?P<title_end>"))?(?P<right_paren>\)))')
-    double_brace_re = regex.compile(r'(?P<b>\{|\})')
-    space_around_paren_re = regex.compile(r'(?:\s+)?([()])(?:\s+)?')
-
     def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
                  remove_header_line=False,
                  markdown_filepath=None, html_filepath=None):
@@ -133,22 +85,34 @@ class N10NoteProcessor:
         self.line_number = 0
         self.last_line_is_header = False
 
+    
+    list_table_markers_re = regex.compile(r'(?P<markdown_marker>[-*+|]|[0-9]+\.)[ ]')
+    blockquote_re = regex.compile(r'>([ ]|$)')
+    markdown_header_re = regex.compile(r'[ ]{,3}(?P<header_marker>#{1,6})[ ]')
+
     def line_is_markdown(self, line):
         if not line:
-            return False
+            return None
 
-        if line[0] == "#":
-            logging.debug("markdown chapter line: " + line)
-            return True
+        m = self.markdown_header_re.match(line)
+        if m:
+            logging.debug("markdown header line: " + line)
+            return m.group(1)
+        
+        line = line.strip()
         # check if is markdown lists and blockquotes
-        elif line[0:2] in self.MARKDOWN_MARKERS:
-            logging.debug("line with markdown marker: " + line)
-            return True
-        elif self.MARKDOWN_ORDERED_LIST_RE.match(line):
-            logging.debug("markdown order list: " + line)
-            return True
+        
+        m = self.list_table_markers_re.match(line)
+        if m:
+            logging.debug("line with markdown list or table: " + line)
+            return m.group(1)
+        
+        m = self.blockquote_re.match(line)
+        if m:
+            logging.debug("markdown blockquote: " + line)
+            return ">"
 
-        return False
+        return None
 
     def line_is_in_front_matter(self, line):
         if self.line_number == 1:
@@ -194,6 +158,49 @@ class N10NoteProcessor:
             self.block_list.append(self.block)
             self.block = ""
 
+
+    code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
+    front_matter_re = regex.compile(r'-{3,}')
+
+    english_punctuation = r'-!"#$%&\'()*+,./:;<=>?@\[\\\]^_`{|}~'
+
+    heading_whitespaces_re = regex.compile(r" +")
+    emphasis_normalizer_re = regex.compile(
+        r'(?P<asterisks>\*{1,2})(?P<word1>[^*]+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P=asterisks)')
+    space_after_punc_re = regex.compile(
+        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
+    # regular expression to match markdown link ang image link
+    # (?P<text_group>
+    #   \[
+    #     (?>
+    #       [^\[\]]+
+    #       |(?&text_group)
+    #     )*
+    #   \]
+    # )
+    # (?P<left_paren>\()
+    # (?P<left_angle><)?
+    # (?:
+    #   (?P<url>
+    #    (?(left_angle)
+    #     .*?>
+    # 	|\S*?
+    #     )
+    #   )
+    #     (?:
+    #       (?P<title_begin>[ ]")
+    #         (?P<title>
+    #           (?:[^"]|(?<=\\)")*?
+    #         )
+    #       (?P<title_end>")
+    #     )?
+    # (?P<right_paren>\))
+    # )
+    img_link_re = regex.compile(
+        r'(!?)(?P<text_group>\[(?>[^\[\]]+|(?&text_group))*\])(?P<left_paren>\()(?P<left_angle><)?(?:(?P<url>(?(left_angle).*?>|\S*?))(?:(?P<title_begin>[ ]")(?P<title>(?:[^"]|(?<=\\)")*?)(?P<title_end>"))?(?P<right_paren>\)))')
+    double_brace_re = regex.compile(r'(?P<b>\{|\})')
+    space_around_paren_re = regex.compile(r'(?:\s+)?([()])(?:\s+)?')
+
     def normalize_line(self, line):
         logging.debug("normalize line: " + line)
         heading_spaces = ""
@@ -203,12 +210,12 @@ class N10NoteProcessor:
 
         # indented code block, return the orignal line
         logging.debug("heading space len: " + str(len(heading_spaces)))
-        if len(heading_spaces) >= 4:
-            return line
 
         # markdownlint: no trailing spaces
-        striped_line = line.rstrip()
+        # 行首的空格在heading_spaces里保存着
+        striped_line = line.strip()
 
+        # 避免随后的处理误伤link/img link
         image_or_links = self.img_link_re.findall(striped_line)
         if image_or_links:
             image_or_links = ["".join(i) for i in image_or_links]
@@ -216,15 +223,17 @@ class N10NoteProcessor:
             striped_line = self.double_brace_re.sub(r'\1\1', striped_line)
             striped_line = self.img_link_re.sub('{}', striped_line)
 
+        striped_line = striped_line.replace('’', "'")
+
         # 中文括号转英文括号
         striped_line = striped_line.replace('（', '(')
         striped_line = striped_line.replace('）', ')')
+        # 去掉括号前后的空格
         striped_line = self.space_around_paren_re.sub(r'\1', striped_line)
 
         # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
-        # multiple space between word reduce to one only
-        reduced_line = " ".join(striped_line.split())
-        striped_line = heading_spaces + reduced_line
+        # 多个连续的空格只保留一个
+        striped_line = " ".join(striped_line.split())
 
         # add a space after some punctuations if there's no one
         striped_line = self.space_after_punc_re.sub(r'\1 \2', striped_line)
@@ -241,12 +250,6 @@ class N10NoteProcessor:
 
     def write_block_list(self):
         self.append_prev_block_to_list()
-
-        if self.book_title:
-            self.block_list = ["# " + self.book_title, ""] + self.block_list
-        elif self.book_filename:
-            self.block_list = ["# 摘自: " +
-                               self.book_filename, ""] + self.block_list
 
         # append the remained images at the end
         if self.image_list:
@@ -268,16 +271,32 @@ class N10NoteProcessor:
         normalized_markdown_lines = []
         last_line_is_empty = False
 
+        title_added = False
+
         for line in self.block_list:
+            logging.debug("check line before write disk: " + line)
             self.line_number += 1
 
             if self.line_is_in_code_fence(line):
                 logging.debug("fenced code remained: " + line)
+                # fenced code line already has '\n', so do not append another '\n'
                 normalized_markdown_lines.append(line)
+                last_line_is_empty = False
                 continue
+
+            if not title_added:
+                title_added = True
+
+                if self.book_title:
+                    normalized_markdown_lines.append("# " + self.book_title + "\n")
+                elif self.book_filename:
+                    normalized_markdown_lines.append("# 摘自: " + self.book_filename + "\n")
+
+                normalized_markdown_lines.append("\n")
 
             striped_line = line.strip()
             if not striped_line:
+                logging.debug("empty line, last_line_is_empty: " + str(last_line_is_empty))
                 # markdownlint: no multiple consecutive blank lines
                 if not last_line_is_empty:
                     # markdownlint: no trailing spaces
@@ -292,22 +311,23 @@ class N10NoteProcessor:
             normalized_markdown_lines.append(line)
 
         # markdownlint: markdown file should end with a single new line
-        if not last_line_is_empty:
-            normalized_markdown_lines.append("\n")
+        logging.debug("last step, check if last_line_is_empty=" + str(last_line_is_empty))
+        if last_line_is_empty:
+            normalized_markdown_lines.pop()
 
         full_html = markdown_processor().markdown_to_full_html(normalized_markdown_lines)
         #self.block_list = []
 
+        joined_markdown_text = "".join(normalized_markdown_lines)
         with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
-            n10notes_markdown.write(
-                "".join(normalized_markdown_lines))
+            n10notes_markdown.write(joined_markdown_text)
 
         with open(self.html_filepath, 'w', encoding="utf-8") as html_file:
             html_file.write(full_html)
 
         inliner = css_inline.CSSInliner(remove_style_tags=True)
         inlined_html = inliner.inline(full_html)
-        PutHtml(inlined_html, "".join(normalized_markdown_lines))
+        PutHtml(inlined_html, joined_markdown_text)
 
     def get_images_in_directory(self):
         curdir = os.path.dirname(self.n10_notes_filepath)
@@ -335,6 +355,10 @@ class N10NoteProcessor:
         self.image_list.sort()
         logging.debug("images: " + str(self.image_list))
 
+
+    HAND_NOTES_HEADER_RE = regex.compile(
+        r"([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})-([0-9]{1,2}):([0-9]{1,2})")
+
     def read_hand_notes(self):
         if not self.hand_notes_filepath:
             return
@@ -357,6 +381,7 @@ class N10NoteProcessor:
 
                     last_ts = datetime_obj.timestamp()
                 else:
+                    # 手写笔迹不会合并行，用户写的一行就是一行
                     if line:
                         cur_notes.append("> " + line)
                     else:  # avoid trailing space
@@ -368,6 +393,10 @@ class N10NoteProcessor:
         self.hand_note_list.sort()
         logging.debug(self.hand_note_list)
 
+    
+    HW_NOTES_HEADER_RE = regex.compile(
+        r"([0-9]{4})年([0-9]{2})月([0-9]{2})日 ([0-9]{2}):([0-9]{2}):([0-9]{2})  摘自<<(.*?)>> 第([0-9]+)页")
+
     def process_head_line(self, notes_header, line, orig_line):
         logging.debug("header line: " + line)
         datetime_obj = datetime(*[int(i) for i in
@@ -378,6 +407,7 @@ class N10NoteProcessor:
             logging.debug("cur ts: " + str(ts) +
                           ", first img ts: " + str(self.image_list[0][0]))
             if ts > self.image_list[0][0]:
+                self.block_list.append("")
                 self.block_list.append(self.image_list[0][1])
                 self.block_list.append("")
                 del self.image_list[0]
@@ -393,54 +423,49 @@ class N10NoteProcessor:
             self.book_filename = notes_header.group(7)
 
         if not self.remove_header_line:
-            #self.block = "<sub>" + line + "</sub>\n"
-            # self.append_prev_block_to_list()
             self.block = "(p" + notes_header.group(8) + ")"
 
     def process_normal_line(self, line, orig_line):
         if self.line_is_in_code_fence(line):
             self.append_prev_block_to_list()
-            if self.last_line_is_header:
-                self.block_list.append("")
+
             # fenced code block is untouched
             logging.debug("fenced code remained: " + orig_line)
             self.block_list.append(orig_line)
-            self.block = ""
-        elif self.line_is_markdown(line):
+            return
+
+        markdown_marker = self.line_is_markdown(line)
+        if markdown_marker:
             self.append_prev_block_to_list()
 
-            if line.startswith("# ") and not self.book_title:
+            if not self.book_title and markdown_marker == "#":
                 # level 1 head, treat it as book title
-                self.book_title = line[2:]
+                self.book_title = line[line.index('# ')+2:]
                 # title line is replace with an empty line
-                self.block = ""
+                self.block_list.append("")
             else:
-                if self.last_line_is_header:
-                    self.block_list.append("")
-                # this line is remained, the following lines is append to this line
-                # if they do not open another block
+                # this line is remained, the following lines is append
+                # to this line if they do not open another block
                 self.block = line
-        elif not line:
+            return
+        
+        if not line:
             logging.debug("empty line")
             self.append_prev_block_to_list()
             # empty line is remained
-            self.block_list.append("")
-            self.block = ""
-        elif line[0:4] == "    ":
-            logging.debug("indented line: " + line)
-            # this line is remained, the following lines is append to this line
-            # if they do not open another block
-            self.append_prev_block_to_list()
-            self.block = line
-        else:
-            logging.debug("normal line: " + line)
+            self.block_list.append(orig_line)
 
-            if self.block:
-                if ord(self.block[-1]) < 128:
-                    # use space to join english lines
-                    self.block += " "
+            return
 
-            self.block += line
+        logging.debug("normal line: " + line)
+
+        if self.block:
+            line = line.strip()
+            if ord(self.block[-1]) < 128:
+                # use space to join english lines
+                self.block += " "
+
+        self.block += line
 
     def process(self):
         logging.debug("start process notes file: " + self.n10_notes_filepath)

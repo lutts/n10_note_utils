@@ -9,11 +9,41 @@
 "tags": ["markdown+math","VSCode","static page","publication","LaTeX","math"]
 ---
 
-2022年09月04日 10:53:58  摘自<<心理学与生活 - 19th - 理查德·格里格-人民邮电出版社 (2014).pdf>> 第36页
+2022年10月01日 15:32:47  摘自<<心理学与生活 - 19th - 理查德·格里格-人民邮电出版社 (2014).pdf>> 第182页
+# 心理学研究方法
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eu venenatis quam. Vivamus euismod eleifend metus vitae pharetra. In vel tempor metus. Donec dapibus feugiat euismod. Vivamus interdum tellus dolor. Vivamus blandit eros et imperdiet auctor. Mauris sapien nunc, condimentum a efficitur non, elementum ac sapien. Cras consequat turpis non augue ullamcorper, sit amet porttitor dui interdum.
+2022年10月01日 15:35:38  摘自<<心理学与生活 - 19th - 理查德·格里格-人民邮电出版社 (2014).pdf>> 第182页
+冥想（meditation）是一种改变意识的形式，它通过获得深度的宁静状态而增强 
+自我认识和幸福感口在专注冥想期间，人们把注意力集中在自己的呼吸和调节呼吸上. 
+采取某些身体姿势（如瑜伽姿势），使外部刺激减至最小，产生特定的心理表象，或 
+什么都不想。而在专念冥想中，个体要学会如何让思想和回忆自由地穿行，而心理 
+不对其做出反应。
 
-Sed laoreet luctus erat at rutrum. Proin velit metus, luctus in sapien in, tincidunt mattis ex. Praesent venenatis orci at sagittis eleifend. Nulla facilisi. In feugiat vehicula magna iaculis vehicula. Nulla suscipit tempor odio a semper. Donec vitae dapibus ipsum. Donec libero purus, convallis eu efficitur id, pulvinar elementum diam. Maecenas mollis blandit placerat. Ut gravida pellentesque nunc, in eleifend ante convallis sit amet.
+2022年10月01日 15:35:53  摘自<<心理学与生活 - 19th - 理查德·格里格-人民邮电出版社 (2014).pdf>> 第182页
+研究往往关注于冥想如何帮助必须生活在压力环境中的人们缓解焦虑
+
+2022年10月01日 15:37:07  摘自<<心理学与生活 - 19th - 理查德·格里格-人民邮电出版社 (2014).pdf>> 第183页
+## 改变心理的药物
+
+2022年10月01日 15:38:07  摘自<<心理学与生活 - 19th - 理查德·格里格-人民邮电出版社 (2014).pdf>> 第184页
+ Psychology’s great 
+strength  is  that  it  uses  scientific  observation to  systematically 
+answer questions about all sorts of behaviors
+
+
+```python
+        with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
+            n10notes_markdown.write(joined_markdown_text)
+
+        with open(self.html_filepath, 'w', encoding="utf-8") as html_file:
+            html_file.write(full_html)
+
+        inliner = css_inline.CSSInliner(remove_style_tags=True)
+        inlined_html = inliner.inline(full_html)
+        PutHtml(inlined_html, joined_markdown_text)
+```
+
+text after python
 
 Cells can vary in width and do not need to be perfectly aligned within columns. There must be at least three hyphens in each column of the header row.
 
@@ -80,9 +110,7 @@ img_as_link_text_angle = r'[![img](xxx/yyy.png)](<http://google.com> "My \"title
 
 bad_link = '[link](<http://google.com  "title")'
 
-multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [![img link](haha.png)](<http://google.com> "google") or img ![x](<./hehe.png> "hehe"). that is it'
-
-some text with {braces} {} in it
+multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [![img link](haha.png)](<http://google.com> "google") or img ![x](<./hehe.png> "hehe").  and there's some text with {braces} {} in it'
 
 这**是(is)**一个苹果。
 
@@ -112,10 +140,15 @@ a.string,has;no:space?after   punctuation!another, string; has: space? after    
 
     test    multiple      space.
 	
+
+        多个        连续空格        只保留一个， 但行首的不动
+	
 below is a code block:
 
+```text
     this         is      a   code block
 	should not normalize
+```
 
 after code block
 
@@ -128,7 +161,25 @@ hoho    xxx
 
 fenced code block is not touched
 
-this is a block quote
+bellow is a block quote
 
 > Sed laoreet luctus erat at rutrum. Proin velit metus, luctus in sapien in, tincidunt mattis ex. 
 > Praesent venenatis orci at sagittis eleifend. Nulla facilisi. In feugiat vehicula magna iaculis
+>
+> a paragrah
+with two line will be merged to one line
+
+* **Noncouscious processes**(**非意识过程**): not typically available to consciousness or memory
+  
+  * for example: the regulation of blood pressure(血压调节)， your nervous system monitors physiological information to detect and act on changes continually, without your awareness
+  * At certain times some ordinarily noncouscious activities can be made conscious: for example, you can choose to exercise conscious control over your pattern of breathing
+  
+* **Preconscious memory**(**前意识记忆**): Memory that is not currently conscious but that can **ealily** be called into consciousness when necessary. (例如：你在想你上一个假期中的经历，或者有关《哈姆雷特》的作者)
+  
+  * The **preconscious** refers to the thoughts you aren't actively thinking of but can call to mind **easily** given the right trigger （一个常驻内存的后台进程，当有需要的时候，**很容易**就能切换到前台来)
+  * 与preconscious相应的两个概念：conscious, unconscious
+    * conscious: those we're aware of **right now**，(也就是前台进程)
+    * unconscious: repressed to the point that you can't remember them without extreme 
+      effort and specialized help. (没有进程，需要开一个新进程来进行处理)
+* **Unattended information**(**未被注意的信息**): attention只能focus当前知觉信息的一个子集，其他的称为unattended information
+* **Unconscious**(无意识): 当你无法用你的意识来解释你的某些行为时，你才会认识到无意识信息的存在
