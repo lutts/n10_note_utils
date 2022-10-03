@@ -74,38 +74,6 @@ class markdown_processor:
     * add a space after some punctuations if there's no one
     """
 
-    katex_stylesheet='<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">'
-
-    css_style = """
-        <style>
-        body {
-            font-size: 12pt;
-        }
-        blockquote {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            margin-left: 15px;
-            padding-left: 15px;
-            border-left: 3px solid #ccc;
-            }
-        table {
-            display: table;
-            margin-bottom: 1em;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 5px 10px;
-        }
-        table thead th {
-            font-weight: bold;
-            border: 1px solid;
-        }
-        table tbody td {
-            border: 1px solid;
-        }
-        </style>
-    """
-
     code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
     front_matter_re = regex.compile(r'-{3,}')
 
@@ -324,6 +292,46 @@ class markdown_processor:
         raw_html = self.render_markdown_with_parser(processed_markdown_lines)
         return raw_html
 
+    common_css_style = """
+        body {
+            font-size: 12pt;
+        }
+        table {
+            display: table;
+            margin-bottom: 1em;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 5px 10px;
+        }
+        table thead th {
+            font-weight: bold;
+            border: 1px solid;
+        }
+        table tbody td {
+            border: 1px solid;
+        }
+    """
+
+    common_blockquote_css_style = """
+        blockquote {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 15px;
+            padding-left: 15px;
+            border-left: 3px solid #ccc;
+            }
+    """
+
+    onenote_css_style = """
+        blockquote {
+            margin-left: .375in;
+            background-color: #ececec;
+        }
+    """
+
+    katex_stylesheet='<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">'
+
     def markdown_to_full_html(self, markdown_lines):
         if not markdown_lines:
             return None
@@ -337,7 +345,13 @@ class markdown_processor:
         if self.has_latex_equations:
             full_html += "\n" + self.katex_stylesheet + "\n"
 
-        full_html += self.css_style
+        full_html += "<style>"
+        full_html += self.common_css_style
+        if self.mode == markdown_processor_mode.ONENOTE:
+            full_html += self.onenote_css_style
+        else:
+            full_html += self.common_blockquote_css_style
+        full_html += "</style>"
         full_html += "</head><body>\n" + html_body + "\n</body></html>"
 
         return full_html
