@@ -16,8 +16,8 @@ get_my_utils_path(filename) {
 }
 
 ; window management
-#Up::WinMove A, ,0,0,A_ScreenWidth,(A_ScreenHeight-64)/2
-#Down::WinMove A, ,0,(A_ScreenHeight-64)/2,A_ScreenWidth,(A_ScreenHeight-64)/2
+;#Up::WinMove A, ,0,0,A_ScreenWidth,(A_ScreenHeight-64)/2
+;#Down::WinMove A, ,0,(A_ScreenHeight-64)/2,A_ScreenWidth,(A_ScreenHeight-64)/2
 
 CapsLock & 1:: send ①
 CapsLock & 2:: send ②
@@ -42,7 +42,7 @@ AbbyyScreenReaderOCRText()
     SendInput, r
 }
 
-;CapsLock & c::AbbyyScreenReaderOCRText()
+CapsLock & r::AbbyyScreenReaderOCRText()
 
 ; 去掉剪贴板中除纯属文本之外的其他格式，并删除掉空格及换行符
 PastePlainTextWithoutWhitespaces()
@@ -63,13 +63,15 @@ PastePlainTextWithoutWhitespaces()
 
 Capslock & v::PastePlainTextWithoutWhitespaces()
 
-TextOnlyPaste()
+CopyPlainText()
 {
-    clipboard := clipboard   ; Convert any copied files, HTML, or other formatted text to plain text.
-    send, ^v
+	clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
+	send, ^c
+	ClipWait, 2, 1 ; wait until clipboard contains data
+    clipboard :=  clipboard  ; Convert any copied files, HTML, or other formatted text to plain text.
 }
 
-Capslock & b::TextOnlyPaste()
+Capslock & c::CopyPlainText()
 
 ; 进入spotlight模式，方便进行阅读pacer
 Capslock & s::send ^!+P
@@ -208,6 +210,6 @@ SendMarkdownToTheBrain()
 	}
 }
 
-CapsLock &  r:: SendMarkdownToTheBrain()	
+CapsLock &  i:: SendMarkdownToTheBrain()	
 
 
