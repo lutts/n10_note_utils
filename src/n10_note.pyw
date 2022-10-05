@@ -222,7 +222,7 @@ class N10NoteProcessor:
 
     heading_whitespaces_re = regex.compile(r" +")
     emphasis_normalizer_re = regex.compile(
-        r'(?P<asterisks>\*{1,2})(?P<word1>[^*]+?)(?P<punc1>\(|（|\[|【|<|《)(?P<word2>.+?)(?P<punc2>\)|）|\]|】|>|》)(?P=asterisks)')
+        r'(?P<asterisks>\*{1,2})\s*(?P<word1>[^\s].*?[^\s])\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>[^\s].*?[^\s])\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)')
     space_after_punc_re = regex.compile(
         r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
     # regular expression to match markdown link ang image link
@@ -255,7 +255,8 @@ class N10NoteProcessor:
     img_link_re = regex.compile(
         r'(!?)(?P<text_group>\[(?>[^\[\]]+|(?&text_group))*\])(?P<left_paren>\()(?P<left_angle><)?(?:(?P<url>(?(left_angle).*?>|\S*?))(?:(?P<title_begin>[ ]")(?P<title>(?:[^"]|(?<=\\)")*?)(?P<title_end>"))?(?P<right_paren>\)))')
     double_brace_re = regex.compile(r'(?P<b>\{|\})')
-    space_around_paren_re = regex.compile(r'(?:\s+)?([()])(?:\s+)?')
+    space_around_left_paren_re = regex.compile(r'(?:\s*?)(\s?[(])(?:\s*)')
+    space_around_right_paren_re = regex.compile(r'(?:\s*)([)]\s?)(?:\s*?)')
 
     def normalize_line(self, line):
         logging.debug("normalize line: " + line)
@@ -285,7 +286,8 @@ class N10NoteProcessor:
         striped_line = striped_line.replace('（', '(')
         striped_line = striped_line.replace('）', ')')
         # 去掉括号前后的空格
-        striped_line = self.space_around_paren_re.sub(r'\1', striped_line)
+        striped_line = self.space_around_left_paren_re.sub(r'\1', striped_line)
+        striped_line = self.space_around_right_paren_re.sub(r'\1', striped_line)
 
         # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
         # 多个连续的空格只保留一个
