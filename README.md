@@ -322,4 +322,4 @@ markdown语法简单，使得你可以在阅读器上就预先对笔记进行简
 
 对于supermemo, theBrain等支持图片和文字内联(inline)的，还提供了另一个入口
 
-* **Caps Lock + u**: 发送到supermemo，inline和block的公式都会使用你准备好的图片替代
+* **Caps Lock + u**: 发送到supermemo，inline和block的公式都会使用你准备好的图片替代，并且还会针对supermemo分辨率的问题调整图片的大小
