@@ -354,7 +354,8 @@ class N10NoteProcessor:
                             all_block_list.append(placeholder)
 
                         all_block_list.extend(placeholder_content)
-                        
+                    else:
+                        all_block_list.append(block)
                 else:
                     all_block_list.append(block)
 
