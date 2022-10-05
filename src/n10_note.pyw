@@ -10,10 +10,13 @@ import regex
 import os
 import logging
 from datetime import datetime
-from markdown_utils import markdown_processor, uniqe_name
 import css_inline
+from collections import OrderedDict
+
+from markdown_utils import markdown_processor, uniqe_name
 from HTMLClipboard import PutHtml
 import hanzi
+
 
 
 # Global variables
@@ -51,15 +54,16 @@ class N10NoteProcessor:
     """
 
     def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
-                 remove_header_line=False,
                  markdown_filepath=None, html_filepath=None):
-        self.block = ""
-        self.block_list = []
+        self.block = None
+        self.header_block_list = []
+        self.cur_page_number = 0
+        self.page_block_dict = OrderedDict()
+        self.replacement_dict = {}
         self.image_list = []
         self.hand_note_list = []
         self.n10_notes_filepath = n10_notes_filepath
         self.hand_notes_filepath = hand_notes_filepath
-        self.remove_header_line = remove_header_line
 
         self.book_title = None
         self.book_filename = None
@@ -153,10 +157,62 @@ class N10NoteProcessor:
 
         return False
 
-    def append_prev_block_to_list(self):
+    placeholder_re  = regex.compile(r'(?P<placeholder>{.+})(?P<line_number>[0-9]*)')
+
+    def add_header_blocks_to_page(self):
+        if not self.header_block_list:
+            return
+
+        logging.debug("save header blocks to page" + self.cur_page_number)
+
+        block_list = self.header_block_list
+        self.header_block_list = []
+
+        placeholder = ""
+        m = self.placeholder_re.match(block_list[0].strip())
+        if m:
+            placeholder = m.group("placeholder")
+            logging.debug("found placeholder: " + placeholder)
+            self.replacement_dict[placeholder] = [str(self.line_number)] + block_list[1:]
+            block_list = [placeholder + str(self.line_number)]
+        
+        if self.cur_page_number in self.page_block_dict:
+            self.page_block_dict[self.cur_page_number].extend(block_list)
+        else:
+            self.page_block_dict[self.cur_page_number] = block_list
+
+    def add_current_block_to_header(self):
+        if self.block is None:
+            return
+        
+        self.header_block_list.append(self.block)
+        self.block = None
+
+    def add_raw_blocks_to_header(self, blocks):
+        self.add_current_block_to_header()
+        logging.debug("save blocks: " + str(blocks))
+        self.header_block_list.extend(blocks)
+
+    def keep_line_untouched(self, line):
+        self.add_current_block_to_header()
+        self.header_block_list.append(line)
+
+    def new_block(self, initial_line):
+        self.add_current_block_to_header()
+        self.block = initial_line
+    
+    def concat_to_current_block(self, line):
+        if self.block is None:
+            self.block = line
+            return
+
         if self.block:
-            self.block_list.append(self.block)
-            self.block = ""
+            line = line.strip()
+            if ord(self.block[-1]) < 128:
+                # use space to join english lines
+                self.block += " "
+
+        self.block += line
 
 
     code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
@@ -248,23 +304,26 @@ class N10NoteProcessor:
                       heading_spaces + striped_line + "\n")
         return heading_spaces + striped_line + "\n"
 
-    def write_block_list(self):
-        self.append_prev_block_to_list()
+    def write_block_list(self):        
+        self.add_current_block_to_header()
 
-        # append the remained images at the end
         if self.image_list:
-            self.block_list.append("")
+            left_image_blocks = [""]
             for ts, img in self.image_list:
-                self.block_list.append(img)
-                self.block_list.append("")
+                left_image_blocks.append(img)
+                left_image_blocks.append("")
+            self.add_raw_blocks_to_header(left_image_blocks)
 
         if self.hand_note_list:
-            self.block_list.append("")
+            left_hand_blocks = [""]
             for ts, note in self.hand_note_list:
-                self.block_list.extend(note)
-                self.block_list.append("")
+                left_hand_blocks.extend(note)
+                left_hand_blocks.append("")
+            self.add_raw_blocks_to_header(left_hand_blocks)
 
-        if not self.block_list:
+        self.add_header_blocks_to_page()
+
+        if not self.page_block_dict:
             return
 
         self.reinit_state()
@@ -273,7 +332,37 @@ class N10NoteProcessor:
 
         title_added = False
 
-        for line in self.block_list:
+        all_block_list = []
+
+        for page_number, block_list in self.page_block_dict.items():
+            all_block_list.append("(p" + str(page_number) + "s)")
+            all_block_list.append("")
+
+            for block in block_list:
+                m = self.placeholder_re.match(block)
+                if m:
+                    placeholder = m.group("placeholder")
+                    line_number = m.group("line_number")
+                    if placeholder in self.replacement_dict:
+                        placeholder_content = self.replacement_dict[placeholder]
+                        del self.replacement_dict[placeholder]
+
+                        orig_line_number = placeholder_content[0]
+                        placeholder_content = placeholder_content[1:]
+
+                        if orig_line_number == line_number:
+                            all_block_list.append(placeholder)
+
+                        all_block_list.extend(placeholder_content)
+                        
+                else:
+                    all_block_list.append(block)
+
+            all_block_list.append("")
+            all_block_list.append("(p" + str(page_number) + "e)")
+            all_block_list.append("")
+
+        for line in all_block_list:
             logging.debug("check line before write disk: " + line)
             self.line_number += 1
 
@@ -316,7 +405,6 @@ class N10NoteProcessor:
             normalized_markdown_lines.pop()
 
         full_html = markdown_processor().markdown_to_full_html(normalized_markdown_lines)
-        #self.block_list = []
 
         joined_markdown_text = "".join(normalized_markdown_lines)
         with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
@@ -395,77 +483,58 @@ class N10NoteProcessor:
 
     
     HW_NOTES_HEADER_RE = regex.compile(
-        r"([0-9]{4})年([0-9]{2})月([0-9]{2})日 ([0-9]{2}):([0-9]{2}):([0-9]{2})  摘自<<(.*?)>> 第([0-9]+)页")
+        r"(?P<year>[0-9]{4})年(?P<month>[0-9]{2})月(?P<day>[0-9]{2})日 (?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})  摘自<<(?P<filename>.*?)>> 第(?P<page_number>[0-9]+)页")
 
     def process_head_line(self, notes_header, line, orig_line):
         logging.debug("header line: " + line)
         datetime_obj = datetime(*[int(i) for i in
-                                notes_header.group(1, 2, 3, 4, 5, 6)])
+                                notes_header.group("year", "month", "day", "hour", "minute", "second")])
         logging.debug(datetime_obj)
         ts = datetime_obj.timestamp()
         if self.image_list:
             logging.debug("cur ts: " + str(ts) +
                           ", first img ts: " + str(self.image_list[0][0]))
             if ts > self.image_list[0][0]:
-                self.block_list.append("")
-                self.block_list.append(self.image_list[0][1])
-                self.block_list.append("")
+                self.add_raw_blocks_to_header(["", self.image_list[0][1], ""])
                 del self.image_list[0]
 
         if self.hand_note_list:
+            logging.debug("cur ts: " + str(ts) +
+                          ", first hand note ts: " + str(self.hand_note_list[0][0]))
             if ts > self.hand_note_list[0][0]:
-                self.block_list.append("")
-                self.block_list.extend(self.hand_note_list[0][1])
-                self.block_list.append("")
+                self.add_raw_blocks_to_header(["", self.hand_note_list[0][1], ""])
                 del self.hand_note_list[0]
 
         if not self.book_filename:
-            self.book_filename = notes_header.group(7)
+            self.book_filename = notes_header.group("filename")
 
-        if not self.remove_header_line:
-            self.block = "(p" + notes_header.group(8) + ")"
+        self.add_header_blocks_to_page()
+        self.cur_page_number = notes_header.group("page_number")
 
     def process_normal_line(self, line, orig_line):
         if self.line_is_in_code_fence(line):
-            self.append_prev_block_to_list()
-
-            # fenced code block is untouched
-            logging.debug("fenced code remained: " + orig_line)
-            self.block_list.append(orig_line)
+            logging.debug("fenced code untouched: " + orig_line)
+            self.keep_line_untouched(orig_line)
             return
 
         markdown_marker = self.line_is_markdown(line)
         if markdown_marker:
-            self.append_prev_block_to_list()
-
             if not self.book_title and markdown_marker == "#":
                 # level 1 head, treat it as book title
                 self.book_title = line[line.index('# ')+2:]
-                # title line is replace with an empty line
-                self.block_list.append("")
+                # actually TOUCHED, title line is replace with an empty line
+                self.keep_line_untouched("")
             else:
-                # this line is remained, the following lines is append
-                # to this line if they do not open another block
-                self.block = line
+                self.new_block(line)
             return
         
         if not line:
             logging.debug("empty line")
-            self.append_prev_block_to_list()
-            # empty line is remained
-            self.block_list.append(orig_line)
-
+            self.keep_line_untouched("")
             return
 
         logging.debug("normal line: " + line)
-
-        if self.block:
-            line = line.strip()
-            if ord(self.block[-1]) < 128:
-                # use space to join english lines
-                self.block += " "
-
-        self.block += line
+        self.concat_to_current_block(line)
 
     def process(self):
         logging.debug("start process notes file: " + self.n10_notes_filepath)

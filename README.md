@@ -169,6 +169,73 @@ C:\Users\<你的用户名>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
 * 程序去掉多余的换行是非常智能的，如果你在记笔记的时候就使用markdown进行了初步处理，你会发现程序会保留你做的这些处理
   * 例如：你摘抄了一首诗，诗里的换行符肯定是不能去掉的，此时你就可以用fenced code block来把这段摘抄保护起来了
 
+### 排序和替换
+
+程序还支持根据页码排序的功能，适用于以下场景：
+
+> 当你读完第9页，接着读了第10页，然后发现第9页有些地方遗漏了，就又回到第9页，摘抄了一些文本
+
+程序还支持自定义插入和替换功能，适用于以下场景：
+
+> 当简单的页码排序不满足你的要求时，比如你想将后摘抄的内容插入前面摘抄内容的某个位置，或者完全替换掉某个摘抄
+
+插入功能使用方法如下，在需要插入文本的地方添加“{placeholder}”，其中的placeholder名字你可以随便取，但必须与后面的placeholder保持一致
+
+* 第一个Placeholder的要求：不能紧跟抬头行，因为紧跟抬头行就是替换而不是插入了，参见后关于替换的说明
+* 第二个placeholder有两个要求：1)紧跟抬头行，2)后面跟一个空行。
+
+下面的例子中，aaa和bbb的内容会插入到yyy后面
+
+```text
+2022年10月04日 09:58:38  摘自<<Psychology and Life 20th.pdf>> 第176页
+xxxxxx
+
+yyyy
+
+{placeholder}
+
+2022年10月04日 10:01:12  摘自<<Psychology and Life 20th.pdf>> 第176页
+the three critical parts of this 
+definition. 
+
+......
+......
+
+2022年10月04日 13:00:27  摘自<<Psychology and Life 20th.pdf>> 第178页
+{placeholder}
+
+aaaaaaa
+
+bbbbbb
+```
+
+插入功能使用方法如下， 和插入类似，不同之处在于第一个placeholder的位置是**1)紧跟抬头行，2)后面跟一个空行**
+
+下面的例子中，aaa和bbb的内容会完全替换掉xxx和yyy的内容
+
+```text
+2022年10月04日 09:58:38  摘自<<Psychology and Life 20th.pdf>> 第176页
+{placeholder}
+
+xxxxxx
+
+yyyy
+
+2022年10月04日 10:01:12  摘自<<Psychology and Life 20th.pdf>> 第176页
+the three critical parts of this 
+definition. 
+
+......
+......
+
+2022年10月04日 13:00:27  摘自<<Psychology and Life 20th.pdf>> 第178页
+{placeholder}
+
+aaaaaaa
+
+bbbbbb
+```
+
 ### 手写笔记手写时间格式
 
 手写时间戳的时候，经过识别出来的格式要是下面这个样子的
