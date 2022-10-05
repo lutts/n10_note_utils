@@ -208,7 +208,8 @@ class N10NoteProcessor:
 
         if self.block:
             line = line.strip()
-            if ord(self.block[-1]) < 128:
+            last_char = self.block[-1]
+            if ord(last_char) < 128 and last_char != "-":
                 # use space to join english lines
                 self.block += " "
 
@@ -356,7 +357,7 @@ class N10NoteProcessor:
                             all_block_list.append(placeholder)
 
                         all_block_list.extend(placeholder_content)
-                    else:
+                    elif not line_number:
                         all_block_list.append(block)
                 else:
                     all_block_list.append(block)
