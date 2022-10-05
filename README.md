@@ -265,7 +265,7 @@ bbbbbb
 
 Q: 为什么用markdown?
 
-A: 因为我同时使用Onenote, Visual Studio Code, theBrain, supermemo这四个软件进行笔记整理，这四个软件所要求的格式各不相同，因此需要一个中间格式，markdown是最好的选择，markdown能很方便地转换为其他格式 
+A: 因为我同时使用Onenote, Visual Studio Code, theBrain, supermemo这四个软件进行笔记整理，这四个软件所要求的格式各不相同，因此需要一个中间格式，markdown是最好的选择，markdown能很方便地转换为其他格式
 
 markdown语法简单，使得你可以在阅读器上就预先对笔记进行简单的处理，用于突出一些重点等。因为汉王N10能直接编辑摘抄文件，加上markdown可以使得你记笔记的效果更加好
 
@@ -315,19 +315,22 @@ markdown语法简单，使得你可以在阅读器上就预先对笔记进行简
 | Phone | Includes:{nl}* Holographic display{nl}* Telepathic UI|1,000.00|
 | Case| Shock resistant hard shell|19.00|
 ```
+
 渲染结果如下
 
 ![x](./img/multiline_table_cell.png)
 
 语法很简单： 虽然table单元格只能有一行文本，但可以使用`{nl}`来表示换行，如上面的例子，写成多行是下面这样的：
 
-```
+```markdown
 Includes:
 * Holographic display
 * Telepathic UI
 ```
 
 你只需要把你的多行markdown中的换行替换成`{nl}`就行了
+
+这个语法和theBrain的语法是一致的，方便你将markdown表格拷贝到theBrain中
 
 ## 如果你直接使用markdown进行编辑
 
