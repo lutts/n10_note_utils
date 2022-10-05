@@ -104,6 +104,8 @@ genetics.
 5. `pip install pywin32`
 6. `pip install pathlib2`
 
+或者使用`pip install -r requirements.txt`来安装所有的依赖
+
 这时候就可以从运行我的脚本了，但每次都要打开命令行，很不友好，因此建议再安装AutoHotKey
 
 ### AutoHotKey
