@@ -101,6 +101,8 @@ genetics.
 2. `pip install markdown-it-py[plugins]`
 3. `pip install css_inline`
 4. `pip install regex`
+5. `pip install pywin32`
+6. `pip install pathlib2`
 
 这时候就可以从运行我的脚本了，但每次都要打开命令行，很不友好，因此建议再安装AutoHotKey
 

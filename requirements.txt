@@ -3,3 +3,4 @@ markdown-it-py[plugins]
 css-inline
 regex
 pathlib2
+pywin32
