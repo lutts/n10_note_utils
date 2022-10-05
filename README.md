@@ -273,6 +273,12 @@ markdown语法简单，使得你可以在阅读器上就预先对笔记进行简
 
 <https://commonmark.org/help/>
 
+此外还支持以下扩展：
+
+* github风格的markdown表格
+  * 表格单元中支持多行文本，语法在后面说明
+* katex数学公式
+
 下面是一些markdown示例
 
 ```txt
@@ -298,6 +304,30 @@ markdown语法简单，使得你可以在阅读器上就预先对笔记进行简
 * item 1
 * item 2
 * item 3
+
+### 表格单元多行文本支持
+
+示例：
+
+```markdown
+| Item | Description | Price|
+|--- | --- | ---: |
+| Phone | Includes:{nl}* Holographic display{nl}* Telepathic UI|1,000.00|
+| Case| Shock resistant hard shell|19.00|
+```
+渲染结果如下
+
+![x](./img/multiline_table_cell.png)
+
+语法很简单： 虽然table单元格只能有一行文本，但可以使用`{nl}`来表示换行，如上面的例子，写成多行是下面这样的：
+
+```
+Includes:
+* Holographic display
+* Telepathic UI
+```
+
+你只需要把你的多行markdown中的换行替换成`{nl}`就行了
 
 ## 如果你直接使用markdown进行编辑
 
