@@ -227,7 +227,7 @@ class N10NoteProcessor:
     emphasis_normalizer_re = regex.compile(
         r'(?P<asterisks>\*{1,2})\s*(?P<word1>[^\s].*?[^\s])\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>[^\s].*?[^\s])\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)')
     space_after_punc_re = regex.compile(
-        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'\s]+)')
+        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'0123456789\s]+)')
     # regular expression to match markdown link ang image link
     # (?P<text_group>
     #   \[
