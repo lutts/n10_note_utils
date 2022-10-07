@@ -60,6 +60,7 @@ def main():
 
         processor = N10NoteProcessor(notes_filepath, hand_notes_filepath)
         processor.process()
+        processor.write_block_list()
 
         logging.debug("process done")
 

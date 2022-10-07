@@ -53,13 +53,17 @@ class N10NoteProcessor:
     软件中编辑
     """
 
+    SPECIAL_PAGE_NUMBER = "lines_before_note_header"
+
     def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
                  markdown_filepath=None, html_filepath=None):
         self.block = None
         self.header_block_list = []
-        self.cur_page_number = 0
+        self.cur_page_number = self.SPECIAL_PAGE_NUMBER
         self.page_block_dict = OrderedDict()
         self.replacement_dict = {}
+        self.normalized_lines = []
+
         self.image_list = []
         self.hand_note_list = []
         self.n10_notes_filepath = n10_notes_filepath
@@ -157,13 +161,13 @@ class N10NoteProcessor:
 
         return False
 
-    placeholder_re  = regex.compile(r'(?P<placeholder>{.+})(?P<line_number>[0-9]*)')
+    placeholder_re  = regex.compile(r'^(?P<placeholder>{.+})(?P<line_number>[0-9]*)$')
 
     def add_header_blocks_to_page(self):
         if not self.header_block_list:
             return
 
-        logging.debug("save header blocks to page" + self.cur_page_number)
+        logging.debug("save header blocks to page" + str(self.cur_page_number))
 
         block_list = self.header_block_list
         self.header_block_list = []
@@ -309,42 +313,26 @@ class N10NoteProcessor:
                       heading_spaces + striped_line + "\n")
         return heading_spaces + striped_line + "\n"
 
-    def write_block_list(self):        
-        self.add_current_block_to_header()
 
-        if self.image_list:
-            left_image_blocks = [""]
-            for ts, img in self.image_list:
-                left_image_blocks.append(img)
-                left_image_blocks.append("")
-            self.add_raw_blocks_to_header(left_image_blocks)
-
-        if self.hand_note_list:
-            left_hand_blocks = [""]
-            for ts, note in self.hand_note_list:
-                left_hand_blocks.extend(note)
-                left_hand_blocks.append("")
-            self.add_raw_blocks_to_header(left_hand_blocks)
-
-        self.add_header_blocks_to_page()
+    def normalize_markdown_lines(self):
+        if self.normalized_lines:
+            return self.normalized_lines
 
         if not self.page_block_dict:
-            return
+            return None
 
         self.reinit_state()
-        normalized_markdown_lines = []
-        last_line_is_empty = False
-
-        title_added = False
-
         all_block_list = []
 
         for page_number, block_list in self.page_block_dict.items():
-            all_block_list.append("(p" + str(page_number) + "s)")
-            all_block_list.append("")
+            if page_number != self.SPECIAL_PAGE_NUMBER:
+                all_block_list.append("(p" + str(page_number) + "s)")
+                all_block_list.append("")
 
             for block in block_list:
-                m = self.placeholder_re.match(block)
+                self.line_number += 1
+
+                m = self.placeholder_re.match(block.strip())
                 if m:
                     placeholder = m.group("placeholder")
                     line_number = m.group("line_number")
@@ -364,9 +352,14 @@ class N10NoteProcessor:
                 else:
                     all_block_list.append(block)
 
-            all_block_list.append("")
-            all_block_list.append("(p" + str(page_number) + "e)")
-            all_block_list.append("")
+            if page_number != self.SPECIAL_PAGE_NUMBER:
+                all_block_list.append("")
+                all_block_list.append("(p" + str(page_number) + "e)")
+                all_block_list.append("")
+
+        self.reinit_state()
+        last_line_is_empty = False
+        title_added = False
 
         for line in all_block_list:
             logging.debug("check line before write disk: " + line)
@@ -375,7 +368,7 @@ class N10NoteProcessor:
             if self.line_is_in_code_fence(line):
                 logging.debug("fenced code remained: " + line)
                 # fenced code line already has '\n', so do not append another '\n'
-                normalized_markdown_lines.append(line)
+                self.normalized_lines.append(line)
                 last_line_is_empty = False
                 continue
 
@@ -383,11 +376,11 @@ class N10NoteProcessor:
                 title_added = True
 
                 if self.book_title:
-                    normalized_markdown_lines.append("# " + self.book_title + "\n")
+                    self.normalized_lines.append("# " + self.book_title + "\n")
                 elif self.book_filename:
-                    normalized_markdown_lines.append("# 摘自: " + self.book_filename + "\n")
+                    self.normalized_lines.append("# 摘自: " + self.book_filename + "\n")
 
-                normalized_markdown_lines.append("\n")
+                self.normalized_lines.append("\n")
 
             striped_line = line.strip()
             if not striped_line:
@@ -395,7 +388,7 @@ class N10NoteProcessor:
                 # markdownlint: no multiple consecutive blank lines
                 if not last_line_is_empty:
                     # markdownlint: no trailing spaces
-                    normalized_markdown_lines.append("\n")
+                    self.normalized_lines.append("\n")
                     last_line_is_empty = True
 
                 continue
@@ -403,16 +396,22 @@ class N10NoteProcessor:
                 last_line_is_empty = False
 
             line = self.normalize_line(line)
-            normalized_markdown_lines.append(line)
+            self.normalized_lines.append(line)
 
         # markdownlint: markdown file should end with a single new line
         logging.debug("last step, check if last_line_is_empty=" + str(last_line_is_empty))
         if last_line_is_empty:
-            normalized_markdown_lines.pop()
+            self.normalized_lines.pop()
 
-        full_html = markdown_processor().markdown_to_full_html(normalized_markdown_lines)
+    def write_block_list(self):       
+        self.normalize_markdown_lines()
 
-        joined_markdown_text = "".join(normalized_markdown_lines)
+        if not self.normalized_lines:
+            return
+
+        full_html = markdown_processor().markdown_to_full_html(self.normalized_lines)
+
+        joined_markdown_text = "".join(self.normalized_lines)
         with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
             n10notes_markdown.write(joined_markdown_text)
 
@@ -572,7 +571,28 @@ class N10NoteProcessor:
                     self.process_normal_line(line, orig_line)
                     self.last_line_is_header = False
 
-        self.write_block_list()
+        self.post_process()
+
+    def post_process(self):
+        self.add_current_block_to_header()
+
+        if self.image_list:
+            left_image_blocks = [""]
+            for ts, img in self.image_list:
+                left_image_blocks.append(img)
+                left_image_blocks.append("")
+            self.add_raw_blocks_to_header(left_image_blocks)
+
+        if self.hand_note_list:
+            left_hand_blocks = [""]
+            for ts, note in self.hand_note_list:
+                left_hand_blocks.extend(note)
+                left_hand_blocks.append("")
+            self.add_raw_blocks_to_header(left_hand_blocks)
+
+        self.add_header_blocks_to_page()
+        
+        self.normalize_markdown_lines()
 
 
 def main():
@@ -591,6 +611,7 @@ def main():
     else:
         processor = N10NoteProcessor(*args)
         processor.process()
+        processor.write_block_list()
 
 
 # Main body
