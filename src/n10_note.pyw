@@ -55,8 +55,11 @@ class N10NoteProcessor:
 
     SPECIAL_PAGE_NUMBER = "lines_before_note_header"
 
-    def __init__(self, n10_notes_filepath, hand_notes_filepath=None,
-                 markdown_filepath=None, html_filepath=None):
+    def __init__(self, n10_notes_filepath=None,
+                 hand_notes_filepath=None,
+                 markdown_filepath=None,
+                 html_filepath=None,
+                 raw_text=None):
         self.block = None
         self.header_block_list = []
         self.cur_page_number = self.SPECIAL_PAGE_NUMBER
@@ -68,24 +71,31 @@ class N10NoteProcessor:
         self.hand_note_list = []
         self.n10_notes_filepath = n10_notes_filepath
         self.hand_notes_filepath = hand_notes_filepath
+        self.raw_text = raw_text
 
         self.book_title = None
         self.book_filename = None
 
-        split_filepath = os.path.splitext(n10_notes_filepath)
+        self.markdown_filepath = None
+        self.html_filepath = None
+
         if markdown_filepath:
             self.markdown_filepath = markdown_filepath
-        else:
+        elif self.n10_notes_filepath:
+            split_filepath = os.path.splitext(n10_notes_filepath)
             self.markdown_filepath = uniqe_name(split_filepath[0] + ".md")
 
-        logging.debug("markdown text will write to " + self.markdown_filepath)
-
+        if self.markdown_filepath:
+            logging.debug("markdown text will write to " + self.markdown_filepath)
+        
         if html_filepath:
             self.html_filepath = html_filepath
-        else:
+        elif self.n10_notes_filepath:
+            split_filepath = os.path.splitext(n10_notes_filepath)
             self.html_filepath = uniqe_name(split_filepath[0] + ".html")
 
-        logging.debug("rendered html file will write to " + self.html_filepath)
+        if self.html_filepath:
+            logging.debug("rendered html file will write to " + self.html_filepath)
 
     def reinit_state(self):
         self.code_fence = None
@@ -377,10 +387,10 @@ class N10NoteProcessor:
 
                 if self.book_title:
                     self.normalized_lines.append("# " + self.book_title + "\n")
+                    self.normalized_lines.append("\n")
                 elif self.book_filename:
                     self.normalized_lines.append("# 摘自: " + self.book_filename + "\n")
-
-                self.normalized_lines.append("\n")
+                    self.normalized_lines.append("\n")
 
             striped_line = line.strip()
             if not striped_line:
@@ -403,7 +413,7 @@ class N10NoteProcessor:
         if last_line_is_empty:
             self.normalized_lines.pop()
 
-    def write_block_list(self):       
+    def write_block_list(self):
         self.normalize_markdown_lines()
 
         if not self.normalized_lines:
@@ -412,17 +422,29 @@ class N10NoteProcessor:
         full_html = markdown_processor().markdown_to_full_html(self.normalized_lines)
 
         joined_markdown_text = "".join(self.normalized_lines)
-        with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
-            n10notes_markdown.write(joined_markdown_text)
 
-        with open(self.html_filepath, 'w', encoding="utf-8") as html_file:
-            html_file.write(full_html)
+        if self.markdown_filepath:
+            try:
+                with open(self.markdown_filepath, "w", encoding="utf-8") as n10notes_markdown:
+                    n10notes_markdown.write(joined_markdown_text)
+            except:
+                pass
+
+        if self.html_filepath:
+            try:
+                with open(self.html_filepath, 'w', encoding="utf-8") as html_file:
+                    html_file.write(full_html)
+            except:
+                pass
 
         inliner = css_inline.CSSInliner(remove_style_tags=True)
         inlined_html = inliner.inline(full_html)
         PutHtml(inlined_html, joined_markdown_text)
 
     def get_images_in_directory(self):
+        if not self.n10_notes_filepath:
+            return
+
         curdir = os.path.dirname(self.n10_notes_filepath)
         if curdir == "":
             curdir = "."
@@ -507,7 +529,7 @@ class N10NoteProcessor:
             logging.debug("cur ts: " + str(ts) +
                           ", first hand note ts: " + str(self.hand_note_list[0][0]))
             if ts > self.hand_note_list[0][0]:
-                self.add_raw_blocks_to_header(["", self.hand_note_list[0][1], ""])
+                self.add_raw_blocks_to_header([""] + self.hand_note_list[0][1] + [""])
                 del self.hand_note_list[0]
 
         if not self.book_filename:
@@ -541,37 +563,16 @@ class N10NoteProcessor:
         logging.debug("normal line: " + line)
         self.concat_to_current_block(line)
 
-    def process(self):
-        logging.debug("start process notes file: " + self.n10_notes_filepath)
-        if not self.n10_notes_filepath:
-            return
+    def get_raw_text_lines(self):
+        if self.n10_notes_filepath:
+            logging.debug("get raw text from file " + self.n10_notes_filepath)
+            with open(self.n10_notes_filepath, 'r', encoding='utf_8_sig') as n10notes:
+                return n10notes.readlines()
 
-        self.get_images_in_directory()
-        self.read_hand_notes()
+        if self.raw_text:
+            return self.raw_text.splitlines(keepends=True)
 
-        self.reinit_state()
-
-        last_line_is_header = False
-
-        with open(self.n10_notes_filepath, 'r', encoding='utf_8_sig') as n10notes:
-            for line in n10notes:
-                self.line_number += 1
-
-                logging.debug("read notes line: " + line)
-                orig_line = line
-
-                # only remove trailing whitespaces
-                line = line.rstrip()
-                # check if is header line
-                notes_header = self.HW_NOTES_HEADER_RE.match(line)
-                if notes_header:
-                    self.last_line_is_header = True
-                    self.process_head_line(notes_header, line, orig_line)
-                else:
-                    self.process_normal_line(line, orig_line)
-                    self.last_line_is_header = False
-
-        self.post_process()
+        return None
 
     def post_process(self):
         self.add_current_block_to_header()
@@ -594,6 +595,36 @@ class N10NoteProcessor:
         
         self.normalize_markdown_lines()
 
+    def process(self):
+        raw_text_lines = self.get_raw_text_lines()
+        if not raw_text_lines:
+            return
+
+        self.get_images_in_directory()
+        self.read_hand_notes()
+
+        self.reinit_state()
+
+        last_line_is_header = False
+
+        for line in raw_text_lines:
+            self.line_number += 1
+
+            logging.debug("process line: " + line)
+            orig_line = line
+
+            # only remove trailing whitespaces
+            line = line.rstrip()
+            # check if is header line
+            notes_header = self.HW_NOTES_HEADER_RE.match(line)
+            if notes_header:
+                self.last_line_is_header = True
+                self.process_head_line(notes_header, line, orig_line)
+            else:
+                self.process_normal_line(line, orig_line)
+                self.last_line_is_header = False
+
+        self.post_process()
 
 def main():
     args = sys.argv[1:]

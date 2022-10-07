@@ -212,4 +212,11 @@ SendMarkdownToTheBrain()
 
 CapsLock &  i:: SendMarkdownToTheBrain()	
 
+NormalizedClipboard()
+{
+	fullexec_path := get_my_utils_path("src\normalize_clipboard.pyw")
+	RunWait, %fullexec_path%
+}
+
+CapsLock &  n:: NormalizedClipboard()	
 

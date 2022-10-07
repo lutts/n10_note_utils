@@ -12,8 +12,7 @@ from markdown_utils import markdown_processor
 from n10_note import N10NoteProcessor
 
 def main():
-
-    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     args = sys.argv[1:]
 
     if not args:
@@ -58,9 +57,13 @@ def main():
         if hand_notes_filepath:
             logging.debug("hand_notes_filepath: " + hand_notes_filepath)
 
-        processor = N10NoteProcessor(notes_filepath, hand_notes_filepath)
-        processor.process()
-        processor.write_block_list()
+        try:
+            processor = N10NoteProcessor(n10_notes_filepath=notes_filepath,
+                                     hand_notes_filepath=hand_notes_filepath)
+            processor.process()
+            processor.write_block_list()
+        except Exception as e:
+            logging.error(str(e))
 
         logging.debug("process done")
 
