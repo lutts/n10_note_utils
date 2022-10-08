@@ -257,6 +257,16 @@ class markdown_processor:
 
         return False
 
+    thebrain_text_color_re = regex.compile(r':[{](?P<text>.*?):[(]style=&quot;(?P<style>.*?)&quot;[)]:[}]:')
+
+    def process_raw_html_extras(self, raw_html):
+        processed_html = []
+
+        for line in raw_html.splitlines():
+            processed_html.append(self.thebrain_text_color_re.sub(r'<span style="\2">\1</span>', line))
+        
+        return "\n".join(processed_html)
+
     def markdown_to_raw_html(self, markdown_lines):
         """
         convert markdown to html with my own extenstions
@@ -290,7 +300,7 @@ class markdown_processor:
             processed_markdown_lines.append(line)
 
         raw_html = self.render_markdown_with_parser(processed_markdown_lines)
-        return raw_html
+        return self.process_raw_html_extras(raw_html)
 
     common_css_style = """
         body {

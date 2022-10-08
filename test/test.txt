@@ -14,6 +14,12 @@
 
 Hey Jane, 周 末 要 不要一起 吃早茶，叫上 Jennie 和 Jone, 预计花费 100 元
 
+some text  :{**Red on yellow**:(style="background-color:#ffff00;color:#aa0000"):}: with others :{**Yellow on red**:(style="background-color:#aa0000;color:#ffff00"):}: different.
+
+some text  :{*Red on yellow*:(style="background-color:#ffff00;color:#aa0000"):}: with color
+
+some text <span style="background-color:#ffff00;color:#aa0000">Red on yellow</span> with color
+
 2022年10月01日 15:35:38  摘自<<心理学与生活 - 19th - 理查德·格里格-人民邮电出版社 (2014).pdf>> 第182页
 冥想（meditation）是一种改变意识的形式，它通过获得深度的宁静状态而增强 
 自我认识和幸福感口在专注冥想期间，人们把注意力集中在自己的呼吸和调节呼吸上. 
