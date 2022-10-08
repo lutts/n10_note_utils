@@ -44,25 +44,6 @@ AbbyyScreenReaderOCRText()
 
 CapsLock & r::AbbyyScreenReaderOCRText()
 
-; 去掉剪贴板中除纯属文本之外的其他格式，并删除掉空格及换行符
-PastePlainTextWithoutWhitespaces()
-{
-    clipboard := clipboard   ; Convert any copied files, HTML, or other formatted text to plain text.
-    clipboard := StrReplace(Clipboard, "`r`n")
-    ; 删除所有空格:
-    clipboard := StrReplace(clipboard, A_Space, "")
-    send, ^v
-	
-    ;sleep, 100
-    ;cliplen := StrLen(clipboard)
-    ;Send, {Shift down}{Left %cliplen%}{Shift up}
-    ;send, ^+n
-    ;sleep, 100
-    ;Send, {Right}
-}
-
-Capslock & v::PastePlainTextWithoutWhitespaces()
-
 CopyPlainText()
 {
 	clipboard := ""  ; Start off empty to allow ClipWait to detect when the text has arrived.
@@ -212,11 +193,12 @@ SendMarkdownToTheBrain()
 
 CapsLock &  i:: SendMarkdownToTheBrain()	
 
-NormalizedClipboard()
+NormalizedPaste()
 {
 	fullexec_path := get_my_utils_path("src\normalize_clipboard.pyw")
 	RunWait, %fullexec_path%
+	send, ^v
 }
 
-CapsLock &  n:: NormalizedClipboard()	
+CapsLock &  v:: NormalizedPaste()	
 
