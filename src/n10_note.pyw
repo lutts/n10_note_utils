@@ -242,6 +242,11 @@ class N10NoteProcessor:
         r'(?P<asterisks>\*{1,2})\s*(?P<word1>[^\s].*?[^\s])\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>[^\s].*?[^\s])\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)')
     space_after_punc_re = regex.compile(
         r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'0123456789\s]+)')
+    # CJK Unified Ideographs: 4E00 — 9FFF, 但后面有几个没用，只到9fd5
+    # 中英文之间需要增加空格: 中 chinese 文
+    # 中文与数字之间需要增加空格: 花了 5000 元
+    # 基于这两点，下面的正则表达式只有在中文之间存在空格时才会去掉空格，如果中文字符后面是数字、英文、标点之类的，则不会
+    space_around_chinese_char_re = regex.compile(r'(?P<zhchar>[\u4e00-\u9fd5])(?:\s+)(?=[\u4e00-\u9fa5])')
     # regular expression to match markdown link ang image link
     # (?P<text_group>
     #   \[
@@ -302,9 +307,13 @@ class N10NoteProcessor:
         # 中文括号转英文括号
         striped_line = striped_line.replace('（', '(')
         striped_line = striped_line.replace('）', ')')
-        # 去掉括号前后的空格
+        # 去掉括号前或后面的空格
         striped_line = self.space_around_left_paren_re.sub(r'\1', striped_line)
         striped_line = self.space_around_right_paren_re.sub(r'\1', striped_line)
+
+        # 去掉中文字符之间的空格
+        # test string: Hey Jane, 周 末 要 不要一起 吃早茶，叫上 Jennie 和 Jone, 预计花费 100 元
+        striped_line = self.space_around_chinese_char_re.sub(r'\g<zhchar>', striped_line)
 
         # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
         # 多个连续的空格只保留一个
