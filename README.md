@@ -368,3 +368,23 @@ Includes:
 对于supermemo, theBrain等支持图片和文字内联(inline)的，还提供了另一个入口
 
 * **Caps Lock + u**: 发送到supermemo，inline和block的公式都会使用你准备好的图片替代，并且还会针对supermemo分辨率的问题调整图片的大小
+
+## 关于supermemo
+
+supermemo对内联图片的支持乱七八糟，因此在将markdown转为supermemo适用的格式的时候，可以指定一个特定的目录webroot，统一将图片放到这个目录下，这样可以避免supermemo的很多图片问题
+
+要支持这个功能，需要在脚本所在的src目录下放置一个配置文件: settings.json，内容如下，其中的目录可以根据你的需要进行设置：
+
+```json
+{
+	"webroot" : "D:\\Data\\supermemo\\collections\\webroot"
+}
+````
+
+有了这个目录后，网页中的本地图片都会**拷贝**到这个目录里，放在一个唯一的UUID目录下，生成的HTML中的图片路径都会指向这个路径，暂时不支持从internet上直接下载图片。
+
+要注意的是，生成的HTML中的路径是诸如`http://localhost:9999:/xxx.png`这样的形式的，并不是写死的windows路径，因此都开启supermemo的时候也需要同时开启一个http server，虽然有点不方便，但通过AHK可以同时启动这supermemo和http server，所以问题不大:
+
+* Caps Lock + s: 启动supermemo，然后再启动一个以指定的webroot目录为根目录的python http server
+
+因为脚本中的可执行文件路径是写死的，因此你如果也使用supermemo，需要修改MyHotScripts.ahk中的RunSupermemo实现，将里面的路径改为你的路径

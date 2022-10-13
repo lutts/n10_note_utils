@@ -55,7 +55,7 @@ CopyPlainText()
 Capslock & c::CopyPlainText()
 
 ; 进入spotlight模式，方便进行阅读pacer
-Capslock & s::send ^!+P
+; Capslock & s::send ^!+P
 
 LookUpDictionary()
 {
@@ -116,7 +116,7 @@ SendMarkdownToOnenote()
 		
 		SplitPath, SelectedFile,, dir
 		dirname := quote(dir)
-		RunWait, python -m http.server -d %dirname%
+		RunWait, python -m http.server -d %dirname%  9999
 	}
 }
 
@@ -158,12 +158,12 @@ SendMarkdownToSupermemo()
 		 
 		 quoted_selectedfile := quote(SelectedFile)
 		 
-		fullexec_path := get_my_utils_path("src\send_markdown_to_supermemo_from_ahk.pyw")
+		fullexec_path := get_my_utils_path("src\send_markdown_to_supermemo_from_ahk.py")
 		RunWait, %fullexec_path% %quoted_selectedfile%
 		
-		SplitPath, SelectedFile,, dir
-		dirname := quote(dir)
-		RunWait, python -m http.server -d %dirname%
+		;SplitPath, SelectedFile,, dir
+		;dirname := quote(dir)
+		;RunWait, python -m http.server -d %dirname% 9999
 	}
 }
 
@@ -187,7 +187,7 @@ SendMarkdownToTheBrain()
 		
 		SplitPath, SelectedFile,, dir
 		dirname := quote(dir)
-		RunWait, python -m http.server -d %dirname%
+		RunWait, python -m http.server -d %dirname%  9999
 	}
 }
 
@@ -201,4 +201,15 @@ NormalizedPaste()
 }
 
 CapsLock &  v:: NormalizedPaste()	
+
+RunSupermemo()
+{
+	process, exist, sm18.exe
+	if !errorlevel
+	    Run, "C:\SuperMemo\sm18.exe"
+	
+	Run, python -m http.server -d "D:\Data\supermemo\collections\webroot"  9999
+}
+
+CapsLock &  s:: RunSupermemo()	
 

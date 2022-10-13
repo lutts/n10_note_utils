@@ -180,6 +180,10 @@ class markdown_processor:
         markdown_lines : iterable of markdown lines **with line breaks**
         """
 
+        # md = MarkdownIt("commonmark", {"typographer": True})
+        # md.enable(["replacements", "smartquotes"])
+        # md.render("'single quotes' (c)")
+
         md = (
             MarkdownIt()
             .use(tasklists_plugin)
