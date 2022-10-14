@@ -103,6 +103,7 @@ genetics.
 4. `pip install regex`
 5. `pip install pywin32`
 6. `pip install pathlib2`
+7. `pip install pillow`
 
 或者使用`pip install -r requirements.txt`来安装所有的依赖
 
