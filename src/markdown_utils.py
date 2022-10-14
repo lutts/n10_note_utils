@@ -138,7 +138,7 @@ class markdown_processor:
                 return '<img src="' + self.images_dict[hexdigest] + '" />'
             else:
                 return one_line_tex
-        elif self.mode in [markdown_processor_mode.SUPERMEMO, markdown_processor_mode().THEBRAIN]:
+        elif self.mode in [markdown_processor_mode.SUPERMEMO, markdown_processor_mode.THEBRAIN]:
             self.get_images_in_directory()
 
             if hexdigest in self.images_dict:
