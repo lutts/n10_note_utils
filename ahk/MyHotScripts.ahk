@@ -72,7 +72,7 @@ Capslock & d:: LookUpDictionary()
 ClipboardMarkdownToHtml()
 {
 	fullexec_path := get_my_utils_path("src\markdown2clipboard.pyw")
-	RunWait, %fullexec_path%
+	RunWait, pythonw %fullexec_path%
 	ClipWait, 2, 1 ; wait until clipboard contains data
 }
 
@@ -92,7 +92,7 @@ N10NotesProcess()
 		;MsgBox, The quoted string:`n%files%
 		
 		fullexec_path := get_my_utils_path("src\n10_note_for_ahk.pyw")
-		RunWait, %fullexec_path% %files%
+		RunWait, pythonw %fullexec_path% %files%
 	}
 }
 
@@ -112,7 +112,7 @@ SendMarkdownToOnenote()
 		 quoted_selectedfile := quote(SelectedFile)
 		 
 		fullexec_path := get_my_utils_path("src\send_markdown_to_onenote_for_ahk.pyw")
-		RunWait, %fullexec_path% %quoted_selectedfile%
+		RunWait, pythonw %fullexec_path% %quoted_selectedfile%
 		
 		SplitPath, SelectedFile,, dir
 		dirname := quote(dir)
@@ -136,7 +136,7 @@ ListMarkdownLatexEquations()
 		 quoted_selectedfile := quote(SelectedFile)
 		 
 		fullexec_path := get_my_utils_path("src\list_latex_equations.pyw")
-		RunWait, %fullexec_path% %quoted_selectedfile%
+		RunWait, pythonw %fullexec_path% %quoted_selectedfile%
 		
 		SplitPath, SelectedFile,, dir
 		MsgBox, latex equations saved to %dir%\latex_equations.txt
@@ -159,7 +159,7 @@ SendMarkdownToSupermemo()
 		 quoted_selectedfile := quote(SelectedFile)
 		 
 		fullexec_path := get_my_utils_path("src\send_markdown_to_supermemo_from_ahk.py")
-		RunWait, %fullexec_path% %quoted_selectedfile%
+		RunWait, python %fullexec_path% %quoted_selectedfile%
 		
 		;SplitPath, SelectedFile,, dir
 		;dirname := quote(dir)
@@ -183,7 +183,7 @@ SendMarkdownToTheBrain()
 		 quoted_selectedfile := quote(SelectedFile)
 		 
 		fullexec_path := get_my_utils_path("src\send_markdown_to_thebrain_from_ahk.pyw")
-		RunWait, %fullexec_path% %quoted_selectedfile%
+		RunWait, pythonw %fullexec_path% %quoted_selectedfile%
 		
 		SplitPath, SelectedFile,, dir
 		dirname := quote(dir)
@@ -196,7 +196,7 @@ CapsLock &  i:: SendMarkdownToTheBrain()
 NormalizedPaste()
 {
 	fullexec_path := get_my_utils_path("src\normalize_clipboard.pyw")
-	RunWait, %fullexec_path%
+	RunWait, pythonw %fullexec_path%
 	send, ^v
 }
 
