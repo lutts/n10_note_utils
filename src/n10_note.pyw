@@ -99,6 +99,7 @@ class N10NoteProcessor:
 
     def reinit_state(self):
         self.code_fence = None
+        self.code_fence_info_string = None
         self.front_matter = None
         self.line_number = 0
         self.last_line_is_header = False
@@ -164,6 +165,7 @@ class N10NoteProcessor:
             else:
                 # a new fenced block start
                 self.code_fence = tmp_code_fence
+                self.code_fence_info_string = info_string
 
             return True
         elif self.code_fence:
@@ -549,6 +551,10 @@ class N10NoteProcessor:
 
     def process_normal_line(self, line, orig_line):
         if self.line_is_in_code_fence(line):
+            if self.code_fence_info_string and self.code_fence_info_string == "delete":
+                logging.debug("fenced code marked as deleted: " + orig_line)
+                return
+
             logging.debug("fenced code untouched: " + orig_line)
             self.keep_line_untouched(orig_line)
             return
