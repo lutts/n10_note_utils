@@ -248,7 +248,7 @@ class N10NoteProcessor:
     # 中英文之间需要增加空格: 中 chinese 文
     # 中文与数字之间需要增加空格: 花了 5000 元
     # 基于这两点，下面的正则表达式只有在中文之间存在空格时才会去掉空格，如果中文字符后面是数字、英文、标点之类的，则不会
-    space_around_chinese_char_re = regex.compile(r'(?P<zhchar>[\u4e00-\u9fd5])(?:\s+)(?=[\u4e00-\u9fa5])')
+    space_around_chinese_char_re = regex.compile(r'(?P<zhchar>[\u4e00-\u9fd5])(?:\s+)(?=[\u4e00-\u9fd5])')
     # regular expression to match markdown link ang image link
     # (?P<text_group>
     #   \[
