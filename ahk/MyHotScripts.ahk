@@ -30,6 +30,9 @@ CapsLock & 8:: send ⑧
 CapsLock & 9:: send ⑨
 CapsLock & 0:: send ⑩
 
+; 屏蔽微软五笔的全角半角切换
++Space::Send, {Space}
+
 ; supermemo, 将element转为纯文本
 CapsLock & t::send ^+{F12}
 

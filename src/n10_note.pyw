@@ -200,6 +200,15 @@ class N10NoteProcessor:
     def add_current_block_to_header(self):
         if self.block is None:
             return
+
+        if not self.book_title:
+            m = self.markdown_header_re.match(self.block)
+            if m:
+                markdown_marker = m.group(1)
+                if markdown_marker == "#":
+                    # level 1 head, treat it as book title
+                    self.book_title = self.block[self.block.index('# ')+2:]
+                    self.block = ""
         
         self.header_block_list.append(self.block)
         self.block = None
@@ -561,13 +570,7 @@ class N10NoteProcessor:
 
         markdown_marker = self.line_is_markdown(line)
         if markdown_marker:
-            if not self.book_title and markdown_marker == "#":
-                # level 1 head, treat it as book title
-                self.book_title = line[line.index('# ')+2:]
-                # actually TOUCHED, title line is replace with an empty line
-                self.keep_line_untouched("")
-            else:
-                self.new_block(line)
+            self.new_block(line)
             return
         
         if not line:
