@@ -1,50 +1,108 @@
 2022年10月04日 10:08:16  摘自<<Psychology and Life 20th.pdf>> 第196页
-**learning-performance distinction**—the difference between 
-what has been learned and what is expressed, or performed, in 
-overt behavior.
+最终结果: 1, 5, b, 2, 7, 9, 6, 8, 4, a
 
-{196-1}
+11111111111111111111111111111111111111111111111
+
+[555]
+
+[no replacement]
+
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 
 2022年10月04日 10:09:39  摘自<<Psychology and Life 20th.pdf>> 第196页
-* **A Relatively Consistent Change**
+2222222222222222222222222222222
 
 {ordinary text, not place holder}
 
 2022年10月04日 10:55:27  摘自<<Psychology and Life 20th.pdf>> 第197页
-{198-1}
+[666]:-
+3333333333333333333333333333333
 
-Complex forms of learning 
+cccccccccccccccccccccccccccccccc
 
 2022年10月04日 10:55:47  摘自<<Psychology and Life 20th.pdf>> 第198页
-represent combinations and elaborations of simpler processes 
-and not qualitatively different phenomena.
+4444444444444444444444444444444
 
 2022年10月04日 11:03:40  摘自<<Psychology and Life 20th.pdf>> 第196页
-{196-1}
-
-Often, 
-however, your performance doesn’t show everything that you 
-have learned. Sometimes, too, you have acquired general atti-
-tudes, such as an appreciation of modern art or an understand-
-ing of Eastern philosophy, that may not be apparent in your 
-measurable actions. 
-
-In such instances, you have achieved a po-
-tential for behavior change because you have learned attitudes 
-and values that can influence the kinds of books you read or 
-the way you spend your leisure time. 
-
-This is an example of the 
-learning-performance distinction—the difference between 
-what has been learned and what is expressed, or performed, in 
-overt behavior.
+[555]:.
+5555555555555555555555555555555
 
 2022年10月04日 12:48:38  摘自<<Psychology and Life 20th.pdf>> 第198页
-{198-1}
+[666]:.
+666666666666666666666666666666
 
-## CLASSICAL CONDITIONING: 
-LEARNING PREDICTABLE
-SIGNALS
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第500页
+[]:+
+888888888888888888888888888888
 
 2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第196页
-something missing in page 196
+[777]:.
+
+77777777777777777777777777777777
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第600页
+[]:+
+999999999999999999999999999999
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第196页
+[]:.
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+接下来测试兼容以前的，正确顺序: e, d, f, k, g, h, l
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第200页
+{oldoverride}
+
+ccccccccccccccccccccccccccccccccc
+
+cccccccccccccccccccccccccccccccc
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第201页
+dddddddddddddddddd
+
+ddddddddddddddddddd
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第200页
+{oldoverride}
+
+eeeeeeeeeeeeeeeeeeeeeeeeeee
+
+eeeeeeeeeeeeeeeeeeeeeeeeeee
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第201页
+ffffffffffffffffffff
+
+{oldsubstitute}
+
+gggggggggggg
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第202页
+hhhhhhhhhhhhhh
+
+hhhhhhhhhhhhhh
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第201页
+{oldsubstitute}
+
+kkkkkkkkkkkkkkkkkkk
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第203页
+{not touched 1}
+
+LLLLLLLLLLLLLLLLL
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第204页
+MMMMMMMMMMMM
+
+{not touched 2}
+
+NNNNNNNNNNNNNNN
+
+
+
+
+
+
+
+
+

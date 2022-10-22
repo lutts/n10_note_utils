@@ -12,59 +12,93 @@ import logging
 from datetime import datetime
 import css_inline
 from collections import OrderedDict
+import uuid
 
 from markdown_utils import markdown_processor, uniqe_name
 from HTMLClipboard import PutHtml
 import hanzi
 
 
-
 # Global variables
 
 # Class declarations
 
-# Function declarations
+class NoteBlock:
+    def __init__(self, phy_page_number):
+        self.phy_page_number = phy_page_number
+        self.logic_page_number = phy_page_number
+        self.cur_line = None
+        self.lines = []
+        self.next = None
+    
+    def is_empty(self):
+        if not self.lines:
+            return True
+        
+        for line in self.lines:
+            if line:
+                return False
+        
+        return True
+
+    def get_next_list_tail(self):
+        if not self.next:
+            return None
+        
+        next_block = self.next
+        while next_block.next:
+            next_block = next_block.next
+
+        return next_block
+
+    def finish_current_line(self):
+        if self.cur_line is None:
+            return
+
+        self.lines.append(self.cur_line)
+        self.cur_line = None
+
+    def concat_to_current_line(self, line):
+        if self.cur_line is None:
+            self.cur_line = line
+            return
+
+        line = line.strip()
+        last_char = self.cur_line[-1]
+        if last_char == "-":
+            self.cur_line = self.cur_line[:-1]
+        elif ord(last_char) < 128:
+            # use space to join english lines
+            self.cur_line += " "
+        
+        self.cur_line += line
+
+    def new_line(self, line):
+        self.finish_current_line()
+        self.cur_line = line
+
+    def add_single_raw_line(self, line):
+        self.finish_current_line()
+        self.lines.append(line)
+
+    def add_multi_raw_line(self, lines):
+        self.finish_current_line()
+        self.lines.extend(lines)
+
 
 class N10NoteProcessor:
-    """
-    这个类的用途：
-    1. 去掉汉王N10摘抄文件中的多余空格和换行
-    2. 将读书过程中的截图图片根据时间戳嵌入到笔记中
-    3. 将手写笔记按照手工的时间戳加入到笔记中
-
-    注：汉王的手写笔记导出的文件是UTF-16 BE BOM的，需要事先转为UTF-8
-
-    我们将整个摘抄文件分为`块`，每`块`都有特殊的开头，没有特殊开头的文本行
-    默认都属于最近的一个`块`，块又分三类：
-
-    * 汉王的摘抄特征行：
-        * 将被简化为`(p56)`这样的页码，放在紧接着的`块`的开始，
-        方便后续手工整理笔记时很方便地删掉这些页码信息
-    * 会去掉多余空格和换行的
-        * 缩进至少4个英文空格则视为一块的开始
-        * Markdown特殊字符(*, -, +, >, #，|(表格), 数字后面一个点)开始的行也视为一块的开始
-    * 保持不变的：
-        * 空行可以用来分隔块。单个空行会被保留，但多个连续空行只会保留一个
-
-    建议：自已的想法用markdown的blockquote `> `来写，这样markdown渲染出来的效果最好
-
-    处理后的文件会生成一个标准的Markdown文件，可以用支持Markdown的编辑器打开
-    程序还会自动将markdown文件渲染成html文件一并输出，方便用户将带格式的html文本拷贝到诸如OneNote等笔记
-    软件中编辑
-    """
-
-    SPECIAL_PAGE_NUMBER = "lines_before_note_header"
-
     def __init__(self, n10_notes_filepath=None,
                  hand_notes_filepath=None,
                  markdown_filepath=None,
                  html_filepath=None,
                  raw_text=None):
-        self.block = None
-        self.header_block_list = []
-        self.cur_page_number = self.SPECIAL_PAGE_NUMBER
+        self.prev_block = None
+        self.cur_block = NoteBlock("0")
         self.page_block_dict = OrderedDict()
+        
         self.replacement_dict = {}
+        self.old_placeholder_dict = {}
+
         self.normalized_lines = []
 
         self.image_list = []
@@ -103,7 +137,6 @@ class N10NoteProcessor:
         self.front_matter = None
         self.line_number = 0
         self.last_line_is_header = False
-
     
     list_table_markers_re = regex.compile(r'(?P<markdown_marker>[-*+|]|[0-9]+\.)[ ]')
     blockquote_re = regex.compile(r'>([ ]|$)')
@@ -173,75 +206,106 @@ class N10NoteProcessor:
 
         return False
 
-    placeholder_re  = regex.compile(r'^(?P<placeholder>{.+})(?P<line_number>[0-9]*)$')
+    old_placeholder_re  = regex.compile(r'^{(?P<placeholder>.+)}$')
+    sticker_re = regex.compile(r'\[(?P<placeholder>[^]]*?)\](:[.+-])?$')
 
-    def add_header_blocks_to_page(self):
-        if not self.header_block_list:
-            return
-
-        logging.debug("save header blocks to page" + str(self.cur_page_number))
-
-        block_list = self.header_block_list
-        self.header_block_list = []
-
-        placeholder = ""
-        m = self.placeholder_re.match(block_list[0].strip())
-        if m:
-            placeholder = m.group("placeholder")
-            logging.debug("found placeholder: " + placeholder)
-            self.replacement_dict[placeholder] = [str(self.line_number)] + block_list[1:]
-            block_list = [placeholder + str(self.line_number)]
-        
-        if self.cur_page_number in self.page_block_dict:
-            self.page_block_dict[self.cur_page_number].extend(block_list)
-        else:
-            self.page_block_dict[self.cur_page_number] = block_list
-
-    def add_current_block_to_header(self):
-        if self.block is None:
-            return
-
-        if not self.book_title:
-            m = self.markdown_header_re.match(self.block)
+    def scan_block_for_book_title(self):
+        idx = 0
+        for line in self.cur_block.lines:
+            m = self.markdown_header_re.match(line)
             if m:
                 markdown_marker = m.group(1)
                 if markdown_marker == "#":
                     # level 1 head, treat it as book title
-                    self.book_title = self.block[self.block.index('# ')+2:]
-                    self.block = ""
+                    self.book_title = line[line.index('# ')+2:]
+                    self.cur_block.lines[idx] = ""
+                    break
+            idx += 1
+
+    def convert_old_placeholder(self, block):
+        # 兼容以前的{placeholder}方案
+        converted_lines = []
+        first_line = block.lines[0].strip()
+        idx = 0
+        for line in block.lines:
+            m = self.old_placeholder_re.match(line.strip())
+            if m:
+                placeholder = m.group(1)
+
+                if placeholder in self.old_placeholder_dict:
+                    # 第二次碰到
+                    converted_lines.append(line)
+                    if idx == 0:
+                        first_line = '[' + placeholder + ']:.'
+                else:
+                    self.old_placeholder_dict[placeholder] = line
+                    # 第一次碰到
+                    if idx == 0:
+                        # 第一行
+                        converted_lines.append('[' + placeholder + ']:-')
+                    else:
+                        converted_lines.append('[' + placeholder + ']')
+            else:
+                converted_lines.append(line)
+            
+            idx += 1
         
-        self.header_block_list.append(self.block)
-        self.block = None
+        block.lines =  converted_lines
+        return first_line
 
-    def add_raw_blocks_to_header(self, blocks):
-        self.add_current_block_to_header()
-        logging.debug("save blocks: " + str(blocks))
-        self.header_block_list.extend(blocks)
+    def finish_current_block(self):
+        self.cur_block.finish_current_line()
 
-    def keep_line_untouched(self, line):
-        self.add_current_block_to_header()
-        self.header_block_list.append(line)
-
-    def new_block(self, initial_line):
-        self.add_current_block_to_header()
-        self.block = initial_line
-    
-    def concat_to_current_block(self, line):
-        if self.block is None:
-            self.block = line
+        if self.cur_block.is_empty():
             return
 
-        if self.block:
-            line = line.strip()
-            last_char = self.block[-1]
-            if last_char == "-":
-                self.block = self.block[:-1]
-            elif ord(last_char) < 128:
-                # use space to join english lines
-                self.block += " "
+        if not self.book_title:
+            self.scan_block_for_book_title()
 
-        self.block += line
+        first_line = self.convert_old_placeholder(self.cur_block)
+        #first_line = self.cur_block.lines[0].strip()
+        m = self.sticker_re.match(first_line)
+        if m:
+            if first_line == '[]:.':
+                # stick to current position
+                del self.cur_block.lines[0]
+                self.cur_block.logic_page_number = str(uuid.uuid4())
+            elif first_line == '[]:+':
+                # stick to previous block
+                del self.cur_block.lines[0]
+                if self.prev_block:
+                    self.cur_block.logic_page_number = self.prev_block.logic_page_number
+                    self.prev_block.next = self.cur_block
+                    return
+            else:
+                placeholder = m.group(1)
+                suffix = m.group(2)
+                if placeholder and suffix == ":.":
+                    #logging.debug("------------>" + (" | ".join(self.cur_block.lines)))
+                    self.replacement_dict[placeholder] = self.cur_block
 
+        logic_page_number = self.cur_block.logic_page_number
+        if logic_page_number in self.page_block_dict:
+            self.page_block_dict[logic_page_number].append(self.cur_block)
+        else:
+            self.page_block_dict[logic_page_number] = [self.cur_block]
+
+    def new_block(self, phy_page_number):
+        self.finish_current_block()
+        self.prev_block = self.cur_block
+        self.cur_block = NoteBlock(phy_page_number)
+
+    def concat_to_current_line(self, line):
+        self.cur_block.concat_to_current_line(line)
+
+    def new_line(self, line):
+        self.cur_block.new_line(line)
+
+    def add_single_raw_line(self, line):
+        self.cur_block.add_single_raw_line(line)
+
+    def add_multi_raw_line(self, lines):
+        self.cur_block.add_multi_raw_line(lines)
 
     code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
     front_matter_re = regex.compile(r'-{3,}')
@@ -250,7 +314,7 @@ class N10NoteProcessor:
 
     heading_whitespaces_re = regex.compile(r" +")
     emphasis_normalizer_re = regex.compile(
-        r'(?P<asterisks>\*{1,2})\s*(?P<word1>[^\s].*?[^\s])\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>[^\s].*?[^\s])\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)')
+        r'(?P<asterisks>\*{1,2})\s*(?P<word1>[^*].*?)\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>.*?)\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)')
     space_after_punc_re = regex.compile(
         r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'0123456789\s]+)')
     # CJK Unified Ideographs: 4E00 — 9FFF, 但后面有几个没用，只到9fd5
@@ -334,7 +398,7 @@ class N10NoteProcessor:
         striped_line = self.space_after_punc_re.sub(r'\1 \2', striped_line)
 
         striped_line = self.emphasis_normalizer_re.sub(
-            '\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', striped_line)
+            r'\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', striped_line)
 
         if image_or_links:
             striped_line = striped_line.format(*image_or_links)
@@ -344,6 +408,96 @@ class N10NoteProcessor:
         return heading_spaces + striped_line + "\n"
 
 
+    def get_block_lines(self, block):
+        if block.is_empty():
+            if block.next:
+                return self.get_block_lines(block.next)
+            else:
+                return []
+
+        # logging.debug("get_block_lines: " + (" | ".join(block.lines)))
+
+        lines = block.lines
+        block.lines = None
+
+        first_line = lines[0]
+        m = self.sticker_re.match(first_line.strip())
+        if m:
+            placeholder = m.group(1)
+            suffix = m.group(2)
+            if placeholder and suffix == ":-":
+                if placeholder in self.replacement_dict:
+                    replace_block = self.replacement_dict[placeholder]
+                    if not replace_block.is_empty():
+                        replace_block.lines[0] = ""
+                        lines = replace_block.lines
+
+                        if replace_block.next:
+                            tmp_next = block.next
+                            block.next = replace_block.next
+                            replace_block.get_next_list_tail().next = tmp_next
+                            replace_block.next = None
+                    else:
+                        lines = []
+                    replace_block.lines = None
+                elif placeholder in self.old_placeholder_dict:
+                    lines[0] = self.old_placeholder_dict[placeholder]
+                    del self.old_placeholder_dict[placeholder]
+
+        result_list = []
+
+        phy_page_number = int(block.phy_page_number)
+        if phy_page_number != self.prev_phy_page_number:
+            if self.prev_phy_page_number != 0:
+                result_list.append("")
+                result_list.append("(p" + str(self.prev_phy_page_number) + "e)")
+                result_list.append("")
+
+            result_list.append("(p" + block.phy_page_number + "s)")
+            result_list.append("")
+
+            self.prev_phy_page_number = phy_page_number
+
+        for line in lines:
+            stripped_line = line.strip()
+            m = self.sticker_re.match(stripped_line)
+            if m:
+                placeholder = m.group(1)
+                suffix = m.group(2)
+
+                if placeholder and not suffix:
+                    if placeholder in self.replacement_dict:
+                        replace_block = self.replacement_dict[placeholder]
+
+                        if replace_block.next:
+                            if block.next:
+                                block.get_next_list_tail().next = replace_block.next
+                            else:
+                                block.next = replace_block.next
+                            
+                            replace_block.next = None
+
+                        if not replace_block.is_empty():
+                            replace_block.lines[0] = ""
+                            result_list.extend(self.get_block_lines(replace_block))
+                        else:
+                            result_list.append("")
+                    elif placeholder in self.old_placeholder_dict:
+                        result_list.append(self.old_placeholder_dict[placeholder])
+                        del self.old_placeholder_dict[placeholder]
+                    else:
+                        result_list.append(line)
+                else:
+                    result_list.append(line)
+            else:
+                result_list.append(line)
+
+        if block.next:
+            result_list.extend(self.get_block_lines(block.next))
+        
+        # logging.debug("get_block_lines: return_list: " + (" | ".join(result_list)))
+        return result_list
+
     def normalize_markdown_lines(self):
         if self.normalized_lines:
             return self.normalized_lines
@@ -351,41 +505,17 @@ class N10NoteProcessor:
         if not self.page_block_dict:
             return None
 
-        self.reinit_state()
         all_block_list = []
+        self.prev_phy_page_number = 0
 
-        for page_number, block_list in self.page_block_dict.items():
-            if page_number != self.SPECIAL_PAGE_NUMBER:
-                all_block_list.append("(p" + str(page_number) + "s)")
-                all_block_list.append("")
-
+        for _, block_list in self.page_block_dict.items():
             for block in block_list:
-                self.line_number += 1
+                all_block_list.extend(self.get_block_lines(block))
 
-                m = self.placeholder_re.match(block.strip())
-                if m:
-                    placeholder = m.group("placeholder")
-                    line_number = m.group("line_number")
-                    if placeholder in self.replacement_dict:
-                        placeholder_content = self.replacement_dict[placeholder]
-                        del self.replacement_dict[placeholder]
-
-                        orig_line_number = placeholder_content[0]
-                        placeholder_content = placeholder_content[1:]
-
-                        if orig_line_number == line_number:
-                            all_block_list.append(placeholder)
-
-                        all_block_list.extend(placeholder_content)
-                    elif not line_number:
-                        all_block_list.append(block)
-                else:
-                    all_block_list.append(block)
-
-            if page_number != self.SPECIAL_PAGE_NUMBER:
-                all_block_list.append("")
-                all_block_list.append("(p" + str(page_number) + "e)")
-                all_block_list.append("")
+        if self.prev_phy_page_number != 0:
+            all_block_list.append("")
+            all_block_list.append("(p" + str(self.prev_phy_page_number) + "e)")
+            all_block_list.append("")
 
         self.reinit_state()
         last_line_is_empty = False
@@ -542,21 +672,20 @@ class N10NoteProcessor:
             logging.debug("cur ts: " + str(ts) +
                           ", first img ts: " + str(self.image_list[0][0]))
             if ts > self.image_list[0][0]:
-                self.add_raw_blocks_to_header(["", self.image_list[0][1], ""])
+                self.add_multi_raw_line(["", self.image_list[0][1], ""])
                 del self.image_list[0]
 
         if self.hand_note_list:
             logging.debug("cur ts: " + str(ts) +
                           ", first hand note ts: " + str(self.hand_note_list[0][0]))
             if ts > self.hand_note_list[0][0]:
-                self.add_raw_blocks_to_header([""] + self.hand_note_list[0][1] + [""])
+                self.add_multi_raw_line([""] + self.hand_note_list[0][1] + [""])
                 del self.hand_note_list[0]
 
         if not self.book_filename:
             self.book_filename = notes_header.group("filename")
 
-        self.add_header_blocks_to_page()
-        self.cur_page_number = notes_header.group("page_number")
+        self.new_block(notes_header.group("page_number"))
 
     def process_normal_line(self, line, orig_line):
         if self.line_is_in_code_fence(line):
@@ -565,21 +694,28 @@ class N10NoteProcessor:
                 return
 
             logging.debug("fenced code untouched: " + orig_line)
-            self.keep_line_untouched(orig_line)
+            self.add_single_raw_line(orig_line)
+            return
+
+        stripped_line = line.strip()
+        m = self.sticker_re.match(stripped_line)
+        if m:
+            logging.debug("found sticker: " + stripped_line)
+            self.add_single_raw_line(line)
             return
 
         markdown_marker = self.line_is_markdown(line)
         if markdown_marker:
-            self.new_block(line)
+            self.new_line(line)
             return
         
         if not line:
             logging.debug("empty line")
-            self.keep_line_untouched("")
+            self.add_single_raw_line("")
             return
 
         logging.debug("normal line: " + line)
-        self.concat_to_current_block(line)
+        self.concat_to_current_line(line)
 
     def get_raw_text_lines(self):
         if self.n10_notes_filepath:
@@ -593,23 +729,22 @@ class N10NoteProcessor:
         return None
 
     def post_process(self):
-        self.add_current_block_to_header()
-
         if self.image_list:
             left_image_blocks = [""]
             for ts, img in self.image_list:
                 left_image_blocks.append(img)
                 left_image_blocks.append("")
-            self.add_raw_blocks_to_header(left_image_blocks)
+            self.add_multi_raw_line(left_image_blocks)
 
         if self.hand_note_list:
             left_hand_blocks = [""]
             for ts, note in self.hand_note_list:
                 left_hand_blocks.extend(note)
                 left_hand_blocks.append("")
-            self.add_raw_blocks_to_header(left_hand_blocks)
+            self.add_multi_raw_line(left_hand_blocks)
 
-        self.add_header_blocks_to_page()
+        self.finish_current_block()
+        self.cur_block = None
         
         self.normalize_markdown_lines()
 

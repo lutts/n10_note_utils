@@ -1,0 +1,101 @@
+note 处理新需求：
+
+1、有时候不想按页码排序，想保持原有的位置，如何做？
+
+---> 实现的关键就是我们的页码本身是不排序的，比如1, 3, 2，不会排成1, 2, 3，目前的排序实际上只是内容按页码出现的顺序排序，
+
+这里有一个基本假设：读者不会跳着页的读书，而是顺着页数来读的
+
+---> 第二个问题：用什么标志来表示当前的内容需要保持在当前位置呢？
+---> 第三个问题：如果block N和block N-1是相关的，block N-1被移走了，那么block N怎么办？
+
+所以这里有一个block stick的概念，
+
+* stick to previous block： 
+* stick to current position
+
+这就要求对page number进行进一步的划分：实际page number，逻辑page number,
+	* 实际Page number: 当前header标识的page number，处理之后会插入到内容中(pxxxs), (pxxxe)
+	* 逻辑page number: 
+		* stick to previous block时，逻辑page number是前一个block 的page number
+		* stick to current position时，逻辑page number是实际page number + 一个唯一标识，这样就不会和之前的page number内容合并到一起了
+		* 什么标志都没有时：逻辑page number和实际page number相同
+		
+dict的key是逻辑page number，那么之实际page number存放在哪里呢? 这里有一种可能：一个逻辑page number里可能包含多个物理page number，这多个物理page number存放在哪里呢?
+在代码里就是：当logic_page_number != phy_page_number时，phy_page_number要如何存放
+
+---> 解决方案：dict的value是一个二维数组，每一行代表一个phy_page_number的，示例
+[
+	[123，"x", "y", "z"]
+	[345, "a", "b", "c"]
+	[123,  "u", "v", "w"]
+]
+
+可以看到，页码123是可以被345打断的，第二维的第一个item永远是phy_page_number
+
+实际page number: 通过解析header line获得
+逻辑page number: 
+	* 如果第一行不是stick标志，则logic_page_number = phy_page_number
+	* 如果第一行是stick标志:
+		* stick to previous block: logic_page_number = prev block logic_page_number
+		* stick to current block: logic_page_number = phy_page_number + uuid
+
+第一遍扫描
+---------
+碰到第一行是`[placeholder]:.`的行，将当前block的内容放入到replacement_dict中，key为"placeholder."，只留下[placeholder]:.本身
+碰到第一行是[placeholder]:-时，存放block时, 会以"placeholder-"这个key将当前block的内容放入到replacement_dict中，只留下[placeholder]:-本身
+
+第二遍扫描
+---------
+* 插入逻辑:
+  * 碰到[placeholder]时，如果replacement_dict中有"placeholder."，则取出来，去掉"placeholder."本身，然后替换掉[placeholder]即可
+ 
+* 替换逻辑:
+  * 碰到[placeholder]:-时，如果"placeholder."在replacement_dict中，则取出来替换掉[placeholder]:-，去掉"placeholder."本身, 同时删除掉replacement_dict["placeholder-"]
+
+第三遍扫描
+---------
+这一遍只在replacement_dict不为空时进行，为了防止有内容碰瓷了我们的stick标志，虽然不常见
+
+  * 碰到[placeholder]:.时，如果"placeholder."在replacement_dict中，则取出来恢复  （？？？否则呢，要不要删除？）
+  * 碰到[placeholder]:-时，如果"placeholder-"在replacement_dict中，则取出来恢复  (？？？否则呢，要不要删除？）
+
+上面的算法太复杂了，有没有更简单点的算法呢？
+---> 看样子要引入一个Block类了，同时在NoteProcessor时保留一个类似于replacement_dict一样的placeholder到block的引用
+block {
+phy_page_number
+logic_page_number
+lines
+}
+
+注意：为了兼容之前的{placeholder}解决方案，程序做以下适配：
+* 第一次碰到{placeholder}时，
+	* 如果是第一行，则使用[placeholder]:-代替
+	* 如果不是第一行，则使用[placeholder]代替
+* 第二次碰到时:
+	* 如果是第一行，则使用[placeholder]:.代替
+	* 如果不是第一行，则Ignore
+	
+* 替换时:
+    * 如果找到替换者，则正常替换
+	* 如果没找到替换者，则要恢复成大括号的形式
+	
+要兼容似乎比较麻烦呀，干脆不兼容了？旧的前后是不区分的，有点麻烦呀
+
+吸取之前的替换的不便性的教训，这次该如何设计标志呢？ 标志一定要是一个markdown marker，这样就不需要在后面加空行了
+
+对markdown marker的要求：需要是那种出现在一行开头就表示是一个markdown marker的，以便和普通文本进行有效的区别
+
+符合要求的有：
+* heading: #, ##...，这个不建议采用，因为无法区分是真的heading还是标志
+* fenced code block: 可以采用，但会影响现有的处 理fenced code block的逻辑，现有的逻辑是碰到fenced code block就保留里面的内容的
+* list marker: 这个也不方便
+* blockquote: 也不适合
+* Link reference definitions： 似乎是唯一选择了
+
+[]:. 表示不参与排序（stick to current position)
+[]:+ 表示stick to pervious block
+  ---> stick必须紧跟在header后面
+[placeholer]:. 表示替换block，只在第一行时有效
+[placeholder]  表示使用替换block替换[label]，这个标志可以出现在任何位置，唯一的要求是必须单独在一行，而且前后不能有其他内容
+[placeholder]:- 表示使用替换block替换当前block，[label]-必须是block的第一行，标志前后不能有其他内容
