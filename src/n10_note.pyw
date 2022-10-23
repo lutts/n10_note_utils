@@ -67,7 +67,7 @@ class NoteBlock:
         last_char = self.cur_line[-1]
         if last_char == "-":
             self.cur_line = self.cur_line[:-1]
-        elif last_char == '’' or ord(last_char) < 128:
+        elif last_char == '’' or last_char == '”' or ord(last_char) < 128:
             # use space to join english lines
             self.cur_line += " "
         
