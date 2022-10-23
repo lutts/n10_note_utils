@@ -372,6 +372,8 @@ class N10NoteProcessor:
         # markdownlint: no trailing spaces
         # 行首的空格在heading_spaces里保存着
         striped_line = line.strip()
+        
+        striped_line = striped_line.replace('\0', '')
 
         # 避免随后的处理误伤link/img link
         image_or_links = self.img_link_re.findall(striped_line)
