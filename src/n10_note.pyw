@@ -262,6 +262,10 @@ class N10NoteProcessor:
         if not self.book_title:
             self.scan_block_for_book_title()
 
+        # check again
+        if self.cur_block.is_empty():
+            return
+
         first_line = self.convert_old_placeholder(self.cur_block)
         #first_line = self.cur_block.lines[0].strip()
         m = self.sticker_re.match(first_line)
