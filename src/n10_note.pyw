@@ -383,11 +383,15 @@ class N10NoteProcessor:
             striped_line = self.double_brace_re.sub(r'\1\1', striped_line)
             striped_line = self.img_link_re.sub('{}', striped_line)
 
-        striped_line = striped_line.replace('’', "'")
+        # Replaces all curly quotes(‘, ’, “, ”) in a document with straight quotes(', ").
+        striped_line = regex.sub(r'‘(?=[^\u4e00-\u9fd5])', "'", striped_line)
+        striped_line = regex.sub(r'(?<=[^\u4e00-\u9fd5])’', "'", striped_line)
+        striped_line = regex.sub(r'“(?=[^\u4e00-\u9fd5])', '"', striped_line)
+        striped_line = regex.sub(r'(?<=[^\u4e00-\u9fd5])”', '"', striped_line)
 
         # 中文括号转英文括号
-        striped_line = striped_line.replace('（', '(')
-        striped_line = striped_line.replace('）', ')')
+        striped_line = regex.sub(r'（(?=[^\u4e00-\u9fd5])', '(', striped_line)
+        striped_line = regex.sub(r'(?<=[^\u4e00-\u9fd5])）', ')', striped_line)
         # 去掉括号前或后面的空格
         striped_line = self.space_around_left_paren_re.sub(r'\1', striped_line)
         striped_line = self.space_around_right_paren_re.sub(r'\1', striped_line)

@@ -128,6 +128,18 @@ bad_link = '[link](<http://google.com  "title")'
 
 multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [![img link](haha.png)](<http://google.com> "google") or img ![x](<./hehe.png> "hehe").  and there's some text with {braces} {} in it'
 
+s1 = "‘english’"
+
+s2 = "‘中文’"
+
+s3 = '“english”'
+
+s4 = '“中文”'
+
+s5 = "（english）"
+
+s6 = "（中文）"
+
 这**是(is)**一个苹果。
 
 这*是(is)*一个苹果。
