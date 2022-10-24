@@ -19,6 +19,7 @@ def normlize_clipboard():
     processor.process()
 
     if processor.normalized_lines:
+        processor.normalized_lines[-1] = processor.normalized_lines[-1].rstrip()
         pyperclip.copy("".join(processor.normalized_lines))
 
 
