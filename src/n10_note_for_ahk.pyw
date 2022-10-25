@@ -37,16 +37,16 @@ def main():
     for filename in args[1:]:
         logging.debug("filename: " + filename)
         fullpath = os.path.join(dirname, filename)
-        if '摘抄' in filename:
-            notes_filepath = fullpath
-        elif filename.endswith(".md"):
+        if filename.endswith(".md"):
             markdown_processor().markdown_file_to_html_file(fullpath)
             continue
+        elif '摘抄' in filename:
+            notes_filepath = fullpath
         else:
             if not notes_filepath:
                 notes_filepath = fullpath
-
-            hand_notes_filepath = fullpath
+            else:
+                hand_notes_filepath = fullpath
 
     if notes_filepath:
         # only one file, it must be notes file
@@ -66,7 +66,6 @@ def main():
             logging.error(str(e))
 
         logging.debug("process done")
-
 
 # Main body
 if __name__ == '__main__':
