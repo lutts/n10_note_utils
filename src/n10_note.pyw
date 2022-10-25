@@ -137,6 +137,7 @@ class N10NoteProcessor:
         self.front_matter = None
         self.line_number = 0
         self.last_line_is_header = False
+        self.in_math_context = False
     
     list_table_markers_re = regex.compile(r'(?P<markdown_marker>[-*+|]|[0-9]+\.)[ ]')
     blockquote_re = regex.compile(r'>([ ]|$)')
@@ -183,6 +184,18 @@ class N10NoteProcessor:
 
         return False
 
+    def line_is_in_math_context(self, line):
+        if '$$' in line:
+            if self.in_math_context:
+                # end of math context
+                self.in_math_context = False
+            else:
+                # start of math context
+                self.in_math_context = True
+            return True
+        else:
+            return self.in_math_context
+
     def line_is_in_code_fence(self, line):
         if self.line_is_in_front_matter(line):
             return True
@@ -202,6 +215,8 @@ class N10NoteProcessor:
 
             return True
         elif self.code_fence:
+            return True
+        elif self.line_is_in_math_context(line):
             return True
 
         return False
