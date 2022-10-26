@@ -594,8 +594,6 @@ class N10NoteProcessor:
         if not self.normalized_lines:
             return
 
-        full_html = markdown_processor().markdown_to_full_html(self.normalized_lines)
-
         joined_markdown_text = "".join(self.normalized_lines)
 
         if self.markdown_filepath:
@@ -605,6 +603,8 @@ class N10NoteProcessor:
             except:
                 pass
 
+        full_html = markdown_processor().markdown_to_full_html(self.normalized_lines)
+        
         if self.html_filepath:
             try:
                 with open(self.html_filepath, 'w', encoding="utf-8") as html_file:

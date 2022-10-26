@@ -106,8 +106,8 @@ class markdown_processor:
         logging.debug("get images in dir: " + curdir)
         # curdir = os.path.abspath(curdir)
         for image in os.listdir(curdir):
-            # check if the image ends with png
-            if (image.endswith(".png")):
+            # check if the image ends with png or jpg
+            if image.endswith(".png") or img.endswith(".jpg"):
                 hashdigest = os.path.splitext(image)[0]
                 logging.debug("found image file: " + image)
                 self.images_dict[hashdigest] = image
@@ -263,7 +263,7 @@ class markdown_processor:
 
     thebrain_text_color_re = regex.compile(r':[{](?P<text>.*?):[(]style=&quot;(?P<style>.*?)&quot;[)]:[}]:')
 
-    def process_raw_html_extras(self, raw_html):
+    def process_html_body_extras(self, raw_html):
         processed_html = []
 
         for line in raw_html.splitlines():
@@ -271,7 +271,7 @@ class markdown_processor:
         
         return "\n".join(processed_html)
 
-    def markdown_to_raw_html(self, markdown_lines):
+    def markdown_to_html_body(self, markdown_lines):
         """
         convert markdown to html with my own extenstions
 
@@ -304,26 +304,39 @@ class markdown_processor:
             processed_markdown_lines.append(line)
 
         raw_html = self.render_markdown_with_parser(processed_markdown_lines)
-        return self.process_raw_html_extras(raw_html)
+        return self.process_html_body_extras(raw_html)
 
     common_css_style = """
         body {
             font-size: 12pt;
         }
+        /*
+        img {
+			width:100%;
+		}
+        */
         table {
             display: table;
-            margin-bottom: 1em;
+            /* margin-bottom: 1em; */
             border-collapse: collapse;
         }
         th, td {
-            padding: 5px 10px;
+            padding: 5px 8px;
         }
         table thead th {
             font-weight: bold;
-            border: 1px solid;
+            text-align: left;
+            /* border: 1px solid; */
+			border-top: 2px solid #000; /* 表头首行上方粗线 */
+			border-bottom: 1px solid #000; /* 表头首行下方细线 */
         }
+		/*
         table tbody td {
             border: 1px solid;
+        }
+		*/
+		table > tbody > tr:last-child {
+            border-bottom: 2px solid #000; /* 表体末行下方粗线 */
         }
     """
 
@@ -350,23 +363,27 @@ class markdown_processor:
         if not markdown_lines:
             return None
 
-        html_body = self.markdown_to_raw_html(markdown_lines)
+        html_body = self.markdown_to_html_body(markdown_lines)
         if not html_body:
             return None
 
-        full_html = '<html><head><meta charset="UTF-8">'
+        full_html = '<html><head><meta charset="UTF-8">\n'
         
         if self.has_latex_equations:
             full_html += "\n" + self.katex_stylesheet + "\n"
 
-        full_html += "<style>"
+        full_html += "<style>\n"
         full_html += self.common_css_style
         if self.mode == markdown_processor_mode.ONENOTE:
             full_html += self.onenote_css_style
         else:
             full_html += self.common_blockquote_css_style
-        full_html += "</style>"
-        full_html += "</head><body>\n" + html_body + "\n</body></html>"
+        full_html += "</style>\n"
+        full_html += "</head><body>\n"
+        full_html += '<!-- <div  style="margin:0 auto;width:18.46cm;"> -->\n'
+        full_html += html_body
+        full_html += '\n<!-- </div> -->\n'
+        full_html += "</body></html>"
 
         return full_html
 
@@ -407,7 +424,7 @@ class markdown_processor:
             self.markdown_filepath = markdown_filepath
 
         with open(markdown_filepath, 'r', encoding='utf-8') as m:
-            self.markdown_to_raw_html(m.readlines())
+            self.markdown_to_html_body(m.readlines())
 
         if not self.inline_latex_equations and not self.block_latex_equations:
             return
