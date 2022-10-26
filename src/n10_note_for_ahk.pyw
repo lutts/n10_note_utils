@@ -12,7 +12,7 @@ from markdown_utils import markdown_processor
 from n10_note import N10NoteProcessor
 
 def main():
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    # logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     args = sys.argv[1:]
 
     if not args:
