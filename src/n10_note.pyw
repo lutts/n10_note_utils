@@ -333,7 +333,7 @@ class N10NoteProcessor:
 
     heading_whitespaces_re = regex.compile(r" +")
     emphasis_normalizer_re = regex.compile(
-        r'(?P<asterisks>\*{1,2})\s*(?P<word1>[^*].*?)\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>.*?)\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)')
+        r'(?P<asterisks>\*{1,2})\s*(?P<word1>[\u4e00-\u9fd5]+?)\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>.*?)\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)(?=[\u4e00-\u9fd5])')
     space_after_punc_re = regex.compile(
         r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'0123456789\s]+)')
     # CJK Unified Ideographs: 4E00 — 9FFF, 但后面有几个没用，只到9fd5

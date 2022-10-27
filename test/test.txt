@@ -140,25 +140,24 @@ s5 = "（english）"
 
 s6 = "（中文）"
 
-这**是(is)**一个苹果。
-
-这*是(is)*一个苹果。
-
-这**是[is]**一个苹果。
-
-这**是【is】**一个苹果。
-
-这**是《is》**一个苹果。
-
-这**是<is>**一个苹果。
-
-这**是（is）**一个苹果。
-
-这**是**(**is**)一个苹果。
-
-**心理学(psychology)**是关于**个体**的**行为**及**心智（mind）过程**的**科学研究**
-
-**reference list:** Reference list entries should have a hanging indent of 0.5 in
+* 这**是(is)**一个苹果。
+* 这*是(is)*一个苹果。
+* 这**是[is]**一个苹果。
+* 这**是【is】**一个苹果。
+* 这**是《is》**一个苹果。
+* 这**是<is>**一个苹果。
+* 这**是（is）**一个苹果。
+* 这**是**(**is**)一个苹果。
+* The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)**测试:
+* The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)**。
+* The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)**
+* The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)** vs. others
+* The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)*测试:
+* The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)*。
+* The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)*
+* The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)* vs. others
+* **心理学(psychology)**是关于**个体**的**行为**及**心智（mind）过程**的**科学研究**
+* **reference list:** Reference list entries should have a hanging indent of 0.5 in
  
 中文:【不要加空格】
  
