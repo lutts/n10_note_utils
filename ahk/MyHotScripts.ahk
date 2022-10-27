@@ -3,6 +3,8 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
+; SetCapsLockState, AlwaysOff
+
 quote(string) {
     return """" string """"
 }
@@ -204,6 +206,15 @@ NormalizedPaste()
 }
 
 CapsLock &  v:: NormalizedPaste()	
+
+NormalizedPasteTheBrain()
+{
+	fullexec_path := get_my_utils_path("src\normalize_clipboard_thebrain.pyw")
+	RunWait, pythonw %fullexec_path%
+	send, ^v
+}
+
+CapsLock &  b:: NormalizedPasteTheBrain()
 
 RunSupermemo()
 {
