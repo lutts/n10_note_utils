@@ -67,7 +67,7 @@ class NoteBlock:
         last_char = self.cur_line[-1]
         if last_char == "-":
             self.cur_line = self.cur_line[:-1]
-        elif last_char == '’' or last_char == '”' or ord(last_char) < 128:
+        elif last_char == '\u2019' or last_char == '\u201d' or ord(last_char) < 128:
             # use space to join english lines
             self.cur_line += " "
         
@@ -329,18 +329,9 @@ class N10NoteProcessor:
     code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
     front_matter_re = regex.compile(r'-{3,}')
 
-    english_punctuation = r'-!"#$%&\'()*+,./:;<=>?@\[\\\]^_`{|}~'
-
     heading_whitespaces_re = regex.compile(r" +")
     emphasis_normalizer_re = regex.compile(
         r'(?P<asterisks>\*{1,2})\s*(?P<word1>[\u4e00-\u9fd5]+?)\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>.*?)\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)(?=[\u4e00-\u9fd5])')
-    space_after_punc_re = regex.compile(
-        r'(?P<punc>\.|,|;|:|\?|\!)(?P<word>[^' + english_punctuation + hanzi.punctuation + r'0123456789\s]+)')
-    # CJK Unified Ideographs: 4E00 — 9FFF, 但后面有几个没用，只到9fd5
-    # 中英文之间需要增加空格: 中 chinese 文
-    # 中文与数字之间需要增加空格: 花了 5000 元
-    # 基于这两点，下面的正则表达式只有在中文之间存在空格时才会去掉空格，如果中文字符后面是数字、英文、标点之类的，则不会
-    space_around_chinese_char_re = regex.compile(r'(?P<zhchar>[\u4e00-\u9fd5])(?:\s+)(?=[\u4e00-\u9fd5])')
     # regular expression to match markdown link ang image link
     # (?P<text_group>
     #   \[
@@ -371,11 +362,126 @@ class N10NoteProcessor:
     img_link_re = regex.compile(
         r'(!?)(?P<text_group>\[(?>[^\[\]]+|(?&text_group))*\])(?P<left_paren>\()(?P<left_angle><)?(?:(?P<url>(?(left_angle).*?>|\S*?))(?:(?P<title_begin>[ ]")(?P<title>(?:[^"]|(?<=\\)")*?)(?P<title_end>"))?(?P<right_paren>\)))')
     double_brace_re = regex.compile(r'(?P<b>\{|\})')
-    space_around_left_paren_re = regex.compile(r'(?:\s*?)(\s?[(])(?:\s*)')
-    space_around_right_paren_re = regex.compile(r'(?:\s*)([)]\s?)(?:\s*?)')
+
+    english_punctuation = r'-!"#$%&\'()*+,./:;<=>?@\[\\\]^_`{|}~'
+    punctuation_and_numbers = english_punctuation + hanzi.punctuation + '0123456789'
+
+    def is_chinese_char(self, char):
+        if '\u4e00' < char and char < '\u9fd5':
+            return True
+
+    def _normalize_line(self, line):
+        # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
+        # 多个连续的空格只保留一个，同时也保证后续的处理不会碰到连续的空格
+        # 这一操作还有几个副作用:
+        # 1. 行首和行尾巴的空白字符会被去掉
+        # 2. tab等空白字符都会被去掉，整个字符串中的空白字符就只剩下英文空格了
+        line = " ".join(line.split())
+
+        line_len = len(line)
+        if line_len <= 2:
+            return line
+
+        chars = [line[0]]
+        skip_next_char = False
+
+        for idx in range(1, line_len-1):
+            if skip_next_char:
+                skip_next_char = False
+                continue
+
+            prev_char = chars[-1]
+            cur_char = line[idx]
+            next_char = line[idx + 1]
+            if idx + 2 < line_len:
+                next_next_char = line[idx + 2]
+            else:
+                next_next_char = None
+
+            # 如果是空格，要判断是否需要删掉
+            if cur_char == ' ':
+                # CJK Unified Ideographs: 4E00 — 9FFF, 但后面有几个没用，只到9fd5
+                # 中英文之间需要增加空格: 中 chinese 文
+                # 中文与数字之间需要增加空格: 花了 5000 元
+                # 基于这两点，只有在中文之间存在空格时才会去掉空格，如果中文字符后面是数字、英文、标点之类的，则不会
+                # test string: Hey Jane, 周 末 要 不要一起 吃早茶，叫上 Jennie 和 Jone, 预计花费 100 元
+                if self.is_chinese_char(prev_char) and self.is_chinese_char(next_char):
+                    # 删除
+                    continue
+            
+                # 中文标点前后都不需要空格
+                if prev_char in hanzi.punctuation: 
+                    continue
+
+                if next_char in hanzi.punctuation:
+                    continue
+
+                if prev_char == ' ':
+                    continue
+
+                # 英文小括号（暂时不考虑中括号、大括号、尖括号，太复杂了）
+                if prev_char == '(':
+                    continue
+                if next_char == ')':
+                    continue
+
+                chars.append(cur_char)
+            elif cur_char in ['.', ',', ';', ':', '?', '!']:
+                chars.append(cur_char)
+                if next_char != ' ' and next_char not in self.punctuation_and_numbers:
+                    chars.append(' ')
+            elif cur_char in ['\u2018', '\u201c']:  # left single/double quotation mark
+                next_nonspace_char = next_char
+                if next_char == ' ':
+                    next_nonspace_char = next_next_char
+                    skip_next_char = True
+
+                if not self.is_chinese_char(next_nonspace_char) and next_nonspace_char not in hanzi.punctuation:
+                    if prev_char != ' ':
+                        chars.append(' ')
+                    if cur_char == '\u2018':
+                        chars.append("'")
+                    else:
+                        chars.append('"')
+                else:
+                    chars.append(cur_char)
+            elif cur_char in ['\u2019', '\u201d']: # right single/double quotation mark
+                if not self.is_chinese_char(prev_char) and prev_char not in hanzi.punctuation:
+                    if cur_char == '\u2019':
+                        chars.append("'")
+                    else:
+                        chars.append('"')
+                else:
+                    chars.append(cur_char)
+            elif cur_char == '（':  # 中文左括号
+                next_nonspace_char = next_char
+                if next_char == ' ':
+                    next_nonspace_char = next_next_char
+                    skip_next_char = True
+
+                if not self.is_chinese_char(next_nonspace_char) and next_nonspace_char not in hanzi.punctuation:
+                    if prev_char != ' ':
+                        chars.append(' ')
+
+                    chars.append('(')
+                else:
+                    chars.append(cur_char)
+            elif cur_char == '）': # 中文右括号
+                if not self.is_chinese_char(prev_char) and prev_char not in hanzi.punctuation:
+                    chars.append(')')
+                else:
+                    chars.append(cur_char)
+            else:
+                chars.append(cur_char)
+        
+        chars.append(line[-1])
+        return ''.join(chars)
 
     def normalize_line(self, line):
         logging.debug("normalize line: " + line)
+
+        line = line.replace('\0', '')
+
         heading_spaces = ""
         m = self.heading_whitespaces_re.match(line)
         if m:
@@ -384,54 +490,27 @@ class N10NoteProcessor:
         # indented code block, return the orignal line
         logging.debug("heading space len: " + str(len(heading_spaces)))
 
-        # markdownlint: no trailing spaces
-        # 行首的空格在heading_spaces里保存着
-        striped_line = line.strip()
-        
-        striped_line = striped_line.replace('\0', '')
-
         # 避免随后的处理误伤link/img link
-        image_or_links = self.img_link_re.findall(striped_line)
+        image_or_links = self.img_link_re.findall(line)
         if image_or_links:
             image_or_links = ["".join(i) for i in image_or_links]
             logging.debug("found img or links: " + str(image_or_links))
-            striped_line = self.double_brace_re.sub(r'\1\1', striped_line)
-            striped_line = self.img_link_re.sub('{}', striped_line)
+            line = self.double_brace_re.sub(r'\1\1', line)
+            line = self.img_link_re.sub('{}', line)
 
-        # Replaces all curly quotes(‘, ’, “, ”) in a document with straight quotes(', ").
-        striped_line = regex.sub(r'‘(?=[^\u4e00-\u9fd5])', "'", striped_line)
-        striped_line = regex.sub(r'(?<=[^\u4e00-\u9fd5])’', "'", striped_line)
-        striped_line = regex.sub(r'“(?=[^\u4e00-\u9fd5])', '"', striped_line)
-        striped_line = regex.sub(r'(?<=[^\u4e00-\u9fd5])”', '"', striped_line)
+        line = self._normalize_line(line)
 
-        # 中文括号转英文括号
-        striped_line = regex.sub(r'（(?=[^\u4e00-\u9fd5])', '(', striped_line)
-        striped_line = regex.sub(r'(?<=[^\u4e00-\u9fd5])）', ')', striped_line)
-        # 去掉括号前或后面的空格
-        striped_line = self.space_around_left_paren_re.sub(r'\1', striped_line)
-        striped_line = self.space_around_right_paren_re.sub(r'\1', striped_line)
+        # logging.debug("after __normalize_line: " + line)
 
-        # 去掉中文字符之间的空格
-        # test string: Hey Jane, 周 末 要 不要一起 吃早茶，叫上 Jennie 和 Jone, 预计花费 100 元
-        striped_line = self.space_around_chinese_char_re.sub(r'\g<zhchar>', striped_line)
-
-        # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
-        # 多个连续的空格只保留一个
-        striped_line = " ".join(striped_line.split())
-
-        # add a space after some punctuations if there's no one
-        striped_line = self.space_after_punc_re.sub(r'\1 \2', striped_line)
-
-        striped_line = self.emphasis_normalizer_re.sub(
-            r'\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', striped_line)
+        line = self.emphasis_normalizer_re.sub(
+            r'\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', line)
 
         if image_or_links:
-            striped_line = striped_line.format(*image_or_links)
+            line = line.format(*image_or_links)
 
         logging.debug("normalized result: " +
-                      heading_spaces + striped_line + "\n")
-        return heading_spaces + striped_line + "\n"
-
+                      heading_spaces + line + "\n")
+        return heading_spaces + line + "\n"
 
     def get_block_lines(self, block):
         if block.is_empty():

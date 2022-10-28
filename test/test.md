@@ -9,20 +9,14 @@
 "tags": ["markdown+math","VSCode","static page","publication","LaTeX","math"]
 ---
 
-# 摘自: 心理学与生活 - 19th - 理查德·格里格-人民邮电出版社 (2014). pdf
+# 标题
 
-(p36)
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eu venenatis quam. Vivamus euismod eleifend metus vitae pharetra. In vel tempor metus. Donec dapibus feugiat euismod. Vivamus interdum tellus dolor. Vivamus blandit eros et imperdiet auctor. Mauris sapien nunc, condimentum a efficitur non, elementum ac sapien. Cras consequat turpis non augue ullamcorper, sit amet porttitor dui interdum.
-
-Sed laoreet luctus erat at rutrum. Proin velit metus, luctus in sapien in, tincidunt mattis ex. Praesent venenatis orci at sagittis eleifend. Nulla facilisi. In feugiat vehicula magna iaculis vehicula. Nulla suscipit tempor odio a semper. Donec vitae dapibus ipsum. Donec libero purus, convallis eu efficitur id, pulvinar elementum diam. Maecenas mollis blandit placerat. Ut gravida pellentesque nunc, in eleifend ante convallis sit amet.
-
-Cells can vary in width and do not need to be perfectly aligned within columns. There must be at least three hyphens in each column of the header row.
+### 测试表格及表格内的多行支持
 
 | Command | Description |
 | --- | --- |
 | git status | List all new or modified files |
-| git diff | To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].{nl}{nl}* [x] #739{nl}* [ ] https://github. com/octo-org/octo-repo/issues/740{nl}* [ ] Add delight to the experience when all tasks are complete : tada:{nl} {nl}If a task list item description begins with a parenthesis, you'll need to escape it with \: |
+| git diff | To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].{nl}{nl}* [x] #739{nl}* [ ] [octo-org](https://github.com/octo-org/octo-repo/issues/740){nl}* [ ] Add delight to the experience when all tasks are complete : tada:{nl} {nl}If a task list item description begins with a parenthesis, you'll need to escape it with \: |
 
 You can align text to the left, right, or center of a column by including colons : to the left, right, or on both sides of the hyphens within the header row.
 
@@ -40,6 +34,8 @@ To include a pipe | as content within your cell, use a \ before the pipe:
 
 command-line usage
 
+## 测试task list
+
 To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].
 
 * [x] #739
@@ -50,98 +46,36 @@ If a task list item description begins with a parenthesis, you'll need to escape
 
 * [ ] \(Optional) Open a followup issue
 
+## 测试strikethought
+
 Parse ~~strikethrough~~ formatting
 
-![x](<./test    image.jpeg>)
+## fenced code
 
-![x](<./test    image.jpeg> "image title")
+```
+def main():
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    args = sys.argv[1:]
 
-![x](./test_image.jpg)
+    if not args:
+        logging.debug('no file selected\n')
+        sys.exit(1)
 
-![x](./test_image.jpg "image title")
+    filename = args[0]
 
-[link](http://google.com)
+    logging.debug("send " + filename + " to onenote")
+    send_markdown(filename, markdown_processor_mode.ONENOTE)
 
-[link](<http://google.com/test page>)
 
-[link](http://google.com "google")
+# Main body
+if __name__ == '__main__':
+    main()
+```
 
-[link](<http://google.com/test page> "google test page")
+## 测试对theBrain文字颜色和底色的支持
 
-complex_link = r'[Link text with [brackets] inside](http://www.example.com "My \"title\"")'
+some text  :{**Red on yellow**:(style="background-color:#ffff00;color:#aa0000"):}: with others :{**Yellow on red**:(style="background-color:#aa0000;color:#ffff00"):}: different.
 
-complex_img = r'![Link text with [brackets] inside](http://www.example.com/haha.png "My \"title\"")'
+some text  :{*Red on yellow*:(style="background-color:#ffff00;color:#aa0000"):}: with color
 
-img_as_link_text = r'[![img](xxx/yyy.png)](http://google.com "My \"title\"")'
-
-complex_link_angle = r'[Link text with [brackets] inside](<http://www.example.com> "My \"title\"")'
-
-complex_img_angle = r'![Link text with [brackets] inside](<http://www.example.com/haha.png> "My \"title\"")'
-
-img_as_link_text_angle = r'[![img](xxx/yyy.png)](<http://google.com> "My \"title\"")'
-
-bad_link = '[link](<http://google. com "title")'
-
-multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [![img link](haha.png)](<http://google.com> "google") or img ![x](<./hehe.png> "hehe"). that is it'
-
-some text with {braces} {} in it
-
-这**是**(**is**)一个苹果。
-
-这*是*(*is*)一个苹果。
-
-这**是**[**is**]一个苹果。
-
-这**是**【**is**】一个苹果。
-
-这**是**《**is**》一个苹果。
-
-这**是**<**is**>一个苹果。
-
-这**是**（**is**）一个苹果。
-
-这**是**(**is**)一个苹果。
-
-**心理学**(**psychology**)是关于**个体**的**行为**及**心智（mind）过程**的**科学研究**
-
-**reference list:** Reference list entries should have a hanging indent of 0. 5 in
-
-中文:【不要加空格】
-
-英文:[紧跟标点也不要加空格]
-
-a. string, has; no: space? after punctuation! another, string; has: space? after puctuation! ok!
-
-    test    multiple      space.
-below is a code block:
-
-    this         is      a   code block 	should not normalize
-after code block
-
-`````
-hoho    xxx
-````
-      haha
-`````test
-`````
-fenced code block is not touched
-
-this is a block quote
-
-> Sed laoreet luctus erat at rutrum. Proin velit metus, luctus in sapien in, tincidunt mattis ex.
-> Praesent venenatis orci at sagittis eleifend. Nulla facilisi. In feugiat vehicula magna iaculis
-
-a formula bellow
-
-$$\frac{1}{\left(\sqrt{\phi\sqrt{5}}-\phi\right)e^{\frac{2}{5}\pi}}=
- 1+\frac{e^{-2\pi}} {
-   1+\frac{e^{-4\pi}} {
-     1+\frac{e^{-6\pi}} {
-       1+\frac{e^{-8\pi}} {
-         1+\cdots
-       }
-     }
-   }
-}$$
-
-after latex formula
+some text <span style="background-color:#ffff00;color:#aa0000">Red on yellow</span> with color

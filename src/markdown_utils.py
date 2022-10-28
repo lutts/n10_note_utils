@@ -298,7 +298,7 @@ class markdown_processor:
                 processed_markdown_lines.append(line)
                 continue
 
-            line = line.replace('[x]', '[]')
+            line = line.replace('![x]', '![]')
 
             line = self.process_newline_in_table_cell(line)
             processed_markdown_lines.append(line)
