@@ -310,11 +310,6 @@ class markdown_processor:
         body {
             font-size: 12pt;
         }
-        /*
-        img {
-			width:100%;
-		}
-        */
         table {
             display: table;
             /* margin-bottom: 1em; */
@@ -359,17 +354,10 @@ class markdown_processor:
 
     katex_stylesheet='<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">'
 
-    def markdown_to_full_html(self, markdown_lines):
-        if not markdown_lines:
-            return None
-
-        html_body = self.markdown_to_html_body(markdown_lines)
-        if not html_body:
-            return None
-
+    def html_body_to_full_html(self, html_body, for_inline=False):
         full_html = '<html><head><meta charset="UTF-8">\n'
         
-        if self.has_latex_equations:
+        if not for_inline and self.has_latex_equations:
             full_html += "\n" + self.katex_stylesheet + "\n"
 
         full_html += "<style>\n"
@@ -378,24 +366,39 @@ class markdown_processor:
             full_html += self.onenote_css_style
         else:
             full_html += self.common_blockquote_css_style
+        
+        if not for_inline:
+            full_html += "\nimg { width:100%; }\n"
+
         full_html += "</style>\n"
         full_html += "</head><body>\n"
-        full_html += '<!-- <div  style="margin:0 auto;width:18.46cm;"> -->\n'
+        if not for_inline:
+            full_html += '<div  style="margin:0 auto;width:18.46cm;">\n'
         full_html += html_body
-        full_html += '\n<!-- </div> -->\n'
+        if not for_inline:
+            full_html += '\n</div>\n'
         full_html += "</body></html>"
 
         return full_html
 
-    def markdown_to_html_with_inline_style(self, markdown_lines):
-        html_body = self.markdown_to_full_html(markdown_lines)
+    def markdown_to_full_html(self, markdown_lines):
+        html_body = self.markdown_to_html_body(markdown_lines)
         if not html_body:
             return None
 
-        inliner = css_inline.CSSInliner(remove_style_tags=True)
-        html_body = inliner.inline(html_body)
+        return self.html_body_to_full_html(html_body)
 
-        return html_body
+    def markdown_to_html_with_inline_style(self, markdown_lines):
+        html_body = self.markdown_to_html_body(markdown_lines)
+        if not html_body:
+            return None
+        
+        full_html = self.html_body_to_full_html(html_body, True)
+
+        inliner = css_inline.CSSInliner(remove_style_tags=True)
+        html_body = inliner.inline(full_html)
+
+        return full_html
 
     def markdown_to_html_file(self, markdown_lines, html_filepath):
         if not html_filepath:
