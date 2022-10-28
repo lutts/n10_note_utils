@@ -76,7 +76,9 @@ normal text
 
 > blockquote par1
 >
-> blockquote par2
+>> blockquote par2
+>
+> blockquote par3
 
 * another list
   * item1
@@ -139,7 +141,10 @@ def normlize_clipboard():
                 if not q:
                     line = '\t' * level + content + '\n'
                 else:
-                    line = '> ' * (level + 1) + q.group('content') + '\n'
+                    quote_marker = q.group('quote_marker')
+                    quote_marker = quote_marker.replace('>', '> ')
+                    quote_marker = ' '.join(quote_marker.split()) + ' '
+                    line = '> ' * level + quote_marker + q.group('content') + '\n'
                 
                 list_marker = list_markers[0:level]
                 

@@ -140,7 +140,7 @@ class N10NoteProcessor:
         self.in_math_context = False
     
     list_table_markers_re = regex.compile(r'(?P<markdown_marker>[-*+|]|[0-9]+\.)[ ]')
-    blockquote_re = regex.compile(r'>([ ]|$)')
+    blockquote_re = regex.compile(r'(?P<quote_marker>>(?:$|[> ]*))')
     markdown_header_re = regex.compile(r'[ ]{,3}(?P<header_marker>#{1,6})[ ]')
 
     def line_is_markdown(self, line):
