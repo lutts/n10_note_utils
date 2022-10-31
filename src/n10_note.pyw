@@ -374,7 +374,7 @@ class N10NoteProcessor:
         # test string: 'a.string,has;no:space?after   punctuation!another, string; has: space? after puctuation! ok!'
         # 多个连续的空格只保留一个，同时也保证后续的处理不会碰到连续的空格
         # 这一操作还有几个副作用:
-        # 1. 行首和行尾巴的空白字符会被去掉
+        # 1. 行首和行尾的空白字符会被去掉
         # 2. tab等空白字符都会被去掉，整个字符串中的空白字符就只剩下英文空格了
         line = " ".join(line.split())
 
@@ -382,21 +382,29 @@ class N10NoteProcessor:
         if line_len <= 2:
             return line
 
-        chars = [line[0]]
+        chars = []
         skip_next_char = False
 
-        for idx in range(1, line_len-1):
+        for idx in range(0, line_len):
             if skip_next_char:
                 skip_next_char = False
                 continue
 
-            prev_char = chars[-1]
+            if idx == 0:
+                prev_char = ' '
+            else:
+                prev_char = chars[-1]
             cur_char = line[idx]
-            next_char = line[idx + 1]
+
+            if idx + 1 < line_len:
+                next_char = line[idx + 1]
+            else:
+                next_char = ' '
+
             if idx + 2 < line_len:
                 next_next_char = line[idx + 2]
             else:
-                next_next_char = None
+                next_next_char = ' '
 
             # 如果是空格，要判断是否需要删掉
             if cur_char == ' ':
@@ -473,8 +481,7 @@ class N10NoteProcessor:
                     chars.append(cur_char)
             else:
                 chars.append(cur_char)
-        
-        chars.append(line[-1])
+
         return ''.join(chars)
 
     def normalize_line(self, line):
