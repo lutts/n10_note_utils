@@ -75,6 +75,8 @@ def save_image(seq_no, img):
 
 
 if __name__ == '__main__':
+    temp_notes_dir = get_temp_notes_dir()
+    print('start notes monitor on temp notes directory: ' + str(temp_notes_dir))
     monitor = py_clipboard_monitor(
         on_text=append_note,
         on_image=save_image)
