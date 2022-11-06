@@ -398,7 +398,10 @@ class markdown_processor:
         inliner = css_inline.CSSInliner(remove_style_tags=True)
         html_body = inliner.inline(full_html)
 
-        return full_html
+        r = regex.compile(r'(<html>.*?<body[^>]*>|</body>.*?</html>)', regex.DOTALL)
+        html_body = r.sub('', html_body)
+
+        return html_body.strip()
 
     def markdown_to_html_file(self, markdown_lines, html_filepath):
         if not html_filepath:

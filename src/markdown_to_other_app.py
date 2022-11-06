@@ -11,7 +11,7 @@ import urllib.parse
 
 from PIL import Image
 from markdown_utils import markdown_processor, markdown_processor_mode
-from HTMLClipboard import PutHtml
+from clipboard_utils import clipboard_util
 import settings
 
 
@@ -123,6 +123,6 @@ def send_markdown(filename: str, mode: markdown_processor_mode):
 
         html_body = add_prefix_to_local_images(html_body, mode, os.path.dirname(filename))
         
-        PutHtml(html_body, "".join(markdown_lines))
+        clipboard_util.put_html(html_body, "".join(markdown_lines))
     except Exception as e:
         logging.debug("exception: " + str(e))

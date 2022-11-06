@@ -7,18 +7,46 @@ import os
 import json
 
 
-def get_webroot():
+def _get_key_value(key):
     script_path = os.path.dirname( __file__ )
     settings_file = os.path.join(script_path, "settings.json")
     
     try:
         with open(settings_file, 'r') as f:
             setting_json = json.load(f)
-            return setting_json.get("webroot")
+            return setting_json.get(key)
     except:
         pass
     
     return None
+
+
+def get_webroot():
+    webroot = _get_key_value("webroot")
+    if webroot:
+        try:
+            if not os.path.exists(webroot):
+                os.makedirs(webroot)
+        except:
+            webroot = None
+        
+    return webroot
+
+
+def get_temp_notes_dir():
+    temp_notes_dir = _get_key_value("temp_notes_dir")
+    if temp_notes_dir:
+        try:
+            if not os.path.exists(temp_notes_dir):
+                os.makedirs(temp_notes_dir)
+        except:
+            temp_notes_dir = None
+    
+    return temp_notes_dir
+
+
+def get_tesseract_cmd():
+    return _get_key_value("tesseract_cmd")
 
 
 def get_imgroot(img_dir):

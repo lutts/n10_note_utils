@@ -8,26 +8,15 @@ import pyperclip
 import unicodedata
 
 from markdown_utils import markdown_processor, markdown_processor_mode
-from HTMLClipboard import GetHtml, PutHtml, DumpHtml
+from clipboard_utils import clipboard_util
 
 
 def markdown_to_clipboard(markdown_lines):
     html_body = markdown_processor().markdown_to_html_with_inline_style(markdown_lines)
-    PutHtml(html_body, "".join(markdown_lines))
+    clipboard_util.put_html(html_body, "".join(markdown_lines))
 
 
 if __name__ == "__main__":
-    def test_SimpleGetPutHtml():
-        data = "<p>Writing to the clipboard is <strong>太简单了</strong> with this code.</p>"
-        PutHtml(data)
-        if GetHtml() == data:
-            print("passed")
-        else:
-            print("failed")
-
-    # test_SimpleGetPutHtml()
-    # DumpHtml()
-
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     logging.debug("markdown to clipboard")
     markdown_text = pyperclip.paste()

@@ -15,7 +15,7 @@ from collections import OrderedDict
 import uuid
 
 from markdown_utils import markdown_processor, uniqe_name
-from HTMLClipboard import PutHtml
+from clipboard_utils import clipboard_util
 import hanzi
 
 
@@ -700,7 +700,7 @@ class N10NoteProcessor:
 
         inliner = css_inline.CSSInliner(remove_style_tags=True)
         inlined_html = inliner.inline(full_html)
-        PutHtml(inlined_html, joined_markdown_text)
+        clipboard_util.put_html(inlined_html, joined_markdown_text)
 
     def get_images_in_directory(self):
         if not self.n10_notes_filepath:
@@ -771,7 +771,7 @@ class N10NoteProcessor:
 
     
     HW_NOTES_HEADER_RE = regex.compile(
-        r"(?P<year>[0-9]{4})年(?P<month>[0-9]{2})月(?P<day>[0-9]{2})日 (?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})  摘自<<(?P<filename>.*?)>> 第(?P<page_number>[0-9]+)页")
+        r"(?P<year>[0-9]{4})年(?P<month>[0-9]{2})月(?P<day>[0-9]{2})日\s+(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})\s+摘自<<(?P<filename>.*?)>>\s+第(?P<page_number>[0-9]+)页")
 
     def process_head_line(self, notes_header, line, orig_line):
         logging.debug("header line: " + line)
