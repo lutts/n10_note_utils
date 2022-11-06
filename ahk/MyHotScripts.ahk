@@ -225,5 +225,14 @@ RunSupermemo()
 	Run, python -m http.server -d "D:\Data\supermemo\collections\webroot"  9999
 }
 
-CapsLock &  s:: RunSupermemo()	
+CapsLock &  s:: RunSupermemo()
+
+StartNoteMonitor()
+{
+	fullexec_path := get_my_utils_path("src\notes_monitor.py")
+	Run, python %fullexec_path%
+}
+
+CapsLock &  n:: StartNoteMonitor()
+
 
