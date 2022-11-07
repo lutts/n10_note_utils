@@ -235,4 +235,23 @@ StartNoteMonitor()
 
 CapsLock &  n:: StartNoteMonitor()
 
+GenerateSupermemoQA()
+{
+	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
+	if (SelectedFile = "")
+	{
+		return
+	}
+	else
+	{
+		 ;MsgBox, The user selected the following:`n%SelectedFile%
+
+		 quoted_selectedfile := quote(SelectedFile)
+
+		fullexec_path := get_my_utils_path("src\supermemo_qa_generator.py")
+		RunWait, pythonw %fullexec_path% %quoted_selectedfile%
+	}
+}
+CapsLock &  q:: GenerateSupermemoQA()
+
 

@@ -52,7 +52,7 @@ Parse ~~strikethrough~~ formatting
 
 ## fenced code
 
-```
+```python
 def main():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     args = sys.argv[1:]
