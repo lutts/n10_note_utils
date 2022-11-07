@@ -88,7 +88,6 @@ def convert_html_to_qa_text(title, html_body):
     q_re = re.compile(r'<p>q: ')
     a_re = re.compile(r'<p>a: ')
     hr_re = re.compile('<hr\s*/?>')
-    fenced_code_begin_re = re.compile(r'<pre><code')
 
     if title:
         title = '<strong><font color=blue>' + title + ' : </font></strong>'
