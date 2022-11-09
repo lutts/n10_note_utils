@@ -29,7 +29,7 @@ def get_note_header():
         last_page_number = page_number
     else:
         page_number = last_page_number
-    print("page_number: " + page_number)
+    print("page_number: " + str(page_number))
 
     filename_cap = ImageGrab.grab(bbox=(586, 0, 2641, 57))
     filename_ocr = pytesseract.image_to_string(
@@ -44,7 +44,7 @@ def get_note_header():
 
     cur_time = time.strftime('%Y年%m月%d日 %H:%M:%S', time.localtime())
 
-    return cur_time + ' 摘自<<' + filename + '>> 第' + page_number + '页\n'
+    return cur_time + ' 摘自<<' + filename + '>> 第' + str(page_number) + '页\n'
 
 
 def append_note(seq_no, note):
@@ -76,7 +76,7 @@ def save_image(seq_no, img):
 
 if __name__ == '__main__':
     temp_notes_dir = get_temp_notes_dir()
-    print('start notes monitor on temp notes directory: ' + str(temp_notes_dir))
+    print('start notes monitor(' + str(os.getpid()) + ') on temp notes directory: ' + str(temp_notes_dir))
     monitor = py_clipboard_monitor(
         on_text=append_note,
         on_image=save_image)

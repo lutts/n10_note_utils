@@ -35,32 +35,46 @@ class py_clipboard_monitor:
         :return: window hwnd
         """
         wc = win32gui.WNDCLASS()
-        wc.lpfnWndProc = self._process_message
+        wc.lpfnWndProc = {0x031D: self.on_clipboard_update}
         wc.lpszClassName = self.__class__.__name__
         wc.hInstance = win32api.GetModuleHandle(None)
         class_atom = win32gui.RegisterClass(wc)
-        return win32gui.CreateWindow(class_atom, self.__class__.__name__, 0, 0, 0, 0, 0, 0, 0, wc.hInstance, None)
+        return win32gui.CreateWindow(
+            wc.lpszClassName,
+            "py clipboard monitor",
+            0,
+            0, 0, 0, 0,
+            win32con.HWND_MESSAGE,
+            0,
+            wc.hInstance,
+            None)
+
+    def on_clipboard_update(self, hwnd: int, msg: int, wparam: int, lparam: int):
+        print("update message received: " +
+                str(win32clipboard.GetClipboardSequenceNumber()))
+        if self._on_update:
+            self._on_update()
+
+        seq_no, clips = self._get_clipboard_content()
+
+        for clip in clips:
+            if clip[0] == 'text' and self._on_text:
+                self._on_text(seq_no, clip[1])
+
+            if clip[0] == 'image' and self._on_image:
+                img = ImageGrab.grabclipboard()
+                self._on_image(seq_no, img)
+
+            if clip[0] == 'html' and self._on_html:
+                self._on_html(seq_no, clip[1])
+
+        return 0
 
     def _process_message(self, hwnd: int, msg: int, wparam: int, lparam: int):
         WM_CLIPBOARDUPDATE = 0x031D
+        print('msg: ' + hex(msg))
         if msg == WM_CLIPBOARDUPDATE:
-            print("update message received: " +
-                  str(win32clipboard.GetClipboardSequenceNumber()))
-            if self._on_update:
-                self._on_update()
-
-            seq_no, clips = self._get_clipboard_content()
-
-            for clip in clips:
-                if clip[0] == 'text' and self._on_text:
-                    self._on_text(seq_no, clip[1])
-
-                if clip[0] == 'image' and self._on_image:
-                    img = ImageGrab.grabclipboard()
-                    self._on_image(seq_no, img)
-
-                if clip[0] == 'html' and self._on_html:
-                    self._on_html(seq_no, clip[1])
+            self.on_clipboard_update(hwnd, msg, wparam, lparam)
 
         return 0
 
