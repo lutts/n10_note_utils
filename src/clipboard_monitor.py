@@ -52,18 +52,23 @@ class py_clipboard_monitor:
     def on_clipboard_update(self, hwnd: int, msg: int, wparam: int, lparam: int):
         print("update message received: " +
                 str(win32clipboard.GetClipboardSequenceNumber()))
-        if self._on_update:
-            self._on_update()
 
-        seq_no, clips = self._get_clipboard_content()
+        seq_no, clips, retcode = self._get_clipboard_content()
+        print("num clips: " + str(len(clips)))
+
+        if self._on_update:
+            self._on_update(seq_no, clips, retcode)
 
         for clip in clips:
             if clip[0] == 'text' and self._on_text:
                 self._on_text(seq_no, clip[1])
 
             if clip[0] == 'image' and self._on_image:
-                img = ImageGrab.grabclipboard()
-                self._on_image(seq_no, img)
+                try:
+                    img = ImageGrab.grabclipboard()
+                    self._on_image(seq_no, img)
+                except:
+                    pass
 
             if clip[0] == 'html' and self._on_html:
                 self._on_html(seq_no, clip[1])
@@ -84,6 +89,7 @@ class py_clipboard_monitor:
 
         seq_no = 0
         clips = []
+        retcode = 0
 
         cb_opened = False
         try:
@@ -120,11 +126,12 @@ class py_clipboard_monitor:
                     clips.append(('image', None))
         except:
             print("open clipboard failed")
+            retcode = -1
         finally:
             if cb_opened:
                 win32clipboard.CloseClipboard()
 
-        return (seq_no, clips)
+        return (seq_no, clips, retcode)
 
     def listen(self):
         def runner():
