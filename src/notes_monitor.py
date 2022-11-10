@@ -73,7 +73,7 @@ def get_note_header(page_number_cap, filename_cap):
 
     page_number_ocr = pytesseract.image_to_string(
         page_number_cap, lang='eng+chi_sim')
-    r = re.compile(r'(\d+)\s*\(\d+\s*/\s*\d+\s*\)')
+    r = re.compile(r'\(\s*(\d+)\s*/\s*\d+\s*\)')
     m = r.search(page_number_ocr)
     if m:
         page_number = m.group(1)
@@ -93,7 +93,7 @@ def get_note_header(page_number_cap, filename_cap):
         m = r.search(filename_ocr)
         if m:
             filename = m.group(1).strip()
-            
+
             ebook_filename_lock.acquire()
             ebook_filename = filename
             ebook_filename_lock.release()
