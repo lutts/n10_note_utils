@@ -12,7 +12,10 @@ from clipboard_monitor import py_clipboard_monitor
 
 
 last_page_number = 0
-last_filename = "untitled"
+
+ebook_filename = None
+ebook_filename_lock = threading.Lock()
+
 ignore_next_clip = False
 ignore_seqno = 0
 
@@ -43,8 +46,19 @@ def should_seqno_ignored(seqno):
 
 
 def grab_page_number_and_filename_image():
+    global ebook_filename
+
     page_number_cap = ImageGrab.grab(bbox=(104, 1858, 299, 1896))
-    filename_cap = ImageGrab.grab(bbox=(586, 0, 2641, 57))
+
+    ebook_filename_lock.acquire()
+    cur_filename = ebook_filename
+    ebook_filename_lock.release()
+
+    if not cur_filename:
+        filename_cap = ImageGrab.grab(bbox=(586, 0, 2641, 57))
+    else:
+        filename_cap = None
+
     print('page number and filename image grabed.')
 
     return (page_number_cap, filename_cap)
@@ -52,7 +66,7 @@ def grab_page_number_and_filename_image():
 
 def get_note_header(page_number_cap, filename_cap):
     global last_page_number
-    global last_filename
+    global ebook_filename
 
     # Path of tesseract executable
     pytesseract.pytesseract.tesseract_cmd = get_tesseract_cmd()
@@ -68,15 +82,24 @@ def get_note_header(page_number_cap, filename_cap):
         page_number = last_page_number
     print("page_number: " + str(page_number))
 
-    filename_ocr = pytesseract.image_to_string(
-        filename_cap, lang='eng+chi_sim')
-    r = re.compile(r'(.*?)\s*-\s*福\s*昕\s*阅\s*读\s*器')
-    m = r.search(filename_ocr)
-    if m:
-        filename = m.group(1).strip()
-    else:
-        filename = last_filename
-    print("filename: " + filename)
+    ebook_filename_lock.acquire()
+    filename = ebook_filename
+    ebook_filename_lock.release()
+
+    if not filename:
+        filename_ocr = pytesseract.image_to_string(
+            filename_cap, lang='eng+chi_sim')
+        r = re.compile(r'(.*?)\s*-\s*福\s*昕\s*阅\s*读\s*器')
+        m = r.search(filename_ocr)
+        if m:
+            filename = m.group(1).strip()
+            
+            ebook_filename_lock.acquire()
+            ebook_filename = filename
+            ebook_filename_lock.release()
+        else:
+            filename = "untitled"
+        print("filename: " + filename)
 
     cur_time = time.strftime('%Y年%m月%d日 %H:%M:%S', time.localtime())
 
