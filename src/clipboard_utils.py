@@ -253,9 +253,11 @@ class clipboard_util:
             data_list.append((win32con.CF_UNICODETEXT, text))
         clipboard_util.put_data(data_list)
 
+    @staticmethod
     def put_html(html, text=None):
         clipboard_util.put_html_fragements(fragments=[html], text=text)
 
+    @staticmethod
     def put_img(image):
         output = BytesIO()
         image.convert('RGB').save(output, 'BMP')

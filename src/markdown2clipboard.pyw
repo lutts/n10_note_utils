@@ -3,10 +3,6 @@
 
 import sys
 import logging
-import codecs
-import pyperclip
-import unicodedata
-
 from markdown_utils import markdown_processor, markdown_processor_mode
 from clipboard_utils import clipboard_util
 
@@ -19,7 +15,7 @@ def markdown_to_clipboard(markdown_lines):
 if __name__ == "__main__":
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     logging.debug("markdown to clipboard")
-    markdown_text = pyperclip.paste()
+    markdown_text = clipboard_util.get_text()
     #markdown_text = unicodedata.normalize('NFKD', markdown_text)
     markdown_text = markdown_text.replace(u'\xa0', u' ')
 

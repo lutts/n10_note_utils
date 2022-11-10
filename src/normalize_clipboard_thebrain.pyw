@@ -3,10 +3,10 @@
 
 import sys
 import logging
-import pyperclip
 import regex
-
 from n10_note import N10NoteProcessor
+from clipboard_utils import clipboard_util
+
 
 def level_of_spaces(spaces, list_markers):
     if not spaces:
@@ -87,7 +87,7 @@ normal text
 def normlize_clipboard():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     logging.debug("normalize clipboard for thebrain")
-    raw_text = pyperclip.paste()
+    raw_text = clipboard_util.get_text()
 
     if not raw_text:
         return
@@ -153,7 +153,7 @@ def normlize_clipboard():
 
             thebrain_lines.append(line)
 
-        pyperclip.copy("".join(thebrain_lines))
+        clipboard_util.put_text("".join(thebrain_lines))
 
 if __name__ == "__main__":
     normlize_clipboard()
