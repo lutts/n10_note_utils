@@ -64,10 +64,10 @@ class cf_html_helper:
             self.html = clipboard_data[start_html:end_html].decode("UTF-8")
             self.html = self.html.replace(r'<!--StartFragment-->', '')
             self.html = self.html.replace(r'<!--EndFragment-->', '')
-            #print("html:" + self.html)
+            # print("html:" + self.html)
             self.fragments.append(
                 clipboard_data[start_frag:end_frag].decode("UTF-8"))
-            print("fragment:###" + self.fragments[0] + "###")
+            # print("fragment:###" + self.fragments[0] + "###")
 
             start_frag = 0
             end_frag = 0
@@ -94,7 +94,7 @@ class cf_html_helper:
                 if key == 'EndFragment':
                     end_frag = int(value)
                     frag = clipboard_data[start_frag:end_frag].decode("UTF-8")
-                    print("frag: " + frag)
+                    # print("frag: " + frag)
                     self.fragments.append(frag)
                     continue
 
@@ -229,8 +229,8 @@ class clipboard_util:
             win32clipboard.EmptyClipboard()
 
             for cf_format, cf_content in data_list:
-                print('cf_format: ' + str(cf_format))
-                print('cf_content: ' + str(cf_content))
+                # print('cf_format: ' + str(cf_format))
+                # print('cf_content: ' + str(cf_content))
                 win32clipboard.SetClipboardData(cf_format, cf_content)
         finally:
             if cb_opened:
@@ -270,3 +270,6 @@ class clipboard_util:
 if __name__ == '__main__':
     print(clipboard_util.get_html())
     clipboard_util.put_html(r'<span style="font-weight:bold;">test</span>', 'test')
+
+    img = ImageGrab.grab(bbox=(0, 0, 500, 500))
+    clipboard_util.put_img(img)
