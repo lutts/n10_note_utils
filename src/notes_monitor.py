@@ -42,7 +42,11 @@ def should_seqno_ignored(seqno):
         ignore_next_clip = False
         return True
 
-    return seqno == ignore_seqno
+    if seqno == ignore_seqno:
+        return True
+    else:
+        ignore_seqno = 0
+        return False
 
 
 def grab_page_number_and_filename_image():
