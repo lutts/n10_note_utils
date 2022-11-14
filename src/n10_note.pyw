@@ -139,7 +139,7 @@ class N10NoteProcessor:
         self.last_line_is_header = False
         self.in_math_context = False
     
-    list_table_markers_re = regex.compile(r'(?P<markdown_marker>[-*+|]|[0-9]+\.|Q:|A:)[ ]')
+    list_table_markers_re = regex.compile(r'(?P<markdown_marker>[-*+|]|[0-9]+\.|Q:|q:|A:|a:)[ ]')
     blockquote_re = regex.compile(r'(?P<quote_marker>>(?:$|[> ]*))')
     markdown_header_re = regex.compile(r'[ ]{,3}(?P<header_marker>#{1,6})[ ]')
 
