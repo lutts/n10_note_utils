@@ -27,10 +27,14 @@ class Block:
         double_brace_re = re.compile(r'(?P<b>\{|\})')
         joined_lines = double_brace_re.sub(r'\1\1', joined_lines)
             
-        cloze_re = re.compile(r'{{{{(.*?)}}}}')
+        cloze_re = re.compile(r'{{{{(.*?)}}}}((?:\([^)]*?\))?)')
 
-        clozes = cloze_re.findall(joined_lines)
+        clozes_hints = cloze_re.findall(joined_lines)
         joined_lines = cloze_re.sub(r'{}', joined_lines)
+
+        logging.debug(clozes_hints)
+        clozes = [i[0] for i in clozes_hints]
+        hints = ['<span>' + i[1] + '</span>' if i[1] else i[1] for i in clozes_hints]
 
         supermemo_cloze = '<span class=cloze>[...]</span>'
 
@@ -41,7 +45,7 @@ class Block:
                 qa_lines.append('\n')
 
             sup_clozes = clozes.copy()
-            sup_clozes[i] = supermemo_cloze
+            sup_clozes[i] = supermemo_cloze + hints[i]
             answer = 'a: ' + clozes[i] + '\n'
 
             question = joined_lines.format(*sup_clozes)
@@ -143,18 +147,21 @@ def main():
         return
 
     # print(qa_markdown_lines)
-    processor = markdown_processor(markdown_processor_mode.SUPERMEMO, filename)
-    html_body = processor.markdown_to_html_with_inline_style(qa_markdown_lines)
-    html_body = add_prefix_to_local_images(
-        html_body, markdown_processor_mode.SUPERMEMO, os.path.dirname(filename))
-    # print(html_body)
-    qa_text = convert_html_to_qa_text(title, html_body)
+    try:
+        processor = markdown_processor(markdown_processor_mode.SUPERMEMO, filename)
+        html_body = processor.markdown_to_html_with_inline_style(qa_markdown_lines)
+        html_body = add_prefix_to_local_images(
+            html_body, markdown_processor_mode.SUPERMEMO, os.path.dirname(filename))
+        # print(html_body)
+        qa_text = convert_html_to_qa_text(title, html_body)
 
-    split_filepath = os.path.splitext(filename)
-    qa_text_file = uniqe_name(split_filepath[0] + ".html")
-    
-    with open(qa_text_file, 'w', encoding="utf-8") as f:
-        f.write(qa_text)
+        split_filepath = os.path.splitext(filename)
+        qa_text_file = uniqe_name(split_filepath[0] + ".html")
+        
+        with open(qa_text_file, 'w', encoding="utf-8") as f:
+            f.write(qa_text)
+    except:
+        logging.exception("some exception occured", exc_info=True)
 
 # Main body
 if __name__ == '__main__':
