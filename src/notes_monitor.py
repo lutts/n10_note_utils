@@ -76,7 +76,7 @@ def get_note_header(page_number_cap, filename_cap):
     pytesseract.pytesseract.tesseract_cmd = get_tesseract_cmd()
 
     page_number_ocr = pytesseract.image_to_string(
-        page_number_cap, lang='eng+chi_sim')
+        page_number_cap, lang='eng')
     # print("page number ocr: " + page_number_ocr)
     r = re.compile(r'\(\s*(\d+)\s+[^\s]*\s+\d+\s*\)')
     m = r.search(page_number_ocr)
