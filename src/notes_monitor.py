@@ -16,6 +16,8 @@ last_page_number = 0
 ebook_filename = None
 ebook_filename_lock = threading.Lock()
 
+saved_text = None
+
 ignore_next_clip = False
 ignore_seqno = 0
 
@@ -131,6 +133,15 @@ def on_text(seq_no, text):
         return
 
     print("on text, seq_no: " + str(seq_no))
+
+    
+    global saved_text
+    if text in ['#', '##', '###', '####', '#####', '######']:
+        saved_text = text
+        return
+    elif saved_text:
+        text = saved_text + ' ' + text
+        saved_text = None
 
     page_number_cap, filename_cap = grab_page_number_and_filename_image()
     global q

@@ -21,16 +21,11 @@ get_my_utils_path(filename) {
 ;#Up::WinMove A, ,0,0,A_ScreenWidth,(A_ScreenHeight-64)/2
 ;#Down::WinMove A, ,0,(A_ScreenHeight-64)/2,A_ScreenWidth,(A_ScreenHeight-64)/2
 
-CapsLock & 1:: send ①
-CapsLock & 2:: send ②
-CapsLock & 3:: send ③
-CapsLock & 4:: send ④
-CapsLock & 5:: send ⑤
-CapsLock & 6:: send ⑥
-CapsLock & 7:: send ⑦
-CapsLock & 8:: send ⑧
-CapsLock & 9:: send ⑨
-CapsLock & 0:: send ⑩
+
+;CapsLock & 7:: send ⑦
+;CapsLock & 8:: send ⑧
+;CapsLock & 9:: send ⑨
+;CapsLock & 0:: send ⑩
 
 ; 屏蔽微软五笔的全角半角切换
 +Space::Send, {Space}
@@ -60,6 +55,21 @@ CopyPlainText()
 }
 
 Capslock & c::CopyPlainText()
+
+CopyAsMarkdownHeader(marker)
+{
+	clipboard := marker
+	sleep, 100
+	Send, ^c
+	SetCapsLockState, Off
+}
+
+CapsLock & 1:: CopyAsMarkdownHeader("#")
+CapsLock & 2:: CopyAsMarkdownHeader("##")
+CapsLock & 3:: CopyAsMarkdownHeader("###")
+CapsLock & 4:: CopyAsMarkdownHeader("####")
+CapsLock & 5:: CopyAsMarkdownHeader("#####")
+CapsLock & 6:: CopyAsMarkdownHeader("######")
 
 ; 进入spotlight模式，方便进行阅读pacer
 ; Capslock & s::send ^!+P
