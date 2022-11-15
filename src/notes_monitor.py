@@ -77,12 +77,14 @@ def get_note_header(page_number_cap, filename_cap):
 
     page_number_ocr = pytesseract.image_to_string(
         page_number_cap, lang='eng+chi_sim')
-    r = re.compile(r'\(\s*(\d+)\s*/\s*\d+\s*\)')
+    # print("page number ocr: " + page_number_ocr)
+    r = re.compile(r'\(\s*(\d+)\s+[^\s]*\s+\d+\s*\)')
     m = r.search(page_number_ocr)
     if m:
         page_number = m.group(1)
         last_page_number = page_number
     else:
+        print("failed OCR page number: " + page_number_ocr)
         page_number = last_page_number
     print("page_number: " + str(page_number))
 
