@@ -647,10 +647,10 @@ class N10NoteProcessor:
                 title_added = True
 
                 if self.book_title:
-                    self.normalized_lines.append("# " + self.book_title + "\n")
+                    self.normalized_lines.append(self.normalize_line("# " + self.book_title))
                     self.normalized_lines.append("\n")
                 elif self.book_filename:
-                    self.normalized_lines.append("# 摘自: " + self.book_filename + "\n")
+                    self.normalized_lines.append(self.normalize_line("# 摘自: " + self.book_filename))
                     self.normalized_lines.append("\n")
 
             striped_line = line.strip()
