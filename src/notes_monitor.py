@@ -5,6 +5,7 @@ import time
 import os
 import threading
 import queue
+import json
 import pytesseract
 from PIL import ImageGrab
 from settings import get_temp_notes_dir, get_tesseract_cmd
@@ -12,10 +13,6 @@ from clipboard_monitor import py_clipboard_monitor
 
 
 last_page_number = 0
-
-ebook_filename = None
-ebook_filename_lock = threading.Lock()
-
 saved_text = None
 
 ignore_next_clip = False
@@ -23,6 +20,35 @@ ignore_seqno = 0
 
 
 q = queue.Queue()
+
+
+single_book_mode : bool = False
+ebook_filename = None
+ebook_filename_lock = threading.Lock()
+
+
+def get_current_filename():
+    global ebook_filename
+    global ebook_filename_lock
+
+    if single_book_mode:
+        ebook_filename_lock.acquire()
+        cur_filename = ebook_filename
+        ebook_filename_lock.release()
+    else:
+        cur_filename = None
+
+    return cur_filename
+
+
+def set_current_filename(filename):
+    global ebook_filename
+    global ebook_filename_lock
+
+    if single_book_mode:
+        ebook_filename_lock.acquire()
+        ebook_filename = filename
+        ebook_filename_lock.release()
 
 
 def on_clipboard_update(seq_no, clips, retcode):
@@ -52,13 +78,9 @@ def should_seqno_ignored(seqno):
 
 
 def grab_page_number_and_filename_image():
-    global ebook_filename
-
     page_number_cap = ImageGrab.grab(bbox=(104, 1858, 299, 1896))
 
-    ebook_filename_lock.acquire()
-    cur_filename = ebook_filename
-    ebook_filename_lock.release()
+    cur_filename = get_current_filename()
 
     if not cur_filename:
         filename_cap = ImageGrab.grab(bbox=(586, 0, 2641, 57))
@@ -72,7 +94,6 @@ def grab_page_number_and_filename_image():
 
 def get_note_header(page_number_cap, filename_cap):
     global last_page_number
-    global ebook_filename
 
     # Path of tesseract executable
     pytesseract.pytesseract.tesseract_cmd = get_tesseract_cmd()
@@ -90,9 +111,7 @@ def get_note_header(page_number_cap, filename_cap):
         page_number = last_page_number
     print("page_number: " + str(page_number))
 
-    ebook_filename_lock.acquire()
-    filename = ebook_filename
-    ebook_filename_lock.release()
+    filename = get_current_filename()
 
     if not filename:
         filename_ocr = pytesseract.image_to_string(
@@ -102,9 +121,7 @@ def get_note_header(page_number_cap, filename_cap):
         if m:
             filename = m.group(1).strip()
 
-            ebook_filename_lock.acquire()
-            ebook_filename = filename
-            ebook_filename_lock.release()
+            set_current_filename(filename)
         else:
             filename = "untitled"
         print("filename: " + filename)
@@ -189,7 +206,15 @@ def worker():
 
 if __name__ == '__main__':
     temp_notes_dir = get_temp_notes_dir()
-    print('start notes monitor(' + str(os.getpid()) + ') on temp notes directory: ' + str(temp_notes_dir))
+    settings_file = os.path.join(temp_notes_dir, 'notes_monitor_settings.json')
+    if os.path.exists(settings_file):
+        with open(settings_file, 'r', encoding='utf-8') as f:
+            setting_json = json.load(f)
+            single_book_mode = setting_json.get('single_book_mode')
+
+    print('start notes monitor(pid: ' + str(os.getpid()) + ')')
+    print('temp notes directory: ' + str(temp_notes_dir))
+    print('single_book_mode: ' + str(single_book_mode))
     # Turn-on the worker thread.
     threading.Thread(target=worker, daemon=True).start()
 

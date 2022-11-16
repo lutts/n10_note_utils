@@ -12,7 +12,7 @@ def _get_key_value(key):
     settings_file = os.path.join(script_path, "settings.json")
     
     try:
-        with open(settings_file, 'r') as f:
+        with open(settings_file, 'r', encoding='utf-8') as f:
             setting_json = json.load(f)
             return setting_json.get(key)
     except:
@@ -56,7 +56,7 @@ def get_imgroot(img_dir):
         return None
 
     try:
-        with open(settings_file, 'r') as f:
+        with open(settings_file, 'r', encoding='utf-8') as f:
             settings_json = json.load(f)
             return settings_json.get("imgroot")
     except:
@@ -70,15 +70,15 @@ def save_imgroot(img_dir, imgroot):
 
     if not os.path.exists(settings_file):
         settings_json = { "imgroot" : imgroot}
-        with open(settings_file, 'w') as f:
+        with open(settings_file, 'w', encoding='utf-8') as f:
             json.dump(settings_json, f)
     else:
-        settings_json = None
+        settings_json = {}
 
         with open(settings_file, 'r') as f:
             settings_json = json.load(f)
         
-        setting_json["imgroot"] = imgroot
+        settings_json["imgroot"] = imgroot
 
         with open(settings_file, 'w') as f:
-            json.dump(setting_json, f)
+            json.dump(settings_json, f)
