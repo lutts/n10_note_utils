@@ -40,7 +40,6 @@ AbbyyScreenReaderOCRText()
     TrayIcon_Button("ScreenshotReader.exe", "L")
     sleep, 100
     SendInput, r
-	SetCapsLockState, Off
 }
 
 CapsLock & r::AbbyyScreenReaderOCRText()
@@ -51,7 +50,6 @@ CopyPlainText()
 	send, ^c
 	ClipWait, 2, 1 ; wait until clipboard contains data
     clipboard :=  clipboard  ; Convert any copied files, HTML, or other formatted text to plain text.
-	SetCapsLockState, Off
 }
 
 Capslock & c::CopyPlainText()
@@ -61,7 +59,6 @@ CopyAsMarkdownHeader(marker)
 	clipboard := marker
 	sleep, 100
 	Send, ^c
-	SetCapsLockState, Off
 }
 
 CapsLock & 1:: CopyAsMarkdownHeader("#")
@@ -81,7 +78,6 @@ LookUpDictionary()
    ClipWait, 2, 1 ; wait until clipboard contains data
    sleep, 200
    Send, ^!+c
-   SetCapsLockState, Off
 }
 
 Capslock & d:: LookUpDictionary()
@@ -92,7 +88,6 @@ ClipboardMarkdownToHtml()
 	fullexec_path := get_my_utils_path("src\markdown2clipboard.pyw")
 	RunWait, pythonw %fullexec_path%
 	ClipWait, 2, 1 ; wait until clipboard contains data
-	SetCapsLockState, Off
 }
 
 Capslock & m:: ClipboardMarkdownToHtml()
@@ -103,7 +98,6 @@ N10NotesProcess()
 	;MsgBox, The user selected the following:`n%SelectedFiles%
 	if (SelectedFiles = "")
 	{
-		SetCapsLockState, Off
     	return
 	}
 	else
@@ -114,7 +108,6 @@ N10NotesProcess()
 		fullexec_path := get_my_utils_path("src\n10_note_for_ahk.pyw")
 		RunWait, pythonw %fullexec_path% %files%
 	}
-	SetCapsLockState, Off
 }
 
 CapsLock & p:: N10NotesProcess()
@@ -124,7 +117,6 @@ SendMarkdownToOnenote()
 	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
 	if (SelectedFile = "")
 	{
-		SetCapsLockState, Off
 		return
 	}
 	else
@@ -140,7 +132,6 @@ SendMarkdownToOnenote()
 		dirname := quote(dir)
 		RunWait, python -m http.server -d %dirname%  9999
 	}
-	SetCapsLockState, Off
 }
 
 CapsLock &  o:: SendMarkdownToOnenote()
@@ -150,7 +141,6 @@ ListMarkdownLatexEquations()
 	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
 	if (SelectedFile = "")
 	{
-		SetCapsLockState, Off
 		return
 	}
 	else
@@ -165,7 +155,6 @@ ListMarkdownLatexEquations()
 		SplitPath, SelectedFile,, dir
 		MsgBox, latex equations saved to %dir%\latex_equations.txt
 	}
-	SetCapsLockState, Off
 }
 
 CapsLock &  l:: ListMarkdownLatexEquations()
@@ -175,7 +164,6 @@ SendMarkdownToSupermemo()
 	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
 	if (SelectedFile = "")
 	{
-		SetCapsLockState, Off
 		return
 	}
 	else
@@ -191,7 +179,6 @@ SendMarkdownToSupermemo()
 		;dirname := quote(dir)
 		;RunWait, python -m http.server -d %dirname% 9999
 	}
-	SetCapsLockState, Off
 }
 
 CapsLock &  u:: SendMarkdownToSupermemo()
@@ -201,7 +188,6 @@ SendMarkdownToTheBrain()
 	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
 	if (SelectedFile = "")
 	{
-		SetCapsLockState, Off
 		return
 	}
 	else
@@ -217,7 +203,6 @@ SendMarkdownToTheBrain()
 		dirname := quote(dir)
 		RunWait, python -m http.server -d %dirname%  9999
 	}
-	SetCapsLockState, Off
 }
 
 CapsLock &  i:: SendMarkdownToTheBrain()	
@@ -227,7 +212,6 @@ NormalizedPaste()
 	fullexec_path := get_my_utils_path("src\normalize_clipboard.pyw")
 	RunWait, pythonw %fullexec_path%
 	send, ^v
-	SetCapsLockState, Off
 }
 
 CapsLock &  v:: NormalizedPaste()	
@@ -237,7 +221,6 @@ NormalizedPasteTheBrain()
 	fullexec_path := get_my_utils_path("src\normalize_clipboard_thebrain.pyw")
 	RunWait, pythonw %fullexec_path%
 	send, ^v
-	SetCapsLockState, Off
 }
 
 CapsLock &  b:: NormalizedPasteTheBrain()
@@ -249,7 +232,6 @@ RunSupermemo()
 	    Run, "C:\SuperMemo\sm18.exe"
 	
 	Run, python -m http.server -d "D:\Data\supermemo\collections\webroot"  9999
-	SetCapsLockState, Off
 }
 
 CapsLock &  s:: RunSupermemo()
@@ -258,7 +240,6 @@ StartNoteMonitor()
 {
 	fullexec_path := get_my_utils_path("src\notes_monitor.py")
 	Run, python %fullexec_path%
-	SetCapsLockState, Off
 }
 
 CapsLock &  n:: StartNoteMonitor()
@@ -268,7 +249,6 @@ GenerateSupermemoQA()
 	FileSelectFile, SelectedFile, 3, , , Markdown Documents (*.md)
 	if (SelectedFile = "")
 	{
-		SetCapsLockState, Off
 		return
 	}
 	else
@@ -280,7 +260,6 @@ GenerateSupermemoQA()
 		fullexec_path := get_my_utils_path("src\supermemo_qa_generator.py")
 		RunWait, pythonw %fullexec_path% %quoted_selectedfile%
 	}
-	SetCapsLockState, Off
 }
 CapsLock &  q:: GenerateSupermemoQA()
 
