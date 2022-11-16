@@ -17,12 +17,14 @@ class py_clipboard_monitor:
                  on_image=None,
                  on_html=None,
                  on_update=None,
-                 cf_html=None):
+                 on_finished=None):
         self._on_text = on_text
         self._on_image = on_image
         self._on_html = on_html
         self._on_update = on_update
+        self._on_finished = on_finished
         self._clipboard_thread = None
+        self.last_seq_no = 0
 
         if on_html:
             self._cf_html = cf_html_helper.get_cf_html()
@@ -54,10 +56,20 @@ class py_clipboard_monitor:
                 str(win32clipboard.GetClipboardSequenceNumber()))
 
         seq_no, clips, retcode = self._get_clipboard_content()
+        if retcode == -1:
+            print("get clipboard content failed")
+            return
+        
+        if seq_no == self.last_seq_no:
+            print("clipboard sequence number not changed, ignore")
+            return
+        else:
+            self.last_seq_no = seq_no
+
         print("num clips: " + str(len(clips)))
 
         if self._on_update:
-            self._on_update(seq_no, clips, retcode)
+            self._on_update(seq_no, clips)
 
         for clip in clips:
             if clip[0] == 'text' and self._on_text:
@@ -72,6 +84,9 @@ class py_clipboard_monitor:
 
             if clip[0] == 'html' and self._on_html:
                 self._on_html(seq_no, clip[1])
+
+        if clips and self._on_finished:
+            self._on_finished(seq_no, clips)
 
         return 0
 
@@ -97,8 +112,7 @@ class py_clipboard_monitor:
             cb_opened = True
 
             seq_no = win32clipboard.GetClipboardSequenceNumber()
-
-            if self._on_text:
+            if self._on_text or self._on_update:
                 if win32clipboard.IsClipboardFormatAvailable(win32con.CF_UNICODETEXT):
                     text = win32clipboard.GetClipboardData(
                         win32con.CF_UNICODETEXT)
@@ -109,19 +123,17 @@ class py_clipboard_monitor:
                     text = text_bytes.decode()
                     clips.append(('text', text))
 
-            if self._on_html:
+            if self._on_html or self._on_update:
                 if cf_html_helper.is_html_available():
                     cf_html = cf_html_helper.get_cf_html()
                     clipboard_data = win32clipboard.GetClipboardData(cf_html)
-                    html_helper = cf_html_helper()
-                    html_helper.decode(clipboard_data)
-                    clips.append(('html', html_helper.html))
+                    clips.append(('html', clipboard_data))
 
             # if win32clipboard.IsClipboardFormatAvailable(win32con.CF_HDROP):
             #    files = win32clipboard.GetClipboardData(win32con.CF_HDROP)
             #    clips.append(('files', files))
 
-            if self._on_image:
+            if self._on_image or self._on_update:
                 if win32clipboard.IsClipboardFormatAvailable(win32con.CF_BITMAP):
                     clips.append(('image', None))
         except:
@@ -129,7 +141,11 @@ class py_clipboard_monitor:
             retcode = -1
         finally:
             if cb_opened:
-                win32clipboard.CloseClipboard()
+                try:
+                    win32clipboard.CloseClipboard()
+                except:
+                    print("close clipboard error")
+                    retcode = -1
 
         return (seq_no, clips, retcode)
 

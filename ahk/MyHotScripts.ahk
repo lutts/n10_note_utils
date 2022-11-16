@@ -73,6 +73,8 @@ CapsLock & 6:: CopyAsMarkdownHeader("######")
 
 LookUpDictionary()
 {
+   Clipboard := "{{LookupGoldenDictionary}}"
+   sleep, 100
    Clipboard := "" ; clear clipboard
    Send, ^c ; simulate Ctrl+C (=selection in clipboard)
    ClipWait, 2, 1 ; wait until clipboard contains data
