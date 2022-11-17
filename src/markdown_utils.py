@@ -107,7 +107,7 @@ class markdown_processor:
         # curdir = os.path.abspath(curdir)
         for image in os.listdir(curdir):
             # check if the image ends with png or jpg
-            if image.endswith(".png") or img.endswith(".jpg"):
+            if image.endswith(".png") or image.endswith(".jpg"):
                 hashdigest = os.path.splitext(image)[0]
                 logging.debug("found image file: " + image)
                 self.images_dict[hashdigest] = image
