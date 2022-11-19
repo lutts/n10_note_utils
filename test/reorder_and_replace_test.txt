@@ -12,8 +12,6 @@ bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 2022年10月04日 10:09:39  摘自<<Psychology and Life 20th.pdf>> 第196页
 2222222222222222222222222222222
 
-{ordinary text, not place holder}
-
 2022年10月04日 10:55:27  摘自<<Psychology and Life 20th.pdf>> 第197页
 [666]:-
 3333333333333333333333333333333
@@ -44,60 +42,33 @@ cccccccccccccccccccccccccccccccc
 []:+
 999999999999999999999999999999
 
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第199页
+[]:-
+delete delete delete
+
+line line line
+
 2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第196页
 []:.
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-接下来测试兼容以前的，正确顺序: e, d, f, k, g, h, l
+接下来测试循环替换的处理，结果是: xxx, zzz, yyy
 
 2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第200页
-{oldoverride}
+[1]:.
 
-ccccccccccccccccccccccccccccccccc
+xxx
 
-cccccccccccccccccccccccccccccccc
+[2]
 
-2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第201页
-dddddddddddddddddd
-
-ddddddddddddddddddd
-
-2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第200页
-{oldoverride}
-
-eeeeeeeeeeeeeeeeeeeeeeeeeee
-
-eeeeeeeeeeeeeeeeeeeeeeeeeee
+yyy
 
 2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第201页
-ffffffffffffffffffff
+[2]:.
 
-{oldsubstitute}
+zzz
 
-gggggggggggg
-
-2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第202页
-hhhhhhhhhhhhhh
-
-hhhhhhhhhhhhhh
-
-2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第201页
-{oldsubstitute}
-
-kkkkkkkkkkkkkkkkkkk
-
-2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第203页
-{not touched 1}
-
-LLLLLLLLLLLLLLLLL
-
-2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第204页
-MMMMMMMMMMMM
-
-{not touched 2}
-
-NNNNNNNNNNNNNNN
-
+[1]
 
 
 

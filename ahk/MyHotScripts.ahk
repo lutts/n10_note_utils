@@ -87,7 +87,7 @@ Capslock & d:: LookUpDictionary()
 ; 将剪贴板中的markdown文本转为html，再将html文本放回剪贴板
 ClipboardMarkdownToHtml()
 {
-	fullexec_path := get_my_utils_path("src\markdown2clipboard.pyw")
+	fullexec_path := get_my_utils_path("src\markdown2clipboard.py")
 	RunWait, pythonw %fullexec_path%
 	ClipWait, 2, 1 ; wait until clipboard contains data
 }
@@ -105,9 +105,9 @@ N10NotesProcess()
 	else
 	{
 		files := quote(SelectedFiles)	
-		;MsgBox, The quoted string:`n%files%
+		; MsgBox, The quoted string:`n%files%
 		
-		fullexec_path := get_my_utils_path("src\n10_note_for_ahk.pyw")
+		fullexec_path := get_my_utils_path("src\n10_note_for_ahk.py")
 		RunWait, pythonw %fullexec_path% %files%
 	}
 }
@@ -127,7 +127,7 @@ SendMarkdownToOnenote()
 		 
 		 quoted_selectedfile := quote(SelectedFile)
 		 
-		fullexec_path := get_my_utils_path("src\send_markdown_to_onenote_for_ahk.pyw")
+		fullexec_path := get_my_utils_path("src\send_markdown_to_onenote_for_ahk.py")
 		RunWait, pythonw %fullexec_path% %quoted_selectedfile%
 		
 		SplitPath, SelectedFile,, dir
@@ -151,7 +151,7 @@ ListMarkdownLatexEquations()
 		 
 		 quoted_selectedfile := quote(SelectedFile)
 		 
-		fullexec_path := get_my_utils_path("src\list_latex_equations.pyw")
+		fullexec_path := get_my_utils_path("src\list_latex_equations.py")
 		RunWait, pythonw %fullexec_path% %quoted_selectedfile%
 		
 		SplitPath, SelectedFile,, dir
@@ -198,7 +198,7 @@ SendMarkdownToTheBrain()
 		 
 		 quoted_selectedfile := quote(SelectedFile)
 		 
-		fullexec_path := get_my_utils_path("src\send_markdown_to_thebrain_from_ahk.pyw")
+		fullexec_path := get_my_utils_path("src\send_markdown_to_thebrain_from_ahk.py")
 		RunWait, pythonw %fullexec_path% %quoted_selectedfile%
 		
 		SplitPath, SelectedFile,, dir
@@ -211,7 +211,7 @@ CapsLock &  i:: SendMarkdownToTheBrain()
 
 NormalizedPaste()
 {
-	fullexec_path := get_my_utils_path("src\normalize_clipboard.pyw")
+	fullexec_path := get_my_utils_path("src\normalize_clipboard.py")
 	RunWait, pythonw %fullexec_path%
 	send, ^v
 }
@@ -220,7 +220,7 @@ CapsLock &  v:: NormalizedPaste()
 
 NormalizedPasteTheBrain()
 {
-	fullexec_path := get_my_utils_path("src\normalize_clipboard_thebrain.pyw")
+	fullexec_path := get_my_utils_path("src\normalize_clipboard_thebrain.py")
 	RunWait, pythonw %fullexec_path%
 	send, ^v
 }

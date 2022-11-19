@@ -4,7 +4,7 @@
 import sys
 import logging
 import regex
-from n10_note import N10NoteProcessor
+from n10_note import RawNoteProcessor
 from clipboard_utils import clipboard_util
 
 
@@ -92,7 +92,7 @@ def normlize_clipboard():
     if not raw_text:
         return
 
-    processor = N10NoteProcessor(raw_text = raw_text)
+    processor = RawNoteProcessor(raw_text = raw_text)
     processor.process()
 
     logging.debug("normalized_lines")

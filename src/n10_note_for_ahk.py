@@ -61,7 +61,7 @@ def main():
             processor = N10NoteProcessor(n10_notes_filepath=notes_filepath,
                                      hand_notes_filepath=hand_notes_filepath)
             processor.process()
-            processor.write_block_list()
+            processor.write()
         except Exception as e:
             logging.error(str(e))
 

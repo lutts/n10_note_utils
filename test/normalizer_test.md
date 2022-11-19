@@ -9,32 +9,15 @@
 "tags": ["markdown+math","VSCode","static page","publication","LaTeX","math"]
 ---
 
-2022年10月01日 15:32:47  摘自<<test.pdf>> 第182页
+([1]p182s)
+
 # 测试一级标题
 
 ## 测试合并行
 
-冥想（meditation）是一种改变意识的形式，它通过获得深度的宁静状态而增强 
-自我认识和幸福感口在专注冥想期间，人们把注意力集中在自己的呼吸和调节呼吸上. 
-采取某些身体姿势（如瑜伽姿势），使外部刺激减至最小，产生特定的心理表象，或 
-什么都不想。而在专念冥想中，个体要学会如何让思想和回忆自由地穿行，而心理 
-不对其做出反应。
+冥想 (meditation)是一种改变意识的形式，它通过获得深度的宁静状态而增强自我认识和幸福感口在专注冥想期间，人们把注意力集中在自己的呼吸和调节呼吸上. 采取某些身体姿势（如瑜伽姿势），使外部刺激减至最小，产生特定的心理表象，或什么都不想。而在专念冥想中，个体要学会如何让思想和回忆自由地穿行，而心理不对其做出反应。
 
-Psychology’s great 
-strength  is  that  it  uses  scientific  observation to  system-
-atically answer questions about all sorts of behaviors. rats'
-behavior is observered. rats’
-behavior is measured. “what is psychology”
-psychology is
-
-```delete
-这些
-内容
-是要
-删除的
-```
-
-
+Psychology's great strength is that it uses scientific observation to systematically answer questions about all sorts of behaviors. rats' behavior is observered. rats' behavior is measured. "what is psychology" psychology is
 
 ### markdown会被保留
 
@@ -53,7 +36,7 @@ hoho    xxx
 `````test
 `````
 
-> Sed laoreet luctus erat at rutrum. Proin velit metus, luctus in sapien in, tincidunt mattis ex. 
+> Sed laoreet luctus erat at rutrum. Proin velit metus, luctus in sapien in, tincidunt mattis ex.
 > Praesent venenatis orci at sagittis eleifend. Nulla facilisi. In feugiat vehicula magna iaculis
 >
 > a paragrah
@@ -61,13 +44,13 @@ hoho    xxx
 | Command | Description |
 | --- | --- |
 | git status | List all new or modified files |
-| git diff | To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].{nl}{nl}* [x] #739{nl}* [ ] [octo-org](https://github.com/octo-org/octo-repo/issues/740){nl}* [ ] Add delight to the experience when all tasks are complete :tada:{nl}    {nl}If a task list item description begins with a parenthesis, you'll need to escape it with \: |
+| git diff | To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].{nl}{nl}* [x] #739{nl}* [ ] [octo-org](https://github.com/octo-org/octo-repo/issues/740){nl}* [ ] Add delight to the experience when all tasks are complete : tada:{nl} {nl}If a task list item description begins with a parenthesis, you'll need to escape it with \: |
 
 To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].
 
 * [x] #739
 * [ ] [octo-org](https://github.com/octo-org/octo-repo/issues/740)
-* [ ] Add delight to the experience when all tasks are complete :tada:
+* [ ] Add delight to the experience when all tasks are complete : tada:
 
 If a task list item description begins with a parenthesis, you'll need to escape it with \:
 
@@ -77,73 +60,72 @@ Parse ~~strikethrough~~ formatting
 
 ## 去掉中文字符之间，但中文和标点、英文、数字之间的空格保留
 
-Hey Jane, 周 末 要 不要一起 吃早茶，叫上 Jennie 和 Jone, 预计花费 100 元
+Hey Jane, 周末要不要一起吃早茶，叫上 Jennie 和 Jone, 预计花费 100 元
 
 ## 根据下文将中文引号转为英文引号
 
-s1 = "some     ‘ english ’  text"
+s1 = "some 'english' text"
 
-s2 = "一些    ‘ 中文 ’    文字"
+s2 = "一些‘中文’文字"
 
-s3 = 'some    “    english   ”     text'
+s3 = 'some "english" text'
 
-s4 = '一些     “    中文   ”    文字'
+s4 = '一些“中文”文字'
 
 ## 根据上下文将中文括号转为英文括号
 
-s5 = "some      （    english    ）      text"
+s5 = "some (english) text"
 
-s6 = "一些     （    中文     ）     文字"
+s6 = "一些（中文）文字"
 
 ## markdown加粗带括号中文的规范
 
-* 这**是(is)**一个苹果。
-* 这*是(is)*一个苹果。
-* 这**是[is]**一个苹果。
-* 这**是【is】**一个苹果。
-* 这**是《is》**一个苹果。
-* 这**是<is>**一个苹果。
-* 这**是（is）**一个苹果。
 * 这**是**(**is**)一个苹果。
-* The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)**测试:
+* 这*是*(*is*)一个苹果。
+* 这**是**[**is**]一个苹果。
+* 这**是**【**is**】一个苹果。
+* 这**是**《**is**》一个苹果。
+* 这**是**<**is**>一个苹果。
+* 这**是**(**is**)一个苹果。
+* 这**是**(**is**)一个苹果。
+* The third set of concerns relates to **divinity(神性)** vs. **神性**(**divinity**)测试:
 * The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)**。
 * The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)**
 * The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)** vs. others
-* The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)*测试:
+* The third set of concerns relates to *divinity(神性)* vs. *神性*(*divinity*)测试:
 * The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)*。
 * The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)*
 * The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)* vs. others
-* **心理学(psychology)**是关于**个体**的**行为**及**心智（mind）过程**的**科学研究**
+* **心理学**(**psychology**)是关于**个体**的**行为**及**心智 (mind)过程**的**科学研究**
 * **reference list:** Reference list entries should have a hanging indent of 0.5 in
 
 ## 空格的处理
 
 ### 一些英文标点符号后面要有空格
 
-a.string,has;no:space?after   punctuation!another, string; has: space? after      puctuation! ok!
+a. string, has; no: space? after punctuation! another, string; has: space? after puctuation! ok!
 
 ### 但如果这些英文禁点后面有其他标点符号或数字，则不加空格
 
 中文:【不要加空格】
- 
+
 english:[english]
 
 number:123
 
 ### 连续空格只保留一个，但行首的不动
 
-    test    multiple      space.
-	
+    test multiple space.
 
-        多个        连续空格        只保留一个， 但行首的不动
+        多个连续空格只保留一个，但行首的不动
 
 * item1
-  
+
   * item11
   * item12
-  
+
 * item2
-  
+
   * item21
   * item22
     * item221
@@ -187,6 +169,10 @@ complex_img_angle = r'![Link text with [brackets] inside](<http://www.example.co
 
 img_as_link_text_angle = r'[![img](xxx/yyy.png)](<http://google.com> "My \"title\"")'
 
-bad_link = '[link](<http://google.com  "title")'
+bad_link = '[link](<http://google. com "title")'
 
-multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [![img link](haha.png)](<http://google.com> "google") or img ![x](<./hehe.png> "hehe").  and there's some text with {braces} {} in it'
+multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [![img link](haha.png)](<http://google.com> "google") or img ![x](<./hehe.png> "hehe"). and there's some text with {braces} {} in it'
+
+([1]p182e)
+
+[1]: <test.pdf>
