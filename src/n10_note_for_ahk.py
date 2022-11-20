@@ -9,7 +9,7 @@ import os
 import logging
 
 from markdown_utils import markdown_processor
-from n10_note import N10NoteProcessor
+from note_processor import N10NoteProcessor
 
 def main():
     # logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)

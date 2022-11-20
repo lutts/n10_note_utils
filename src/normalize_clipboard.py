@@ -3,7 +3,7 @@
 
 import sys
 import logging
-from n10_note import RawNoteProcessor
+from note_processor import RawNoteProcessor
 from clipboard_utils import clipboard_util
 
 def normlize_clipboard():

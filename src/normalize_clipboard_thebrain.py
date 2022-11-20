@@ -4,7 +4,7 @@
 import sys
 import logging
 import regex
-from n10_note import RawNoteProcessor
+from note_processor import RawNoteProcessor
 from clipboard_utils import clipboard_util
 
 
