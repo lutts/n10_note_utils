@@ -95,10 +95,10 @@ def normlize_clipboard():
     processor = RawNoteProcessor(raw_text = raw_text)
     processor.process()
 
-    logging.debug("normalized_lines")
-    logging.debug(processor.normalized_lines)
-    if processor.normalized_lines:
-        processor.normalized_lines[-1] = processor.normalized_lines[-1].rstrip()
+    logging.debug("markdown_lines")
+    logging.debug(processor.markdown_lines)
+    if processor.markdown_lines:
+        processor.markdown_lines[-1] = processor.markdown_lines[-1].rstrip()
 
         list_markers_re = regex.compile(r'(?P<spaces>\s*)(?P<list_marker>(?:[*]|[0-9]+\.)[ ])(?P<item_content>.*)')
         leading_spaces_re = regex.compile(r'(?P<spaces>\s*)(?P<content>[^\s].*)')
@@ -108,7 +108,7 @@ def normlize_clipboard():
         list_markers = []
         thebrain_lines = []
 
-        for line in processor.normalized_lines:
+        for line in processor.markdown_lines:
             #logging.debug("checking line: " + line)
             m = list_markers_re.match(line)
             if m:

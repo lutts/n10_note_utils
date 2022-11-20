@@ -501,7 +501,7 @@ class N10NoteProcessor:
 class RawNoteProcessor:
     def __init__(self, raw_text):
         self.raw_text = raw_text
-        self.normalized_lines = None
+        self.markdown_lines = None
 
     def process(self):
         stage1 = RawNoteProcessStage1(self.raw_text)
@@ -509,7 +509,7 @@ class RawNoteProcessor:
         stage2 = NoteProcessStage2(stage1)
         stage2.process()
 
-        self.normalized_lines = stage2.get_markdown_lines()
+        self.markdown_lines = stage2.get_markdown_lines()
 
 
 def main():

@@ -17,9 +17,9 @@ def normlize_clipboard():
     processor = RawNoteProcessor(raw_text = raw_text)
     processor.process()
 
-    if processor.normalized_lines:
-        processor.normalized_lines[-1] = processor.normalized_lines[-1].rstrip()
-        clipboard_util.put_text("".join(processor.normalized_lines))
+    if processor.markdown_lines:
+        processor.markdown_lines[-1] = processor.markdown_lines[-1].rstrip()
+        clipboard_util.put_text("".join(processor.markdown_lines))
 
 
 if __name__ == "__main__":
