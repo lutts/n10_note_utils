@@ -8,10 +8,10 @@
 "description": "mdmath LaTeX demo site",
 "tags": ["markdown+math","VSCode","static page","publication","LaTeX","math"]
 ---
+# 测试一级标题
 
 ([1]p182s)
 
-# 测试一级标题
 
 ## 测试合并行
 
@@ -175,4 +175,4 @@ multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./h
 
 ([1]p182e)
 
-[1]: <test.pdf>
+[1]: <测试书名.pdf>

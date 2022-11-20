@@ -156,13 +156,14 @@ class py_markdown_normalizer:
 
         return False
 
-    def normalize_line(self, line):
+    @staticmethod
+    def normalize_line(line: str, add_newline_char=True):
         logging.debug("normalize line: " + line)
 
         line = line.replace('\0', '')
 
         heading_spaces = ""
-        m = self.heading_whitespaces_re.match(line)
+        m = py_markdown_normalizer.heading_whitespaces_re.match(line)
         if m:
             heading_spaces = m.group()
 
@@ -170,23 +171,26 @@ class py_markdown_normalizer:
         logging.debug("heading space len: " + str(len(heading_spaces)))
 
         # 避免随后的处理误伤link/img link
-        image_or_links = self.img_link_re.findall(line)
+        image_or_links = py_markdown_normalizer.img_link_re.findall(line)
         if image_or_links:
             image_or_links = ["".join(i) for i in image_or_links]
             logging.debug("found img or links: " + str(image_or_links))
-            line = self.double_brace_re.sub(r'\1\1', line)
-            line = self.img_link_re.sub('{}', line)
+            line = py_markdown_normalizer.double_brace_re.sub(r'\1\1', line)
+            line = py_markdown_normalizer.img_link_re.sub('{}', line)
 
         line = py_text_normalizer.normalize_text_line(line)
 
         # logging.debug("after normalize_text_line: " + line)
 
-        line = self.emphasis_normalizer_re.sub(
+        line = py_markdown_normalizer.emphasis_normalizer_re.sub(
             r'\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', line)
 
         if image_or_links:
             line = line.format(*image_or_links)
 
-        normalized_line = heading_spaces + line + "\n"
+        if add_newline_char:
+            normalized_line = heading_spaces + line + "\n"
+        else:
+            normalized_line = heading_spaces + line
         logging.debug("normalized result: " + normalized_line)
         return normalized_line

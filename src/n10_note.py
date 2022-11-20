@@ -121,6 +121,9 @@ class NoteProcessStage1:
     def new_block(self, filename:str, phy_page_number:str):
         self.finish_current_block()
         self._prev_block = self._cur_block
+        filename, extension = os.path.splitext(filename)
+        filename = py_markdown_normalizer.normalize_line(filename, add_newline_char=False)
+        filename += extension
         self.check_filename(filename)
         self._cur_block = NoteBlock(filename, phy_page_number)
 
@@ -290,6 +293,7 @@ class NoteProcessStage2:
         self.markdown_lines : list[str] = []
         self.markdown_normalizer = py_markdown_normalizer()
 
+        self.title_line_pos = 0
         self.cur_line:str = ""
         self.last_line_is_empty = False
         self.last_filename:str = None
@@ -317,8 +321,14 @@ class NoteProcessStage2:
             return
 
         self.last_line_is_empty = False
-        self.markdown_lines.append(self.markdown_normalizer.normalize_line(self.cur_line))
+        self.markdown_lines.append(py_markdown_normalizer.normalize_line(self.cur_line))
         self.cur_line = ""
+
+    def add_title_line(self, title):
+        self.finish_cur_line()
+        title = py_markdown_normalizer.normalize_line(title)
+        self.markdown_lines.insert(self.title_line_pos, title)
+        self.last_line_is_empty = False
 
     def add_literal_line(self, line):
         self.finish_cur_line()
@@ -341,13 +351,21 @@ class NoteProcessStage2:
     def process_normal_line(self, line:str):
         logging.debug("process normal line: " + line)
         line_type = self.markdown_normalizer.check_line(line)
-        if self.markdown_normalizer.is_literal_text(line_type):
+        is_literal_text = False
+        if line_type == py_markdown_normalizer.FENCED_CODE_LINE:
             info_string = self.markdown_normalizer.code_fence_info_string
-            is_fenced_code = line_type == py_markdown_normalizer.FENCED_CODE_LINE
-            if is_fenced_code and info_string == "delete":
+            if info_string == "delete":
                 logging.debug("fenced code marked as deleted: " + line)
                 return
 
+            is_literal_text = True
+        elif line_type == py_markdown_normalizer.FRONT_MATTER_LINE:
+            self.title_line_pos += 1
+            is_literal_text = True
+        elif line_type == py_markdown_normalizer.MATH_LINE:
+            is_literal_text = True
+
+        if is_literal_text:
             logging.debug("literal text: " + line)
             self.add_literal_line(line)
             return
@@ -355,8 +373,13 @@ class NoteProcessStage2:
         # trim tailing spaces if not literal line
         line = line.rstrip()
         if line_type:
-            logging.debug("markdown line: " + line)
-            self.new_line(line)
+            if line_type == '#':
+                logging.debug("title line: " + line)
+                self.add_title_line(line)
+                self.add_empty_line()
+            else:
+                logging.debug("markdown line: " + line)
+                self.new_line(line)
         elif not line:
             logging.debug("empty line")
             self.add_empty_line()
