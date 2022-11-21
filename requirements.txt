@@ -1,7 +1,8 @@
-markdown-it-py[plugins]
 css-inline
-regex
+markdown-it-py
+mdit-py-plugins
 pathlib2
-pywin32
 Pillow
 pytesseract
+pywin32
+regex
