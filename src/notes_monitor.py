@@ -6,13 +6,14 @@ import os
 import threading
 import queue
 import json
+import uuid
 import pytesseract
+import win32ui
 from PIL import ImageGrab, Image
-from settings import get_temp_notes_dir, get_tesseract_cmd
+import settings
 from clipboard_monitor import py_clipboard_monitor
 
 
-last_page_number = 0
 saved_text = None
 last_text = ""
 
@@ -24,6 +25,11 @@ q = queue.Queue()
 single_book_mode : bool = False
 ebook_filename = None
 ebook_filename_lock = threading.Lock()
+
+foxit_filename_bbox  = settings.get_foxit_filename_region()
+foxit_pagenumber_bbox = settings.get_foxit_pagenumber_region()
+adobe_filename_bbox = settings.get_adobe_filename_region()
+adobe_pagenumber_bbox = settings.get_adobe_pagenumber_region()
 
 
 def get_current_filename():
@@ -60,89 +66,124 @@ def should_seqno_ignored(seqno):
 
 
 def grab_page_number_and_filename_image():
-    foxit_page_number_cap = ImageGrab.grab(bbox=(104, 1858, 299, 1896))
-    adobe_page_number_cap = ImageGrab.grab(bbox=(782, 183, 1021, 223))
+    page_number_caps = []
+    if foxit_pagenumber_bbox:
+        page_number_caps.append(ImageGrab.grab(bbox=foxit_pagenumber_bbox))
 
-    cur_filename = get_current_filename()
+    if adobe_pagenumber_bbox:
+        page_number_caps.append(ImageGrab.grab(bbox=adobe_pagenumber_bbox))
+
+    fw = win32ui.GetForegroundWindow()
+    cur_filename = fw.GetWindowText()
+    print("window title: " + str(cur_filename))
 
     if not cur_filename:
-        # filename_cap = ImageGrab.grab(bbox=(586, 0, 2641, 57))
-        filename_cap = ImageGrab.grab(bbox=(34, 0, 2641, 48))
+        cur_filename = get_current_filename()
+
+    if not cur_filename:
+        filename_caps = []
+        if foxit_filename_bbox:
+            filename_caps.append(ImageGrab.grab(bbox=foxit_filename_bbox))
+
+        if adobe_filename_bbox:
+            filename_caps.append(ImageGrab.grab(bbox=adobe_filename_bbox))
     else:
-        filename_cap = None
+        filename_caps = [cur_filename]
 
     print('page number and filename image grabed.')
 
-    return (foxit_page_number_cap, adobe_page_number_cap, filename_cap)
+    return (filename_caps, page_number_caps)
+
+
+page_number_re = re.compile(r'\(\s*(\d+)\s+[^\s]*\s+\d+\s*\)')
 
 
 def get_page_number(page_number_cap):
     if isinstance(page_number_cap, str):
         return page_number_cap
 
-    global last_page_number
-
     page_number_ocr = pytesseract.image_to_string(
         page_number_cap, lang='eng')
-    # print("page number ocr: " + page_number_ocr)
-    r = re.compile(r'\(\s*(\d+)\s+[^\s]*\s+\d+\s*\)')
-    m = r.search(page_number_ocr)
+    print("page number ocr: " + page_number_ocr)
+    m = page_number_re.search(page_number_ocr)
     if m:
         page_number = m.group(1)
-        last_page_number = page_number
-        return page_number
     else:
-        return None
+        page_number = None
+
+    print("page number: " + str(page_number))
 
     return page_number
 
 
+filename_re = re.compile(r'(.*?)\s+-\s+(福\s*昕\s*阅\s*读\s*器|Adobe\s*Acrobat\s*Pro\s*DC\s*\(\s*64\s*-\s*bit\s*\))')
+
+
+def extract_filename(filename_ocr):
+    print("extract_filename: " + filename_ocr)
+    m = filename_re.search(filename_ocr)
+    if m:
+        filename = m.group(1).strip()
+
+        set_current_filename(filename)
+    else:
+        filename = None
+
+    print("filename: " + str(filename))
+
+    return filename
+
+
 def get_filename(filename_cap):
     if isinstance(filename_cap, str):
-        return filename_cap
-        
+        print("str cap: " + filename_cap)
+        filename = extract_filename(filename_cap)
+        if filename:
+            return filename
+
     filename = get_current_filename()
 
     if not filename:
         filename_ocr = pytesseract.image_to_string(
             filename_cap, lang='eng+chi_sim')
-        print("filename_ocr: " + filename_ocr)
-        r = re.compile(r'(.*?)\s+-\s+(福\s*昕\s*阅\s*读\s*器|Adobe\s*Acrobat\s*Pro\s*DC\s*\(\s*64\s*-\s*bit\s*\))')
-        m = r.search(filename_ocr)
-        if m:
-            filename = m.group(1).strip()
-
-            set_current_filename(filename)
-        else:
-            filename = "untitled"
-        print("filename: " + filename)
+        filename = extract_filename(filename_ocr)
 
     return filename
 
 
-def get_note_header(foxit_page_number_cap, adobe_page_number_cap, filename_cap):
-    page_number = get_page_number(foxit_page_number_cap)
-    if not page_number:
-        page_number = get_page_number(adobe_page_number_cap)
-    else:
-        if isinstance(filename_cap, Image.Image):
-            filename_cap = filename_cap.crop((552, 0, 2607, 48))
+def get_note_header(filename_caps, page_number_caps):
+    print("get note header")
+    filename = None
+    for cap in filename_caps:
+        filename = get_filename(cap)
+        if filename:
+            break
+
+    if not filename:
+        print("failed OCR file name")
+        filename = "untitled"
+
+    page_number = None
+    for cap in page_number_caps:
+        page_number = get_page_number(cap)
+        if page_number:
+            break
+
     if not page_number:
         print("failed OCR page number")
-        page_number = last_page_number
-    print("page_number: " + str(page_number))
-    filename = get_filename(filename_cap)
+        page_number = 0
+
     cur_time = time.strftime('%Y年%m月%d日 %H:%M:%S', time.localtime())
 
     return cur_time + ' 摘自<<' + filename + '>> 第' + str(page_number) + '页\n'
 
 
-def append_note(seq_no, note, foxit_page_number_cap, adobe_page_number_capp, filename_cap):
-    temp_notes_dir = get_temp_notes_dir()
+def append_note(seq_no, note, filename_caps, page_number_caps):
+    temp_notes_dir = settings.get_temp_notes_dir()
     if not temp_notes_dir:
         return
 
-    note_header = get_note_header(foxit_page_number_cap, adobe_page_number_capp, filename_cap)
+    note_header = get_note_header(filename_caps, page_number_caps)
     notes_filepath = os.path.join(temp_notes_dir, 'notes.txt')
     with open(notes_filepath, 'a', encoding='utf_8_sig') as f:
         f.write('\n\n')
@@ -182,13 +223,13 @@ def on_text(seq_no, text):
         text = saved_text + ' ' + text
         saved_text = None
 
-    foxit_page_number_cap, adobe_page_number_cap, filename_cap = grab_page_number_and_filename_image()
+    filename_caps, page_number_caps = grab_page_number_and_filename_image()
     global q
-    q.put(('text', seq_no, text, foxit_page_number_cap, adobe_page_number_cap, filename_cap))
+    q.put(('text', seq_no, text, filename_caps, page_number_caps))
 
 
 def save_image(seq_no, img):
-    temp_notes_dir = get_temp_notes_dir()
+    temp_notes_dir = settings.get_temp_notes_dir()
     if not temp_notes_dir:
         return
 
@@ -224,7 +265,7 @@ def worker():
 
 
 if __name__ == '__main__':
-    temp_notes_dir = get_temp_notes_dir()
+    temp_notes_dir = settings.get_temp_notes_dir()
     settings_file = os.path.join(temp_notes_dir, 'notes_monitor_settings.json')
     if os.path.exists(settings_file):
         with open(settings_file, 'r', encoding='utf-8') as f:
@@ -232,11 +273,15 @@ if __name__ == '__main__':
             single_book_mode = setting_json.get('single_book_mode')
 
      # Path of tesseract executable
-    pytesseract.pytesseract.tesseract_cmd = get_tesseract_cmd()
+    pytesseract.pytesseract.tesseract_cmd = settings.get_tesseract_cmd()
 
     print('start notes monitor(pid: ' + str(os.getpid()) + ')')
     print('temp notes directory: ' + str(temp_notes_dir))
     print('single_book_mode: ' + str(single_book_mode))
+    print('foxit_filename_bbox: ' + str(foxit_filename_bbox))
+    print('foxit_pagenumber_bbox: ' + str(foxit_pagenumber_bbox))
+    print('adobe_filename_bbox: ' + str(adobe_filename_bbox))
+    print('adobe_pagenumber_bbox: ' + str(adobe_pagenumber_bbox))
     # Turn-on the worker thread.
     threading.Thread(target=worker, daemon=True).start()
 
