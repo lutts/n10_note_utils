@@ -499,4 +499,4 @@ theBrain的markdown标准不符合commmark
 
 ## 关于settings.json
 
-test/settings_example.json是一个示例
+test/settings_example.json是一个示例，可以此为基础稍加修改，改名为settings.json放到src目录下即可
