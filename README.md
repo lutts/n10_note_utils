@@ -496,3 +496,7 @@ people who are in **positive** moods may find it {{harder}}(easier or harder?) t
 theBrain的markdown标准不符合commmark
 
 * **CapsLock & b**:: 将剪贴板中的内容转换为theBrain能接受的形式再进行粘贴
+
+## 关于settings.json
+
+test/settings_example.json是一个示例

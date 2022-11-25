@@ -1,5 +1,9 @@
 {
-	"webroot" : "D:\\Data\\supermemo\\collections\\webroot",
-	"temp_notes_dir" : "D:\\temp\\notes",
-	"tesseract_cmd" : "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+	"webroot": "D:\\Data\\supermemo\\collections\\webroot",
+	"temp_notes_dir": "D:\\temp\\notes",
+	"tesseract_cmd": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+	"foxit_filename_region": "34, 0, 2641, 48",
+	"foxit_page_number_region": "104, 1858, 299, 1896",
+	"adobe_filename_region": "586, 0, 2641, 48",
+	"adobe_page_number_region": "782, 183, 1021, 223"
 }
