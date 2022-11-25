@@ -93,7 +93,7 @@ ClipboardMarkdownToHtml()
     FixCapsLockBug()
 }
 
-AppsKey & m:: ClipboardMarkdownToHtml()
+CapsLock & m:: ClipboardMarkdownToHtml()
 
 N10NotesProcess()
 {
@@ -110,7 +110,7 @@ N10NotesProcess()
     FixCapsLockBug()
 }
 
-AppsKey & p:: N10NotesProcess()
+CapsLock & p:: N10NotesProcess()
 
 SendMarkdownToOnenote()
 {
@@ -131,7 +131,7 @@ SendMarkdownToOnenote()
     FixCapsLockBug()
 }
 
-AppsKey &  o:: SendMarkdownToOnenote()
+CapsLock &  o:: SendMarkdownToOnenote()
 
 ListMarkdownLatexEquations()
 {
@@ -151,7 +151,7 @@ ListMarkdownLatexEquations()
     FixCapsLockBug()
 }
 
-AppsKey &  l:: ListMarkdownLatexEquations()
+CapsLock &  l:: ListMarkdownLatexEquations()
 
 SendMarkdownToSupermemo()
 {
@@ -172,7 +172,7 @@ SendMarkdownToSupermemo()
     FixCapsLockBug()
 }
 
-AppsKey &  u:: SendMarkdownToSupermemo()
+CapsLock &  u:: SendMarkdownToSupermemo()
 
 SendMarkdownToTheBrain()
 {
@@ -193,7 +193,7 @@ SendMarkdownToTheBrain()
     FixCapsLockBug()
 }
 
-AppsKey &  i:: SendMarkdownToTheBrain()	
+CapsLock &  i:: SendMarkdownToTheBrain()	
 
 NormalizedPaste()
 {
@@ -234,7 +234,7 @@ StartNoteMonitor()
     FixCapsLockBug()
 }
 
-AppsKey &  n:: StartNoteMonitor()
+CapsLock &  n:: StartNoteMonitor()
 
 GenerateSupermemoQA()
 {
