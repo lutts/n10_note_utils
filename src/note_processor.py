@@ -392,23 +392,26 @@ class NoteProcessStage2:
         if self.cache_mode == self.CACHE_MODE_NONE:
             return False
 
-        if py_text_normalizer.is_blank_line(line):
+        rstriped_line = line.rstrip()
+        if not rstriped_line:
             logging.debug("blank line, end cache mode")
             self.end_cache_mode()
             return False
         else:
             logging.debug("cache line: " + line)
-            self.cache_block.add_line(line)
+            self.cache_block.add_line(rstriped_line)
             return True
 
     def process_normal_line(self, line:str, owner_block:NoteBlock):
         logging.debug("process normal line: " + line)
-        line_type = self.markdown_normalizer.check_line(line)
+        # trim tailing spaces if not literal line
+        rstriped_line = line.rstrip()
+        line_type = self.markdown_normalizer.check_line(rstriped_line)
         is_literal_text = False
         if line_type == py_markdown_normalizer.FENCED_CODE_LINE:
             info_string = self.markdown_normalizer.code_fence_info_string
             if info_string == "delete":
-                logging.debug("fenced code marked as deleted: " + line)
+                logging.debug("fenced code marked as deleted")
                 return
 
             is_literal_text = True
@@ -419,28 +422,26 @@ class NoteProcessStage2:
             is_literal_text = True
 
         if is_literal_text:
-            logging.debug("literal text: " + line)
+            logging.debug("literal text")
             self.add_literal_line(line)
             return
 
-        # trim tailing spaces if not literal line
-        line = line.rstrip()
         if line_type:
             if line_type == '#':
-                logging.debug("title line: " + line)
-                self.add_title_line(line)
+                logging.debug("title line")
+                self.add_title_line(rstriped_line)
                 self.add_empty_line()
             elif not owner_block.is_cache_block and line_type == py_markdown_normalizer.TABLE_LINE:
-                self.begin_cache_mode(self.CACHE_MODE_TABLE, line, owner_block)
+                self.begin_cache_mode(self.CACHE_MODE_TABLE, rstriped_line, owner_block)
             else:
-                logging.debug("markdown line: " + line)
-                self.new_line(line)
-        elif not line:
+                logging.debug("markdown line")
+                self.new_line(rstriped_line)
+        elif not rstriped_line:
             logging.debug("empty line")
             self.add_empty_line()
         else:
-            logging.debug("concat line: " + line)
-            self.concat_line(line)
+            logging.debug("concat line")
+            self.concat_line(rstriped_line)
 
     def add_filename_page_number_info(self, ref_block:NoteBlock):
         if not self.stage1.need_add_file_info():
@@ -604,7 +605,7 @@ def main():
         print('usage: python3 -m n10_note_processor <摘抄文件> [手写笔记导出文本文件]')
         sys.exit(1)
 
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
     if args[0].endswith(".md"):

@@ -69,8 +69,6 @@ class py_markdown_normalizer:
     def check_line(self, line: str) -> str:
         self.seq_number += 1
 
-        line = line.rstrip()
-        
         if self._is_in_front_matter(line):
             return py_markdown_normalizer.FRONT_MATTER_LINE
 
@@ -238,7 +236,6 @@ class py_markdown_normalizer:
                 return False
 
         for cell in cells:
-            cell = cell.strip()
             m = py_markdown_normalizer.table_delimiter_row_cell_re.match(cell)
             if not m:
                 return False
@@ -250,7 +247,7 @@ class py_markdown_normalizer:
         if not table_lines:
             return (False, table_lines)
 
-        first_line = table_lines[0].strip()
+        first_line = table_lines[0]
         logging.debug("first line: " + first_line)
         if not first_line:
             logging.debug("first line of table is empty, ignore")
@@ -271,6 +268,7 @@ class py_markdown_normalizer:
         if py_markdown_normalizer.is_delimiter_row(first_line, parse_result):
             logging.debug("first line is delimiter row")
             delimiter_cells = cells
+            has_trailing_pipe = True
         else:
             all_cells = cells
 
@@ -278,12 +276,12 @@ class py_markdown_normalizer:
 
         for line in table_lines[1:]:
             logging.debug("checking line: " + line)
-            line = line.strip()
             if not line:
                 logging.debug("empty line, break")
                 break
 
             parse_result = py_markdown_normalizer.parse_table_line(line)
+            logging.debug("parse result: " + str(parse_result))
             has_leading_pipe, has_trailing_pipe, cells = parse_result
             if not delimiter_cells and py_markdown_normalizer.is_delimiter_row(line, parse_result):
                 logging.debug("found delimiter row, num all_cells:" + str(len(all_cells)) + ", num_columns: " + str(num_columns))
@@ -342,84 +340,9 @@ class py_markdown_normalizer:
 
 
 def test():
-    test_tables = [
-"""haha
-| :- |
-hoho0
-""",
-"""| haha
-| :- |
-hoho1
-hehe1
-""",
-"""| haha
----------
-hoho2
-""",
-"""| haha
---
-hoho3
-""",
-"""| haha
--|
-hoho4
-""",
-"""| haha
-| -
-hoho5
-""",
-"""| haha | hoho6 |
--- | - 
-""",
-"""| haha
-| - |
--
-- hoho7
-""",
-"""| haha
-- |
-hoho8
-""",
-"""| haha
-| - |
-""",
-"""    | haha 
-    | - |
-    hoho9
-""",
-"""| haha | hehe |
-| - | |
-hoho10
-""",
-"""haha | hoho
-| --- | --- |
-hoho11
-""",
-"""| haha | hehe |
-| --- | --- |
-| - | |
-hoho12
-""",
-"""| haha | hehe |
-| --- | --- |
-| hoho13 | |
-* hoho14
-""",
-"""| haha | hehe |
-| --- | --- |
-| hoho15 | |
-| * hoho16 | |
-""",
-"""| --- | --- | --- |
-| 1 
-| 2
-| 3
-| 4
-| 5
-| 6
-| 7
-""",
-"""| Variable | | |
+    logging.basicConfig(level=logging.DEBUG)
+    table = """| --- | --- | --- |
+| Variable | | |
 | Encodings | The way you categorize information about yourself,
 other people, events, and situations
 | As soon as Bob meets someone, he tries to figure out
@@ -444,17 +367,11 @@ and self-regulatory plans
 generating cognitive and behavioral outcomes
 | Jan can speak English, French, Russian, and Japanese
 and expects to work for the United Nations.
-"""
-    ]
-    
-    logging.basicConfig(level=logging.DEBUG)
-    for table in test_tables:
-        print("normalize table: ")
-        print(table)
-        table_lines = table.splitlines()
-        _, normalized_lines = py_markdown_normalizer.normalize_table(table_lines)
-        print("".join(normalized_lines))
-        print("-----------------------------")
+    """
+    table_lines = table.splitlines()
+    _, normalized_lines = py_markdown_normalizer.normalize_table(table_lines)
+    print("".join(normalized_lines))
+    print("-----------------------------")
 
 
 if __name__ == '__main__':
