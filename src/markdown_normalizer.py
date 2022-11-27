@@ -10,7 +10,7 @@ from text_normalizer import py_text_normalizer
 
 
 class py_markdown_normalizer:
-    heading_whitespaces_re = regex.compile(r" +")
+    leading_whitespaces_re = regex.compile(r" +")
     emphasis_normalizer_re = regex.compile(
         r'(?P<asterisks>\*{1,2})\s*(?P<word1>[\u4e00-\u9fd5]+?)\s*(?P<punc1>\(|（|\[|【|<|《)\s*(?P<word2>.*?)\s*(?P<punc2>\)|）|\]|】|>|》)\s*(?P=asterisks)(?=[\u4e00-\u9fd5])')
     # regular expression to match markdown link ang image link
@@ -47,10 +47,12 @@ class py_markdown_normalizer:
     code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
     front_matter_re = regex.compile(r'-{3,}')
 
-    list_markers_re = regex.compile(r'(?P<markdown_marker>[-*+]|[0-9]+\.|Q:|q:|A:|a:)[ ]')
-    table_re = regex.compile(r'^[|] .*? [|]$')
-    blockquote_re = regex.compile(r'(?P<quote_marker>>(?:$|[> ]*))')
+    list_markers_re = regex.compile(r'[ ]*(?P<markdown_marker>[-*+]|[0-9]+\.|Q:|q:|A:|a:)[ ]')
+    blockquote_re = regex.compile(r'[ ]{,3}(?P<quote_marker>>(?:$|[> ]*))')
     markdown_header_re = regex.compile(r'[ ]{,3}(?P<header_marker>#{1,6})[ ]')
+    maybe_table_re = regex.compile(r'[ ]{,3}\|')
+    table_line_re = regex.compile(r'^[ ]{,3}\|[ ]*|[ ]*(?<=[^\\])\|[ ]*')
+    table_delimiter_row_cell_re = regex.compile(r'^:?-+:?$')
 
     FRONT_MATTER_LINE = "front matter"
     FENCED_CODE_LINE = "fenced code"
@@ -81,21 +83,21 @@ class py_markdown_normalizer:
         m = py_markdown_normalizer.markdown_header_re.match(line)
         if m:
             return m.group(1)
-        
-        line = line.strip()
-        # check if is markdown lists and blockquotes
-        
-        m = py_markdown_normalizer.list_markers_re.match(line)
-        if m:
-            return m.group(1)
 
-        if py_markdown_normalizer.table_re.match(line):
-            return py_markdown_normalizer.TABLE_LINE
-        
         m = py_markdown_normalizer.blockquote_re.match(line)
         if m:
             return ">"
 
+        m = py_markdown_normalizer.list_markers_re.match(line)
+        if m:
+            return m.group(1)
+
+        m = py_markdown_normalizer.maybe_table_re.match(line)
+        if m:
+            _, _, cells = py_markdown_normalizer.parse_table_line(line)
+            if cells:
+                return py_markdown_normalizer.TABLE_LINE
+        
         return None
 
     def is_literal_text(self, line_type) -> bool:
@@ -163,7 +165,7 @@ class py_markdown_normalizer:
         line = line.replace('\0', '')
 
         heading_spaces = ""
-        m = py_markdown_normalizer.heading_whitespaces_re.match(line)
+        m = py_markdown_normalizer.leading_whitespaces_re.match(line)
         if m:
             heading_spaces = m.group()
 
@@ -194,3 +196,266 @@ class py_markdown_normalizer:
             normalized_line = heading_spaces + line
         logging.debug("normalized result: " + normalized_line)
         return normalized_line
+
+    # 这里的表格定义和commonmark的不同，因为我们的目的是从错乱的文本中”恢复“表格，
+    # 所以一开始的文本很大可能不符合commonmark规范的
+    # 
+    # * 表格的第一行必须要有pipe，否则不认为表格的开始，pipe可以在任何位置
+    # * 第一行可以是delimiter row，在这里的主要作用是指定列数
+    # * delimiter row可以出现在任意行
+    # * strict_mode时，delimiter row必须要有开头和结尾的pipe
+    # * 如果delimiter row在第一行，则紧跟着的N个cell为表头
+    # * 如果delimiter row不在第一行，则delimiter前面的N个cell为表头，如果N和delimiter row的cell个数对不上，则不是有效表格
+    # * 非strict_mode时，如果没有delimiter row，则表格列数以第一行所表示的列数
+    # * strict_mode时，必须要有delimiter row
+    # * cell的定义: 两个pipe(|)之间的内容为一个cell，换行不影响cell的判定，如果有多行，会合并成一行
+    # * 表格的终止条件: 空行。标准里是允许block level structure来终止表格的，但我们不考虑block level structure
+
+    @staticmethod
+    def parse_table_line(line:str):
+        cells = py_markdown_normalizer.table_line_re.split(line)
+        has_leading_pipe = False
+        has_trailing_pipe = False
+        if not cells[0]:
+            cells.pop(0)
+            has_leading_pipe = True
+        
+        if not cells[-1]:
+            cells.pop()
+            has_trailing_pipe = True
+
+        return (has_leading_pipe, has_trailing_pipe, cells)
+
+    @staticmethod
+    def is_delimiter_row(line:str, parse_result, strict_mode:bool=False) -> bool:
+        if line == "-" or line.startswith("- "):
+            # is list item, not delimiter row
+            return False
+
+        has_leading_pipe, has_trailing_pipe, cells = parse_result
+        if strict_mode:
+            if not has_leading_pipe or not has_trailing_pipe:
+                return False
+
+        for cell in cells:
+            cell = cell.strip()
+            m = py_markdown_normalizer.table_delimiter_row_cell_re.match(cell)
+            if not m:
+                return False
+
+        return True
+
+    @staticmethod
+    def normalize_table(table_lines:list[str], strict_mode:bool=False):
+        if not table_lines:
+            return (False, table_lines)
+
+        first_line = table_lines[0].strip()
+        logging.debug("first line: " + first_line)
+        if not first_line:
+            logging.debug("first line of table is empty, ignore")
+            return (False, table_lines)
+
+        parse_result = py_markdown_normalizer.parse_table_line(first_line)
+        has_leading_pipe, has_trailing_pipe, cells = parse_result
+        if not has_leading_pipe and not has_trailing_pipe and len(cells) == 1:
+            logging.debug("first line of table has no pipe, ignore")
+            return (False, table_lines)
+
+        all_cells = []
+        delimiter_cells = None
+        # default num columns is the number cells of the first line
+        num_columns = len(cells)
+        logging.debug("first line columns: " + str(num_columns))
+
+        if py_markdown_normalizer.is_delimiter_row(first_line, parse_result):
+            logging.debug("first line is delimiter row")
+            delimiter_cells = cells
+        else:
+            all_cells = cells
+
+        last_line_has_trailing_pipe = has_trailing_pipe
+
+        for line in table_lines[1:]:
+            logging.debug("checking line: " + line)
+            line = line.strip()
+            if not line:
+                logging.debug("empty line, break")
+                break
+
+            parse_result = py_markdown_normalizer.parse_table_line(line)
+            has_leading_pipe, has_trailing_pipe, cells = parse_result
+            if not delimiter_cells and py_markdown_normalizer.is_delimiter_row(line, parse_result):
+                logging.debug("found delimiter row, num all_cells:" + str(len(all_cells)) + ", num_columns: " + str(num_columns))
+                num_columns = len(cells)
+                # if delimiter row is not the first line, column number MUST be the number of cells currently parsed
+                if len(all_cells) != num_columns:
+                    break
+
+                delimiter_cells = cells
+                logging.debug("delimiter row is valid")
+                last_line_has_trailing_pipe = True
+            else:
+                if not has_leading_pipe and not last_line_has_trailing_pipe:
+                    logging.debug("no leading pipe and last line has no trailing pipe")
+                    if not all_cells:
+                        all_cells.append(cells[0])
+                    else:
+                        all_cells[-1] = py_text_normalizer.concat_line(all_cells[-1], cells[0])
+                    cells = cells[1:]
+                
+                all_cells.extend(cells)
+
+                last_line_has_trailing_pipe = has_trailing_pipe
+
+        if strict_mode and not delimiter_cells:
+            return (False, table_lines)
+
+        if len(all_cells) < num_columns:
+            return (False, table_lines)
+
+        if len(all_cells) == 1 and not all_cells[0]:
+            return (False, table_lines)
+
+        all_cells = [py_markdown_normalizer.normalize_line(
+            cell, add_newline_char=False) for cell in all_cells]
+
+        logging.debug("all_cells:")
+        logging.debug(all_cells)
+
+        header_line = '| ' + (' | '.join(all_cells[0:num_columns])) + ' |\n'
+        table_lines = [header_line]
+        if delimiter_cells:
+            table_lines.append('| ' + (' | '.join(delimiter_cells)) + ' |\n')
+        else:
+            delimiter_cells = [""]
+            for _ in range(num_columns):
+                delimiter_cells.append(' --- ')
+            delimiter_cells.append("")
+            table_lines.append('|'.join(delimiter_cells) + "\n")
+
+        for i in range(num_columns, len(all_cells), num_columns):
+            cells = all_cells[i:i+num_columns]
+            table_lines.append('| ' + (' | '.join(cells)) + ' |\n')
+
+        return (True, table_lines)
+
+
+def test():
+    test_tables = [
+"""haha
+| :- |
+hoho0
+""",
+"""| haha
+| :- |
+hoho1
+hehe1
+""",
+"""| haha
+---------
+hoho2
+""",
+"""| haha
+--
+hoho3
+""",
+"""| haha
+-|
+hoho4
+""",
+"""| haha
+| -
+hoho5
+""",
+"""| haha | hoho6 |
+-- | - 
+""",
+"""| haha
+| - |
+-
+- hoho7
+""",
+"""| haha
+- |
+hoho8
+""",
+"""| haha
+| - |
+""",
+"""    | haha 
+    | - |
+    hoho9
+""",
+"""| haha | hehe |
+| - | |
+hoho10
+""",
+"""haha | hoho
+| --- | --- |
+hoho11
+""",
+"""| haha | hehe |
+| --- | --- |
+| - | |
+hoho12
+""",
+"""| haha | hehe |
+| --- | --- |
+| hoho13 | |
+* hoho14
+""",
+"""| haha | hehe |
+| --- | --- |
+| hoho15 | |
+| * hoho16 | |
+""",
+"""| --- | --- | --- |
+| 1 
+| 2
+| 3
+| 4
+| 5
+| 6
+| 7
+""",
+"""| Variable | | |
+| Encodings | The way you categorize information about yourself,
+other people, events, and situations
+| As soon as Bob meets someone, he tries to figure out
+how wealthy he or she is.
+| Expectancies
+and beliefs
+| Your beliefs about the social world and likely outcomes
+for given actions in particular situations; your beliefs
+about your ability to bring outcomes about
+| Greg invites friends to the movies, but he never expects
+them to say “yes.”
+| Affects | Your feelings and emotions, including physiological
+responses
+| Cindy blushes very easily.
+| Goals and values | The outcomes and affective states you do and do not
+value; your goals and life projects
+| Peter wants to be president of his
+college class.
+| Competencies
+and self-regulatory plans
+| The behaviors you can accomplish and plans for
+generating cognitive and behavioral outcomes
+| Jan can speak English, French, Russian, and Japanese
+and expects to work for the United Nations.
+"""
+    ]
+    
+    logging.basicConfig(level=logging.DEBUG)
+    for table in test_tables:
+        print("normalize table: ")
+        print(table)
+        table_lines = table.splitlines()
+        _, normalized_lines = py_markdown_normalizer.normalize_table(table_lines)
+        print("".join(normalized_lines))
+        print("-----------------------------")
+
+
+if __name__ == '__main__':
+    test()

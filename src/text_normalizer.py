@@ -3,11 +3,19 @@
 Module documentation.
 """
 
+import re
 import hanzi
 
 class py_text_normalizer:
     english_punctuation = r'-!"#$%&\'()*+,./:;<=>?@\[\\\]^_`{|}~'
     punctuation_and_numbers = english_punctuation + hanzi.punctuation + '0123456789'
+    blank_line_re = re.compile(r'^\s*$')
+
+    @staticmethod
+    def is_blank_line(line):
+        if py_text_normalizer.blank_line_re.match(line):
+            return True
+        return False
 
     @staticmethod
     def is_chinese_char(char):

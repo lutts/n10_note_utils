@@ -173,6 +173,104 @@ bad_link = '[link](<http://google. com "title")'
 
 multiple_link_or_img = r'in one line [link](http://google.com) or image ![x](./haha.png) may be with title [link title](http://google.com "google"), images can also have title ![x](./hoho.png "hoho"), urls has spaces should use use [![img link](haha.png)](<http://google.com> "google") or img ![x](<./hehe.png> "hehe"). and there's some text with {braces} {} in it'
 
+### table normalizer
+
+haha
+| hoho0 |
+| :- |
+
+---
+
+| haha |
+| :- |
+| hoho1 hehe1 |
+
+---
+
+| haha |
+| --------- |
+| hoho2 |
+
+---
+
+| haha |
+| -- |
+| hoho3 |
+
+---
+
+| haha |
+| - |
+| hoho4 |
+
+---
+
+| haha |
+| - |
+| hoho5 |
+
+---
+
+| haha | hoho6 |
+| -- | - |
+
+---
+
+| haha |
+| - |
+| - hoho7 |
+
+---
+
+| haha
+- | hoho8
+
+---
+
+| haha |
+| - |
+
+---
+
+| haha | hehe |
+| - | | hoho10
+
+---
+
+haha | hoho
+| --- | --- | hoho11
+
+---
+
+| haha | hehe |
+| --- | --- |
+| - |  |
+| hoho12 |
+
+---
+
+| haha | hehe |
+| --- | --- |
+| hoho13 |  |
+| * hoho14 |
+
+---
+
+| haha | hehe |
+| --- | --- |
+| hoho15 |  |
+| * hoho16 |  |
+
+---
+
+| Variable |  |  |
+| --- | --- | --- |
+| Encodings | The way you categorize information about yourself, other people, events, and situations | As soon as Bob meets someone, he tries to figure out how wealthy he or she is. |
+| Expectancies and beliefs | Your beliefs about the social world and likely outcomes for given actions in particular situations; your beliefs about your ability to bring outcomes about | Greg invites friends to the movies, but he never expects them to say "yes." |
+| Affects | Your feelings and emotions, including physiological responses | Cindy blushes very easily. |
+| Goals and values | The outcomes and affective states you do and do not value; your goals and life projects | Peter wants to be president of his college class. |
+| Competencies and self-regulatory plans | The behaviors you can accomplish and plans for generating cognitive and behavioral outcomes | Jan can speak English, French, Russian, and Japanese and expects to work for the United Nations. |
+
 ([1]p182e)
 
 [1]: <测试书名.pdf>

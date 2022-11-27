@@ -53,6 +53,14 @@ class NoteBlock:
         self.lines : list[str] = []
         self.next : NoteBlock = None
 
+        self.is_cache_block = False
+
+    def make_cache_block(self):
+        block = NoteBlock(self.filename, self.phy_page_number)
+        block.is_dummy = self.is_dummy
+        block.is_cache_block = True
+        return block
+
     def clear(self):
         self.lines = None
         self.next = None
@@ -288,6 +296,9 @@ class RawNoteProcessStage1(NoteProcessStage1):
 
 
 class NoteProcessStage2:
+    CACHE_MODE_NONE:int = 0
+    CACHE_MODE_TABLE:int = 1
+
     def __init__(self, stage1: NoteProcessStage1):
         self.stage1 : NoteProcessStage1 = stage1
         self.markdown_lines : list[str] = []
@@ -298,6 +309,9 @@ class NoteProcessStage2:
         self.last_line_is_empty = False
         self.last_filename:str = None
         self.last_page_number:str = None
+
+        self.cache_block:NoteBlock = None
+        self.cache_mode:int = NoteProcessStage2.CACHE_MODE_NONE
 
     def get_markdown_lines(self):
         return self.markdown_lines
@@ -348,7 +362,46 @@ class NoteProcessStage2:
     def concat_line(self, line):
         self.cur_line = py_text_normalizer.concat_line(self.cur_line, line)
 
-    def process_normal_line(self, line:str):
+    def begin_cache_mode(self, mode, line, ref_block):
+        self.finish_cur_line()
+        logging.debug("begin cache mode: " + str(mode))
+        self.cache_mode = mode
+        self.cache_block = ref_block.make_cache_block()
+        self.cache_block.add_line(line)
+
+    def end_cache_mode(self):
+        if self.cache_mode == NoteProcessStage2.CACHE_MODE_NONE:
+            return
+
+        logging.debug("end cache mode: " + str(self.cache_mode))
+        last_cache_mode = self.cache_mode
+        self.cache_mode = NoteProcessStage2.CACHE_MODE_NONE
+        processed = False
+        if last_cache_mode == NoteProcessStage2.CACHE_MODE_TABLE:
+            processed, lines = py_markdown_normalizer.normalize_table(self.cache_block.lines, strict_mode=True)
+            if processed:
+                self.last_line_is_empty = False
+                self.markdown_lines.extend(lines)
+                self.cur_line = ""
+
+        if not processed:
+            self.get_block_lines(self.cache_block)
+        self.cache_block = None
+
+    def cache_line(self, line:str):
+        if self.cache_mode == self.CACHE_MODE_NONE:
+            return False
+
+        if py_text_normalizer.is_blank_line(line):
+            logging.debug("blank line, end cache mode")
+            self.end_cache_mode()
+            return False
+        else:
+            logging.debug("cache line: " + line)
+            self.cache_block.add_line(line)
+            return True
+
+    def process_normal_line(self, line:str, owner_block:NoteBlock):
         logging.debug("process normal line: " + line)
         line_type = self.markdown_normalizer.check_line(line)
         is_literal_text = False
@@ -377,6 +430,8 @@ class NoteProcessStage2:
                 logging.debug("title line: " + line)
                 self.add_title_line(line)
                 self.add_empty_line()
+            elif not owner_block.is_cache_block and line_type == py_markdown_normalizer.TABLE_LINE:
+                self.begin_cache_mode(self.CACHE_MODE_TABLE, line, owner_block)
             else:
                 logging.debug("markdown line: " + line)
                 self.new_line(line)
@@ -422,6 +477,8 @@ class NoteProcessStage2:
             line_number += 1
             replace_block, delete_block = self.get_replacement_block(line, line_number)
             if replace_block:
+                logging.debug("replace block fond, end cache mode")
+                self.end_cache_mode()
                 self.get_block_lines(replace_block)
                 if delete_block:
                     break
@@ -431,8 +488,13 @@ class NoteProcessStage2:
                 if may_need_filename_page_number_info:
                     self.add_filename_page_number_info(block)
                     may_need_filename_page_number_info = False
-                self.process_normal_line(line)
+                logging.debug("check line: " + line)
+                if not self.cache_line(line):
+                    self.process_normal_line(line, block)
         
+        logging.debug("finished cur block, end cache mode")
+        self.end_cache_mode()
+
         while followers:
             self.get_block_lines(followers)
             followers = followers.next
@@ -542,7 +604,7 @@ def main():
         print('usage: python3 -m n10_note_processor <摘抄文件> [手写笔记导出文本文件]')
         sys.exit(1)
 
-    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
     if args[0].endswith(".md"):
