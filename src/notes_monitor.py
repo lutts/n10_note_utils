@@ -96,6 +96,7 @@ def grab_page_number_and_filename_image():
 
 
 page_number_re = re.compile(r'\(\s*(\d+)\s+[^\s]*\s+\d+\s*\)')
+page_number_fallback_re = re.compile(r'(\d+)\s+[^\s]*\s+\d+')
 
 
 def get_page_number(page_number_cap):
@@ -109,7 +110,11 @@ def get_page_number(page_number_cap):
     if m:
         page_number = m.group(1)
     else:
-        page_number = None
+        m = page_number_fallback_re.search(page_number_ocr)
+        if m:
+            page_number = m.group(1)
+        else:
+            page_number = None
 
     print("page number: " + str(page_number))
 
