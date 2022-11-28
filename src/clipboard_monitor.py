@@ -162,6 +162,32 @@ class py_clipboard_monitor:
             while self._clipboard_thread.is_alive():
                 self._clipboard_thread.join(0.25)
 
+    @staticmethod
+    def wait_for_change(timeout=None, prev_text=''):
+        start_time = time.time()
+        while True:
+            clipboard_text = clipboard_util.get_text()
+            if clipboard_text is not None and clipboard_text != prev_text:
+                return clipboard_text
+
+            if timeout is not None and time.time() > start_time + timeout:
+                return None
+
+            time.sleep(0.01)
+
+    @staticmethod
+    def wait_for_text(expect_text, timeout=None):
+        start_time = time.time()
+        while True:
+            clipboard_text = clipboard_util.get_text()
+            if clipboard_text == expect_text:
+                return True
+
+            if timeout is not None and time.time() > start_time + timeout:
+                return False
+
+            time.sleep(0.01)
+
 
 def test():
     def print_text(seqno, text):

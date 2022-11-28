@@ -8,11 +8,10 @@ import sys
 import os
 import logging
 
-from markdown_utils import markdown_processor
-from note_processor import N10NoteProcessor
+from note_processor import process_files
 
 def main():
-    # logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     args = sys.argv[1:]
 
     if not args:
@@ -29,43 +28,14 @@ def main():
         sys.exit(1)
 
     dirname = args[0]
-    notes_filepath = None
-    hand_notes_filepath = None
 
     logging.debug("dirname: " + dirname)
-    
+
+    fullpaths = []
     for filename in args[1:]:
-        logging.debug("filename: " + filename)
-        fullpath = os.path.join(dirname, filename)
-        if filename.endswith(".md"):
-            markdown_processor().markdown_file_to_html_file(fullpath)
-            continue
-        elif '摘抄' in filename:
-            notes_filepath = fullpath
-        else:
-            if not notes_filepath:
-                notes_filepath = fullpath
-            else:
-                hand_notes_filepath = fullpath
-
-    if notes_filepath:
-        # only one file, it must be notes file
-        if notes_filepath == hand_notes_filepath:
-            hand_notes_filepath = None
-        
-        logging.debug("notes_filepath: " + notes_filepath)
-        if hand_notes_filepath:
-            logging.debug("hand_notes_filepath: " + hand_notes_filepath)
-
-        try:
-            processor = N10NoteProcessor(n10_notes_filepath=notes_filepath,
-                                     hand_notes_filepath=hand_notes_filepath)
-            processor.process()
-            processor.write()
-        except Exception as e:
-            logging.error(str(e))
-
-        logging.debug("process done")
+        fullpaths.append(os.path.join(dirname, filename))
+    
+    process_files(fullpaths)
 
 # Main body
 if __name__ == '__main__':

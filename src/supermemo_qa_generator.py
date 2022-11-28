@@ -130,17 +130,7 @@ def convert_html_to_qa_text(title, html_body):
     return '\n'.join(qa_text)
 
 
-def main():
-    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
-    #logging.basicConfig(level=logging.DEBUG)
-    args = sys.argv[1:]
-
-    if not args:
-        logging.debug('no file selected\n')
-        sys.exit(1)
-
-    filename = args[0]
-
+def generate_qa_file(filename):
     title, qa_markdown_lines = generate_qa_markdown(filename)
     if not qa_markdown_lines:
         logging.debug('empty file')
@@ -162,6 +152,20 @@ def main():
             f.write(qa_text)
     except:
         logging.exception("some exception occured", exc_info=True)
+
+
+def main():
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
+    args = sys.argv[1:]
+
+    if not args:
+        logging.debug('no file selected\n')
+        sys.exit(1)
+
+    filename = args[0]
+    generate_qa_file(filename)
+    
 
 # Main body
 if __name__ == '__main__':

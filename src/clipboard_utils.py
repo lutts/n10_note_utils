@@ -103,7 +103,7 @@ class cf_html_helper:
             print("no recogonizable clip data")
 
     @staticmethod
-    def encode(fragments, html_start=None, html_end=None, source=None):
+    def encode(fragments:list, html_start:str=None, html_end:str=None, source:str=None):
         if not html_start:
             html_start = '<html><body>\n'
 
@@ -167,7 +167,7 @@ class cf_html_helper:
 
 class clipboard_util:
     @staticmethod
-    def get_data(format):
+    def _get_data(format):
         cb_opened = False
         clipboard_data = None
         try:
@@ -198,6 +198,17 @@ class clipboard_util:
         return clipboard_data
 
     @staticmethod
+    def get_data(format):
+        data = clipboard_util._get_data(format)
+        if data is None:
+            for _ in range(2):
+                time.sleep(0.02)
+                data = clipboard_util._get_data(format)
+                if data is not None:
+                    return data
+        return data
+
+    @staticmethod
     def get_text():
         if win32clipboard.IsClipboardFormatAvailable(win32con.CF_UNICODETEXT):
             return clipboard_util.get_data(win32con.CF_UNICODETEXT)
@@ -221,7 +232,7 @@ class clipboard_util:
         return ImageGrab.grabclipboard()
 
     @staticmethod
-    def put_data(data_list):
+    def _put_data(data_list) -> bool:
         cb_opened = False
         try:
             win32clipboard.OpenClipboard(0)
@@ -232,39 +243,64 @@ class clipboard_util:
                 # print('cf_format: ' + str(cf_format))
                 # print('cf_content: ' + str(cf_content))
                 win32clipboard.SetClipboardData(cf_format, cf_content)
+
+            return True
+        except:
+            return False
         finally:
             if cb_opened:
                 win32clipboard.CloseClipboard()
 
-    @staticmethod
-    def put_text(text):
-        clipboard_util.put_data([(win32con.CF_UNICODETEXT, text)])
+    def put_data(data_list) -> bool:
+        success = clipboard_util._put_data(data_list)
+        if not success:
+            for _ in range(2):
+                time.sleep(0.02)
+                success = clipboard_util._put_data(data_list)
+                if success:
+                    return success
+        return success
 
     @staticmethod
-    def put_html_fragements(fragments, html_start=None, html_end=None, source=None, text=None):
+    def put_text(text):
+        if text is None:
+            return False
+        return clipboard_util.put_data([(win32con.CF_UNICODETEXT, text)])
+
+    @staticmethod
+    def put_html_fragements(fragments:list, html_start:str=None, html_end:str=None, source:str=None, text:str=None):
+        if not fragments:
+            return False
+
         cf_html = cf_html_helper.get_cf_html()
         if not cf_html:
-            return
+            return False
 
         encoded_html = cf_html_helper.encode(
             fragments=fragments, html_start=html_start, html_end=html_end, source=source)
         data_list = [(cf_html, encoded_html)]
         if text:
             data_list.append((win32con.CF_UNICODETEXT, text))
-        clipboard_util.put_data(data_list)
+        return clipboard_util.put_data(data_list)
 
     @staticmethod
-    def put_html(html, text=None):
-        clipboard_util.put_html_fragements(fragments=[html], text=text)
+    def put_html(html:str, text:str=None):
+        if not html:
+            return False
+
+        return clipboard_util.put_html_fragements(fragments=[html], text=text)
 
     @staticmethod
     def put_img(image):
+        if not image:
+            return False
+            
         output = BytesIO()
         image.convert('RGB').save(output, 'BMP')
         data = output.getvalue()[14:]
         output.close()
 
-        clipboard_util.put_data([(win32con.CF_DIB, data)])
+        return clipboard_util.put_data([(win32con.CF_DIB, data)])
 
 
 if __name__ == '__main__':

@@ -598,6 +598,43 @@ class RawNoteProcessor:
         self.markdown_lines = stage2.get_markdown_lines()
 
 
+def process_files(fullpaths):
+    notes_filepath = None
+    hand_notes_filepath = None
+    for fullpath in fullpaths:
+        logging.debug("file: " + fullpath)
+        filename = os.path.basename(fullpath)
+        if filename.endswith(".md"):
+            markdown_processor().markdown_file_to_html_file(fullpath)
+            continue
+        elif '摘抄' in filename:
+            notes_filepath = fullpath
+        else:
+            if not notes_filepath:
+                notes_filepath = fullpath
+            else:
+                hand_notes_filepath = fullpath
+
+    if notes_filepath:
+        # only one file, it must be notes file
+        if notes_filepath == hand_notes_filepath:
+            hand_notes_filepath = None
+        
+        logging.debug("notes_filepath: " + notes_filepath)
+        if hand_notes_filepath:
+            logging.debug("hand_notes_filepath: " + hand_notes_filepath)
+
+        try:
+            processor = N10NoteProcessor(n10_notes_filepath=notes_filepath,
+                                     hand_notes_filepath=hand_notes_filepath)
+            processor.process()
+            processor.write()
+        except Exception as e:
+            logging.error(str(e))
+
+        logging.debug("process done")
+
+
 def main():
     args = sys.argv[1:]
 

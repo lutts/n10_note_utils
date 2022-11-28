@@ -84,7 +84,7 @@ normal text
   * item1
 """
 
-def normlize_clipboard():
+def do_normlize_clipboard_thebrain():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     logging.debug("normalize clipboard for thebrain")
     raw_text = clipboard_util.get_text()
@@ -156,4 +156,4 @@ def normlize_clipboard():
         clipboard_util.put_text("".join(thebrain_lines))
 
 if __name__ == "__main__":
-    normlize_clipboard()
+    do_normlize_clipboard_thebrain()

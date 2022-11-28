@@ -6,7 +6,7 @@ import logging
 from note_processor import RawNoteProcessor
 from clipboard_utils import clipboard_util
 
-def normlize_clipboard():
+def do_normlize_clipboard():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     logging.debug("normalize clipboard")
     raw_text = clipboard_util.get_text()
@@ -23,4 +23,4 @@ def normlize_clipboard():
 
 
 if __name__ == "__main__":
-    normlize_clipboard()
+    do_normlize_clipboard()
