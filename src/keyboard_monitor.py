@@ -30,23 +30,6 @@ def delay_to_worker_thread(callback):
     
     return delay_to_worker
 
-
-def get_capslock_state():
-    hllDll = ctypes.WinDLL ("User32.dll")
-    VK_CAPITAL = 0x14
-    return hllDll.GetKeyState(VK_CAPITAL)
-
-
-@delay_to_worker_thread
-def toggle_capslock():
-    capslock_state = get_capslock_state()
-    print("capslock_state: " + hex(capslock_state))
-    capslock_on = capslock_state & 0x1
-    if capslock_on:
-        keyboard.send('caps lock')
-
-    keyboard.remove_idle_callback()
-
     
 def ask_open_filename(multiple=False, filetypes=["md"]):
     def get_filetype_tuple(extension):
@@ -161,8 +144,8 @@ def look_up_dictionary():
     else:
         py_clipboard_monitor.wait_for_text(marker, 1)
     keyboard.send("ctrl+c")
+    #time.sleep(0.6)
     py_clipboard_monitor.wait_for_change(2, marker)
-    time.sleep(0.2)
     keyboard.send("ctrl+alt+shift+c")
 
 
@@ -287,13 +270,27 @@ def generate_supermemo_qa():
     generate_qa_file(filename)
     
 
+def get_capslock_state():
+    hllDll = ctypes.WinDLL ("User32.dll")
+    VK_CAPITAL = 0x14
+    return hllDll.GetKeyState(VK_CAPITAL)
+
+
+def toggle_capslock():
+    capslock_state = get_capslock_state()
+    print("capslock_state: " + hex(capslock_state))
+    capslock_on = capslock_state & 0x1
+    if capslock_on:
+        keyboard.send('caps lock')
+
+
 def worker():
     while True:
         callback = worker_queue.get()
 
         try:
-            keyboard.on_idle(toggle_capslock)
             callback()
+            toggle_capslock()
         except:
             print("failed do work in worker")
 
@@ -301,66 +298,179 @@ def worker():
 
 threading.Thread(target=worker, daemon=True).start()
 
-keyboard.add_hotkey("caps lock+t",
-                    supermemo_component_to_plain,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+c",
-                    copy_plain_text,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+1",
-                    copy_as_markdown_header1,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+2",
-                    copy_as_markdown_header2,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+3",
-                    copy_as_markdown_header3,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+4",
-                    copy_as_markdown_header4,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+5",
-                    copy_as_markdown_header5,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+6",
-                    copy_as_markdown_header6,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+d",
-                    look_up_dictionary,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+m",
-                    clipboard_markdown_to_html,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+p",
-                    n10notes_process,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+o",
-                    send_markdown_to_onenote,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+l",
-                    list_markdown_latex_equations,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+u",
-                    send_markdown_to_supermemo,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+i",
-                    send_markdown_to_the_brain,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+v",
-                    normalized_paste,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+b",
-                    normalized_paste_the_brain,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+q",
-                    generate_supermemo_qa,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+n",
-                    start_note_monitor,
-                    suppress=True)
-keyboard.add_hotkey("caps lock+s",
-                    run_supermemo,
-                    suppress=True)
+# keyboard.add_hotkey("caps lock+t",
+#                     supermemo_component_to_plain,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+c",
+#                     copy_plain_text,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+1",
+#                     copy_as_markdown_header1,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+2",
+#                     copy_as_markdown_header2,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+3",
+#                     copy_as_markdown_header3,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+4",
+#                     copy_as_markdown_header4,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+5",
+#                     copy_as_markdown_header5,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+6",
+#                     copy_as_markdown_header6,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+d",
+#                     look_up_dictionary,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+m",
+#                     clipboard_markdown_to_html,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+p",
+#                     n10notes_process,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+o",
+#                     send_markdown_to_onenote,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+l",
+#                     list_markdown_latex_equations,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+u",
+#                     send_markdown_to_supermemo,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+i",
+#                     send_markdown_to_the_brain,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+v",
+#                     normalized_paste,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+b",
+#                     normalized_paste_the_brain,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+q",
+#                     generate_supermemo_qa,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+n",
+#                     start_note_monitor,
+#                     suppress=True)
+# keyboard.add_hotkey("caps lock+s",
+#                     run_supermemo,
+#                     suppress=True)
 
-print("Press ESC to stop.")
-keyboard.wait('esc')
+hotkeys = {'t': supermemo_component_to_plain,
+           'c': copy_plain_text, '1': copy_as_markdown_header1,
+           '2': copy_as_markdown_header2,
+           '3': copy_as_markdown_header3,
+           '4': copy_as_markdown_header4,
+           '5': copy_as_markdown_header5,
+           '6': copy_as_markdown_header6,
+           'd': look_up_dictionary,
+           'm': clipboard_markdown_to_html,
+           'p': n10notes_process,
+           'o': send_markdown_to_onenote,
+           'l': list_markdown_latex_equations,
+           'u': send_markdown_to_supermemo,
+           'i': send_markdown_to_the_brain,
+           'v': normalized_paste,
+           'b': normalized_paste_the_brain,
+           'q': generate_supermemo_qa,
+           'n': start_note_monitor,
+           's': run_supermemo}
+
+
+def do_hotkey(key_name):
+    # print("do hotkey " + key_name)
+    try:
+        hotkeys[key_name]()
+    except:
+        print("do hotkey failed for " + key_name)
+
+
+caps_lock_name = "caps lock"
+
+class State(object):
+    def on_event(self, event: keyboard.KeyboardEvent):
+        pass
+
+    def should_continue(self):
+        return True
+
+
+class InitState(State):
+    def on_event(self, event: keyboard.KeyboardEvent):
+        if event.event_type == keyboard.KEY_DOWN and event.name == caps_lock_name:
+            return CapsLockDownState()
+        else:
+            return self
+
+
+class CapsLockDownState(State):
+    def on_event(self, event: keyboard.KeyboardEvent):
+        if event.event_type == keyboard.KEY_DOWN:
+            if event.name == caps_lock_name:
+                return self
+            elif event.name.lower() in hotkeys:
+                return HotKeyDownState(event.name.lower())
+
+        return InitState()
+
+
+class HotKeyDownState(State):
+    def __init__(self, key_name):
+        self.name = key_name
+
+    def on_event(self, event: keyboard.KeyboardEvent):
+        key_name = event.name.lower()
+        if key_name == self.name:
+            if event.event_type == keyboard.KEY_DOWN:
+                return self
+            else:
+                return HotKeyUpState(self.name)
+        elif event.event_type == keyboard.KEY_UP and key_name == caps_lock_name:
+            return CapsLockUpState(self.name)
+        else:
+            return InitState()
+
+    def should_continue(self):
+        return False
+
+
+class HotKeyUpState(State):
+    def __init__(self, key_name):
+        self.name = key_name
+
+    def on_event(self, event: keyboard.KeyboardEvent):
+        if event.event_type == keyboard.KEY_UP and event.name == caps_lock_name:
+            do_hotkey(self.name)
+        
+        return InitState()
+
+    def should_continue(self):
+        return False
+
+
+class CapsLockUpState(State):
+    def __init__(self, key_name):
+        self.name = key_name
+
+    def on_event(self, event: keyboard.KeyboardEvent):
+        if event.event_type == keyboard.KEY_UP and event.name.lower() == self.name:
+            do_hotkey(self.name)
+        
+        return InitState()
+
+
+cur_state = InitState()
+
+def do_keyboard_hook(event: keyboard.KeyboardEvent):
+    global cur_state
+    cur_state = cur_state.on_event(event)
+    return cur_state.should_continue()
+
+
+keyboard.hook(callback=do_keyboard_hook, suppress=True)
+
+print("Press ctrl+c to stop.")
+keyboard.wait()

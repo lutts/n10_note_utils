@@ -176,21 +176,22 @@ class clipboard_util:
             clipboard_data = win32clipboard.GetClipboardData(format)
             #print('clipboard_data: ' + clipboard_data)
         except Exception as err:
-            print(err)
+            clipboard_data = None
+            #print(err)
             # If access is denied, that means that the clipboard is in use.
             # Keep trying until it's available.
-            if err.winerror == 5:  # Access Denied
-                pass
-                # wait on clipboard because something else has it. we're waiting a
-                # random amount of time before we try again so we don't collide again
-                time.sleep(random.random()/50)
-            elif err.winerror == 1418:  # doesn't have board open
-                pass
-            elif err.winerror == 0:  # open failure
-                pass
-            else:
-                print('ERROR in Clipboard section of readcomments: %s' % err)
-                pass
+            # if err.winerror == 5:  # Access Denied
+            #     pass
+            #     # wait on clipboard because something else has it. we're waiting a
+            #     # random amount of time before we try again so we don't collide again
+            #     time.sleep(random.random()/50)
+            # elif err.winerror == 1418:  # doesn't have board open
+            #     pass
+            # elif err.winerror == 0:  # open failure
+            #     pass
+            # else:
+            #     print('ERROR in Clipboard section of readcomments: %s' % err)
+            #     pass
         finally:
             if cb_opened:
                 win32clipboard.CloseClipboard()
