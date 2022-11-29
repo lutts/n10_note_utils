@@ -89,7 +89,22 @@
 
 后面会对一些功能进行详细说明
 
-### 程序的输出形式
+### 程序快捷键
+
+每次都要到脚本目录下运行脚本有点麻烦，因此我定义了很多快捷键，有两种快捷键实现方式，你可以选择其中一种使用:
+
+1. 纯python实现，位于我的脚本的src目录下的keyboard_monitor.py中，双击运行即可
+2. AutoHotKey实现，需要安装AutoHotKey，安装方法后面会详说
+
+### 解析汉王N10的摘抄笔记
+
+快捷键如下：
+
+* Caps Lock + p: 解析汉王N10笔记，生成markdown和html
+
+  会弹出一个文件选择框，选择你的摘抄文件，如果有手写笔记的导出文本文件，也一并选上
+  
+  **注： 图片文件不需要选，会自动扫描摘抄文件所在文件夹里的png图片文件**
 
 程序会生成markdown和html两种格式的文本
 
@@ -99,6 +114,29 @@
 如果你喜欢markdown，可以打开md文件进行编辑。
 
 程序还会将markdown和html**放入剪贴板**，如果你想导入到笔记软件或word中，并且保留加粗/斜体/列表等格式，你可以直接打开笔记软件，粘贴即可
+
+#### 手写笔记手写时间格式
+
+如果要将手写笔记按时间点合并到摘抄笔记中，则需要在手写笔记手工写上时间戳
+
+手写时间戳的时候，经过识别出来的格式要是下面这个样子的
+
+```txt
+2022.9.14-13:56
+```
+
+* 年：4位数字
+* 月：1~2位数字
+* 日：1~2位数字
+
+年月日用英文点(.)分隔
+
+* 时：1~2位数字，要使用24小时制
+* 分：1~2位数字
+  
+时分用英文冒号(:)分隔
+
+年月日 和 时分 之间用短横(-)分隔
 
 ### 智能markdown表格处理
 
@@ -301,7 +339,7 @@ region的指定格式为: left, top, right, bottom
 
 对于剪贴板里的图片文件，会保存为png图片文件
 
-辅助的ahk快捷键如下:
+辅助的快捷键如下:
 
 * CapsLock & 1:: 将文本拷贝为markdown level 1 header(#)
 * CapsLock & 2:: 将文本拷贝为markdown level 2 header(##)
@@ -317,27 +355,6 @@ region的指定格式为: left, top, right, bottom
 * **CapsLock & v**: 将剪贴板中文本规范化后再进行粘贴
 * **CapsLock & d**: 对选中的文本查找GodenDict词典
   * 注：事先需要将GodenDict的查词hotkey改为`Ctrl+Alt+Shift+C`
-
-### 手写笔记手写时间格式
-
-手写时间戳的时候，经过识别出来的格式要是下面这个样子的
-
-```txt
-2022.9.14-13:56
-```
-
-* 年：4位数字
-* 月：1~2位数字
-* 日：1~2位数字
-
-年月日用英文点(.)分隔
-
-* 时：1~2位数字，要使用24小时制
-* 分：1~2位数字
-  
-时分用英文冒号(:)分隔
-
-年月日 和 时分 之间用短横(-)分隔
 
 ## 程序安装
 
@@ -374,7 +391,7 @@ region的指定格式为: left, top, right, bottom
 
 或者进入到我的程序目录，使用`pip install -r requirements.txt`来安装所有的依赖
 
-安装完pythong就可以从运行我的脚本了，但每次都要打开命令行，很不友好，因此建议再安装AutoHotKey
+安装完python就可以从运行我的脚本了
 
 ### AutoHotKey
 
@@ -397,14 +414,6 @@ PYTHON_UTILS_DIR := "D:\Data\python\projects\note_utils\"
 ```txt
 C:\Users\<你的用户名>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
 ```
-
-我的AHK文件的快捷键配置如下：
-
-* Caps Lock + p: 解析汉王N10笔记，生成markdown和html
-
-  会弹出一个文件选择框，选择你的摘抄文件，如果有手写笔记的导出文本文件，也一并选上
-  
-  **注： 图片文件不需要选，会自动扫描摘抄文件所在文件夹里的png图片文件**
 
 ## 关于markdown
 
@@ -499,11 +508,11 @@ supermemo对内联图片的支持乱七八糟，因此在将markdown转为superm
 
 有了这个目录后，网页中的本地图片都会**拷贝**到这个目录里，放在一个唯一的UUID目录下，生成的HTML中的图片路径都会指向这个路径，暂时不支持从internet上直接下载图片。
 
-要注意的是，生成的HTML中的路径是诸如`http:localhost:9999/xxx.png` 这样的形式的，并不是写死的windows路径，因此都开启supermemo的时候也需要同时开启一个http server，虽然有点不方便，但通过AHK可以同时启动这supermemo和http server，所以问题不大:
+要注意的是，生成的HTML中的路径是诸如`http:localhost:9999/xxx.png` 这样的形式的，并不是写死的windows路径，因此都开启supermemo的时候也需要同时开启一个http server，虽然有点不方便，但通过快捷键可以同时启动这supermemo和http server，所以问题不大:
 
 * **Caps Lock + s**: 启动supermemo，然后再启动一个以指定的webroot目录为根目录的python http server
 
-因为脚本中的可执行文件路径是写死的，因此你如果也使用supermemo，需要修改MyHotScripts.ahk中的RunSupermemo实现，将里面的路径改为你的路径
+如果你使用的是AutoHotKey方式的快捷键实现，因为脚本中的可执行文件路径是写死的，需要修改MyHotScripts.ahk中的RunSupermemo实现，将里面的路径改为你的路径
 
 ### supermemo Q&A支持
 
