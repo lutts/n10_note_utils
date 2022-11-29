@@ -322,9 +322,20 @@ class _KeyboardListener(_GenericListener):
         self.filtered_modifiers = _collections.Counter()
         self.is_replaying = False
 
+        self.idle_callback_lock = _Lock()
+        self.idle_callback = None
+
         # Supporting hotkey suppression is harder than it looks. See
         # https://github.com/boppreh/keyboard/issues/22
         self.modifier_states = {} # "alt" -> "allowed"
+
+    def set_idle_callback(self, callback):
+        with self.idle_callback_lock:
+            self.idle_callback = callback
+    
+    def get_idle_callback(self):
+        with self.idle_callback_lock:
+            return self.idle_callback
 
     def pre_process_event(self, event):
         for key_hook in self.nonblocking_keys[event.scan_code]:
@@ -332,8 +343,13 @@ class _KeyboardListener(_GenericListener):
 
         with _pressed_events_lock:
             hotkey = tuple(sorted(_pressed_events))
+            pressed_events_empty = not _pressed_events
         for callback in self.nonblocking_hotkeys[hotkey]:
             callback(event)
+
+        callback = self.get_idle_callback()
+        if pressed_events_empty and callback:
+            callback()
 
         return event.scan_code or (event.name and event.name != 'unknown')
 
@@ -362,9 +378,11 @@ class _KeyboardListener(_GenericListener):
             if event_type == KEY_DOWN:
                 if is_modifier(scan_code): self.active_modifiers.add(scan_code)
                 _pressed_events[scan_code] = event
+                #print("when " + event.name +" KEY_DOWN, _pressed_events: " + str(_pressed_events))
             hotkey = tuple(sorted(_pressed_events))
             if event_type == KEY_UP:
                 self.active_modifiers.discard(scan_code)
+                #print("when " + event.name + " KEY_UP, _pressed_events: " + str(_pressed_events))
                 if scan_code in _pressed_events: del _pressed_events[scan_code]
 
         # Mappings based on individual keys instead of hotkeys.
@@ -405,6 +423,9 @@ class _KeyboardListener(_GenericListener):
 
         # Queue for handlers that won't block the event.
         self.queue.put(event)
+
+        if event.name == "caps lock":
+            accept = True
 
         return accept
 
@@ -1277,3 +1298,11 @@ def add_abbreviation(source_text, replacement_text, match_suffix=False, timeout=
 register_word_listener = add_word_listener
 register_abbreviation = add_abbreviation
 remove_abbreviation = remove_word_listener
+
+
+def on_idle(callback):
+    _listener.set_idle_callback(callback)
+
+
+def remove_idle_callback():
+    _listener.set_idle_callback(None)

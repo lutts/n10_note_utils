@@ -20,27 +20,49 @@ from supermemo_qa_generator import generate_qa_file
 from send_markdown_to_thebrain_from_ahk import do_send_markdown_to_the_brain
 
 
-capslock_queue = queue.Queue()
+worker_queue = queue.Queue()
 
-
-def triggle_capslock_normalizer():
-    global capslock_queue
-    capslock_queue.put("")
-
-
-def capslock_normalizer(callback):
-    def _normalizer():
-        global capslock_queue
-        capslock_queue.put(callback)
+def delay_to_worker_thread(callback):
+    def delay_to_worker():
+        global worker_queue
+        worker_queue.put(callback)
+        return False
     
-    return _normalizer
+    return delay_to_worker
+
+
+def get_capslock_state():
+    hllDll = ctypes.WinDLL ("User32.dll")
+    VK_CAPITAL = 0x14
+    return hllDll.GetKeyState(VK_CAPITAL)
+
+
+@delay_to_worker_thread
+def toggle_capslock():
+    capslock_state = get_capslock_state()
+    print("capslock_state: " + hex(capslock_state))
+    capslock_on = capslock_state & 0x1
+    if capslock_on:
+        keyboard.send('caps lock')
+
+    keyboard.remove_idle_callback()
 
     
-def ask_open_filename(multiple=False):
+def ask_open_filename(multiple=False, filetypes=["md"]):
+    def get_filetype_tuple(extension):
+        if "md" == extension:
+            return ("markdown files", "*.md")
+        elif "txt" == extension:
+            return ("text files", "*.txt")
+        elif "*.*" == extension:
+            return ("all files", "*.*")
+
+    filetypes.append("*.*")
+    filetypes_opts = tuple([get_filetype_tuple(ext) for ext in filetypes])
+    
     return filedialog.askopenfilename(title="Select file",
                                       multiple=multiple,
-                                      filetypes=(("markdown files", "*.md"),
-                                                 ("all files", "*.*")))
+                                      filetypes=filetypes_opts)
 
 
 http_server_dict:dict[str, subprocess.Popen] = {}
@@ -70,13 +92,13 @@ def start_http_server_for_supermemo():
         run_http_server(rootdir=webroot, port="9999")
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def supermemo_component_to_plain():
     print("supermemo component to plain")
     keyboard.send("ctrl+shift+f12")
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def copy_plain_text():
     print("copy plain text")
     success = clipboard_util.put_text("")
@@ -99,37 +121,37 @@ def copy_as_markdown_header(header_marker):
     keyboard.send("ctrl+c")
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def copy_as_markdown_header1():
     copy_as_markdown_header('#')
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def copy_as_markdown_header2():
     copy_as_markdown_header('##')
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def copy_as_markdown_header3():
     copy_as_markdown_header('###')
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def copy_as_markdown_header4():
     copy_as_markdown_header('####')
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def copy_as_markdown_header5():
     copy_as_markdown_header('#####')
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def copy_as_markdown_header6():
     copy_as_markdown_header('######')
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def look_up_dictionary():
     print("look up dictionary")
     marker = "{{LookupGoldenDictionary}}"
@@ -144,23 +166,23 @@ def look_up_dictionary():
     keyboard.send("ctrl+alt+shift+c")
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def clipboard_markdown_to_html():
     print("clipboard markdown to html")
     markdown_to_clipboard()
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def n10notes_process():
     print("n10 note process")
-    fullpaths = ask_open_filename(multiple=True)
+    fullpaths = ask_open_filename(multiple=True, filetypes=["txt", "md"])
     if not fullpaths:
         return
 
     process_files(fullpaths)
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def send_markdown_to_onenote():
     print("send markdown to onenote")
     filename = ask_open_filename()
@@ -172,7 +194,7 @@ def send_markdown_to_onenote():
     run_http_server(rootdir=dirname, port="8888")
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def list_markdown_latex_equations():
     print("list markdown latex equations")
     filename = ask_open_filename()
@@ -191,7 +213,7 @@ def list_markdown_latex_equations():
         logging.debug(str(e))
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def send_markdown_to_supermemo():
     print("send markdown to supermemo")
     filename = ask_open_filename()
@@ -204,7 +226,7 @@ def send_markdown_to_supermemo():
 
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def send_markdown_to_the_brain():
     print("send markdown to the brain")
     filename = ask_open_filename()
@@ -215,14 +237,14 @@ def send_markdown_to_the_brain():
     run_http_server(os.path.dirname(filename), "8888")
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def normalized_paste():
     print("normalized paste")
     do_normlize_clipboard()
     keyboard.send("ctrl+v")
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def normalized_paste_the_brain():
     print("normalized paste to thebrain")
     do_normlize_clipboard_thebrain()
@@ -237,7 +259,7 @@ def is_supermemo_running():
         return False
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def run_supermemo():
     print("run supermemo")
     if not is_supermemo_running():
@@ -247,7 +269,7 @@ def run_supermemo():
     start_http_server_for_supermemo()
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def start_note_monitor():
     print("start note monitor")
     script_path = os.path.dirname(__file__)
@@ -255,7 +277,7 @@ def start_note_monitor():
                      creationflags=subprocess.CREATE_NEW_CONSOLE)
 
 
-@capslock_normalizer
+@delay_to_worker_thread
 def generate_supermemo_qa():
     print("generate supermemo_qa")
     filename = ask_open_filename()
@@ -263,97 +285,82 @@ def generate_supermemo_qa():
         return
 
     generate_qa_file(filename)
-
-
-keyboard.add_hotkey("caps lock+t",
-                    supermemo_component_to_plain,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+c",
-                    copy_plain_text,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+1",
-                    copy_as_markdown_header1,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+2",
-                    copy_as_markdown_header2,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+3",
-                    copy_as_markdown_header3,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+4",
-                    copy_as_markdown_header4,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+5",
-                    copy_as_markdown_header5,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+6",
-                    copy_as_markdown_header6,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+d",
-                    look_up_dictionary,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+m",
-                    clipboard_markdown_to_html,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+p",
-                    n10notes_process,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+o",
-                    send_markdown_to_onenote,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+l",
-                    list_markdown_latex_equations,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+u",
-                    send_markdown_to_supermemo,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+i",
-                    send_markdown_to_the_brain,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+v",
-                    normalized_paste,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+b",
-                    normalized_paste_the_brain,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+q",
-                    generate_supermemo_qa,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+n",
-                    start_note_monitor,
-                    suppress=True, trigger_on_release=True)
-keyboard.add_hotkey("caps lock+s",
-                    run_supermemo,
-                    suppress=True, trigger_on_release=True)
-
-def get_capslock_state():
-    hllDll = ctypes.WinDLL ("User32.dll")
-    VK_CAPITAL = 0x14
-    return hllDll.GetKeyState(VK_CAPITAL)
     
 
 def worker():
     while True:
-        callback = capslock_queue.get()
+        callback = worker_queue.get()
 
         try:
+            keyboard.on_idle(toggle_capslock)
             callback()
-
-            time.sleep(10)
-
-            capslock_state = get_capslock_state()
-            print("capslock_state: " + hex(capslock_state))
-            capslock_on = capslock_state & 0x1
-            capslock_down = capslock_state & 0x8000
-            if not capslock_down and capslock_on:
-                keyboard.send('caps lock')
         except:
-            pass
+            print("failed do work in worker")
 
-        capslock_queue.task_done()
+        worker_queue.task_done()
 
 threading.Thread(target=worker, daemon=True).start()
 
+keyboard.add_hotkey("caps lock+t",
+                    supermemo_component_to_plain,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+c",
+                    copy_plain_text,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+1",
+                    copy_as_markdown_header1,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+2",
+                    copy_as_markdown_header2,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+3",
+                    copy_as_markdown_header3,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+4",
+                    copy_as_markdown_header4,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+5",
+                    copy_as_markdown_header5,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+6",
+                    copy_as_markdown_header6,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+d",
+                    look_up_dictionary,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+m",
+                    clipboard_markdown_to_html,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+p",
+                    n10notes_process,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+o",
+                    send_markdown_to_onenote,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+l",
+                    list_markdown_latex_equations,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+u",
+                    send_markdown_to_supermemo,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+i",
+                    send_markdown_to_the_brain,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+v",
+                    normalized_paste,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+b",
+                    normalized_paste_the_brain,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+q",
+                    generate_supermemo_qa,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+n",
+                    start_note_monitor,
+                    suppress=True)
+keyboard.add_hotkey("caps lock+s",
+                    run_supermemo,
+                    suppress=True)
 
 print("Press ESC to stop.")
 keyboard.wait('esc')
