@@ -360,7 +360,8 @@ threading.Thread(target=worker, daemon=True).start()
 #                     suppress=True)
 
 hotkeys = {'t': supermemo_component_to_plain,
-           'c': copy_plain_text, '1': copy_as_markdown_header1,
+           'c': copy_plain_text,
+           '1': copy_as_markdown_header1,
            '2': copy_as_markdown_header2,
            '3': copy_as_markdown_header3,
            '4': copy_as_markdown_header4,
@@ -411,8 +412,10 @@ class CapsLockDownState(State):
         if event.event_type == keyboard.KEY_DOWN:
             if event.name == caps_lock_name:
                 return self
-            elif event.name.lower() in hotkeys:
-                return HotKeyDownState(event.name.lower())
+
+            key_name = event.name.lower()
+            if key_name in hotkeys:
+                return HotKeyDownState(key_name)
 
         return InitState()
 
