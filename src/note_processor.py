@@ -301,6 +301,7 @@ class NoteProcessStage2:
 
     def __init__(self, stage1: NoteProcessStage1):
         self.stage1 : NoteProcessStage1 = stage1
+        self.title = "# untitled"
         self.markdown_lines : list[str] = []
         self.markdown_normalizer = py_markdown_normalizer()
 
@@ -340,8 +341,8 @@ class NoteProcessStage2:
 
     def add_title_line(self, title):
         self.finish_cur_line()
-        title = py_markdown_normalizer.normalize_line(title)
-        self.markdown_lines.insert(self.title_line_pos, title)
+        self.title = py_markdown_normalizer.normalize_line(title)
+        self.markdown_lines.insert(self.title_line_pos, self.title)
         self.last_line_is_empty = False
 
     def add_literal_line(self, line):
@@ -523,65 +524,102 @@ class NoteProcessStage2:
                 self.markdown_lines.pop()
 
 
+class NotesWriter:
+    @staticmethod
+    def write_markdown(markdown_lines, markdown_filepath):
+        if not markdown_lines:
+            return None
+
+        joined_markdown_text = "".join(markdown_lines)
+
+        if markdown_filepath:
+            with open(markdown_filepath, "w", encoding="utf-8") as notes_markdown:
+                notes_markdown.write(joined_markdown_text)
+
+        return joined_markdown_text
+
+    @staticmethod
+    def write_html(markdown_lines, html_filepath):
+        if not markdown_lines:
+            return None
+
+        full_html = markdown_processor().markdown_to_full_html(markdown_lines)
+
+        if html_filepath:
+            with open(html_filepath, 'w', encoding="utf-8") as html_file:
+                html_file.write(full_html)
+
+        return full_html
+
+    @staticmethod
+    def copy_to_clipboard(markdown_lines, full_html):
+        if markdown_lines:
+            if isinstance(markdown_lines,  str):
+                joined_markdown_text = markdown_lines
+            else:
+                joined_markdown_text = "".join(markdown_lines)
+        else:
+            joined_markdown_text = None
+
+        if full_html:
+            inliner = css_inline.CSSInliner(remove_style_tags=True)
+            inlined_html = inliner.inline(full_html)
+        else:
+            inlined_html = None
+
+        if inlined_html:
+            clipboard_util.put_html(inlined_html, joined_markdown_text)
+        elif joined_markdown_text:
+            clipboard_util.put_text(joined_markdown_text)
+
+    @staticmethod
+    def write(markdown_lines, markdown_filepath, html_filepath=None, copy_to_clipboard=True):
+        joined_markdown_text = NotesWriter.write_markdown(markdown_lines, markdown_filepath)
+        full_html = NotesWriter.write_html(markdown_lines, html_filepath)
+        if copy_to_clipboard:
+            NotesWriter.copy_to_clipboard(joined_markdown_text, full_html)
+
+
+class CornellNotesWriter:
+    @staticmethod
+    def write(title, markdown_lines, notes_filepath):
+        root, _ = os.path.splitext(notes_filepath)
+
+        markdown_filepath = uniqe_name(root + ".md")
+        html_filepath = uniqe_name(root + ".html")
+        review_filepath = uniqe_name(root + "_review.md")
+        summary_filepath = uniqe_name(root + "_summary.md")
+        qa_filepath = uniqe_name(root + "_qa.md")
+
+        NotesWriter.write(markdown_lines, markdown_filepath, html_filepath)
+
+        with open(review_filepath, 'w', encoding="utf-8") as f:
+            f.write(title)
+
+        with open(summary_filepath, 'w', encoding="utf-8") as f:
+            f.write(title)
+
+        with open(qa_filepath, 'w', encoding="utf-8") as f:
+            f.write(title)
+
+
 class N10NoteProcessor:
-    def __init__(self, n10_notes_filepath,
-                 hand_notes_filepath=None,
-                 markdown_filepath=None,
-                 html_filepath=None):
+    def __init__(self, n10_notes_filepath, hand_notes_filepath=None):
+        self.title = None
         self.markdown_lines = None
         self.n10_notes_filepath = n10_notes_filepath
         self.hand_notes_filepath = hand_notes_filepath
-        self.markdown_filepath = markdown_filepath
-        self.html_filepath = html_filepath
-
-        if markdown_filepath:
-            self.markdown_filepath = markdown_filepath
-        else:
-            split_filepath = os.path.splitext(n10_notes_filepath)
-            self.markdown_filepath = uniqe_name(split_filepath[0] + ".md")
-
-        logging.debug("markdown text will write to " + self.markdown_filepath)
-        
-        if html_filepath:
-            self.html_filepath = html_filepath
-        else:
-            split_filepath = os.path.splitext(n10_notes_filepath)
-            self.html_filepath = uniqe_name(split_filepath[0] + ".html")
-
-        logging.debug("rendered html file will write to " + self.html_filepath)
 
     def process(self):
         stage1 = N10NoteProcessStage1(self.n10_notes_filepath, self.hand_notes_filepath)
         stage1.process()
         stage2 = NoteProcessStage2(stage1)
         stage2.process()
+        self.title = stage2.title
         self.markdown_lines = stage2.get_markdown_lines()
 
     def write(self):
-        if not self.markdown_lines:
-            return
-
-        joined_markdown_text = "".join(self.markdown_lines)
-
-        if self.markdown_filepath:
-            try:
-                with open(self.markdown_filepath, "w", encoding="utf-8") as notes_markdown:
-                    notes_markdown.write(joined_markdown_text)
-            except:
-                pass
-
-        full_html = markdown_processor().markdown_to_full_html(self.markdown_lines)
-        
-        if self.html_filepath:
-            try:
-                with open(self.html_filepath, 'w', encoding="utf-8") as html_file:
-                    html_file.write(full_html)
-            except:
-                pass
-
-        inliner = css_inline.CSSInliner(remove_style_tags=True)
-        inlined_html = inliner.inline(full_html)
-        clipboard_util.put_html(inlined_html, joined_markdown_text)
+        CornellNotesWriter.write(self.title, self.markdown_lines, self.n10_notes_filepath)
 
 
 class RawNoteProcessor:

@@ -7,7 +7,9 @@ import subprocess
 import threading
 import queue
 import ctypes
+import tkinter as tk
 from tkinter import filedialog
+import traceback
 import keyboard
 from markdown2clipboard import markdown_to_clipboard
 from clipboard_utils import clipboard_util, cf_html_helper
@@ -32,7 +34,7 @@ def delay_to_worker_thread(callback):
     
     return delay_to_worker
 
-    
+
 def ask_open_filename(multiple=False, filetypes=["md"]):
     def get_filetype_tuple(extension):
         if "md" == extension:
@@ -295,6 +297,7 @@ def worker():
             toggle_capslock()
         except:
             print("failed do work in worker")
+            traceback.print_exc()
 
         worker_queue.task_done()
 
@@ -382,13 +385,13 @@ hotkeys = {'t': supermemo_component_to_plain,
            'n': start_note_monitor,
            's': run_supermemo}
 
-
 def do_hotkey(key_name):
     # print("do hotkey " + key_name)
     try:
         hotkeys[key_name]()
-    except:
+    except Exception as e:
         print("do hotkey failed for " + key_name)
+        traceback.print_exc()
 
 
 #caps_lock_name = "caps lock"
@@ -495,8 +498,11 @@ def do_keyboard_hook(event: keyboard.KeyboardEvent):
     cur_state = cur_state.on_event(event)
     return cur_state.should_continue()
 
+# root = tk.Tk()
+# root.withdraw()
 
 keyboard.hook(callback=do_keyboard_hook, suppress=True)
 
 print("Press ctrl+c to stop.")
 keyboard.wait()
+#root.mainloop()
