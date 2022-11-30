@@ -418,7 +418,8 @@ class TimeoutState(State):
 
     def on_event(self, event: keyboard.KeyboardEvent):
         if time.time() - self.start_time > 0.5:
-            return InitState()
+            #print("timeout")
+            return InitState().on_event(event)
         else:
             return self.handle_event(event)
 
