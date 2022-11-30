@@ -370,6 +370,8 @@ class _KeyboardListener(_GenericListener):
         if not all(hook(event) for hook in self.blocking_hooks):
             return False
 
+        return True
+
         event_type = event.event_type
         scan_code = event.scan_code
 
