@@ -391,7 +391,7 @@ def do_hotkey(key_name):
         print("do hotkey failed for " + key_name)
 
 
-caps_lock_name = "caps lock"
+#caps_lock_name = "caps lock"
 caps_lock_scan_code = 58
 #print(keyboard.key_to_scan_codes(caps_lock_name))
 
@@ -430,7 +430,7 @@ class TimeoutState(State):
 class CapsLockDownState(TimeoutState):
     def handle_event(self, event: keyboard.KeyboardEvent):
         if event.event_type == keyboard.KEY_DOWN:
-            if event.name == caps_lock_name:
+            if event.scan_code == caps_lock_scan_code:
                 return self
 
             key_name = event.name.lower()
@@ -452,7 +452,7 @@ class HotKeyDownState(TimeoutState):
                 return self
             else:
                 return HotKeyUpState(self.name)
-        elif event.event_type == keyboard.KEY_UP and key_name == caps_lock_name:
+        elif event.event_type == keyboard.KEY_UP and event.scan_code == caps_lock_scan_code:
             return CapsLockUpState(self.name)
         else:
             return InitState()
@@ -467,7 +467,7 @@ class HotKeyUpState(TimeoutState):
         self.name = key_name
 
     def handle_event(self, event: keyboard.KeyboardEvent):
-        if event.event_type == keyboard.KEY_UP and event.name == caps_lock_name:
+        if event.event_type == keyboard.KEY_UP and event.scan_code == caps_lock_scan_code:
             do_hotkey(self.name)
         
         return InitState()
