@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import logging
 import time
@@ -407,8 +409,22 @@ class InitState(State):
             return self
 
 
-class CapsLockDownState(State):
+class TimeoutState(State):
+    def __init__(self):
+        self.start_time = time.time()
+
     def on_event(self, event: keyboard.KeyboardEvent):
+        if time.time() - self.start_time > 0.5:
+            return InitState()
+        else:
+            return self.handle_event(event)
+
+    def handle_event(self, event: keyboard.KeyboardEvent):
+        return None
+
+
+class CapsLockDownState(TimeoutState):
+    def handle_event(self, event: keyboard.KeyboardEvent):
         if event.event_type == keyboard.KEY_DOWN:
             if event.name == caps_lock_name:
                 return self
@@ -420,11 +436,12 @@ class CapsLockDownState(State):
         return InitState()
 
 
-class HotKeyDownState(State):
+class HotKeyDownState(TimeoutState):
     def __init__(self, key_name):
+        super().__init__()
         self.name = key_name
 
-    def on_event(self, event: keyboard.KeyboardEvent):
+    def handle_event(self, event: keyboard.KeyboardEvent):
         key_name = event.name.lower()
         if key_name == self.name:
             if event.event_type == keyboard.KEY_DOWN:
@@ -440,11 +457,12 @@ class HotKeyDownState(State):
         return False
 
 
-class HotKeyUpState(State):
+class HotKeyUpState(TimeoutState):
     def __init__(self, key_name):
+        super().__init__()
         self.name = key_name
 
-    def on_event(self, event: keyboard.KeyboardEvent):
+    def handle_event(self, event: keyboard.KeyboardEvent):
         if event.event_type == keyboard.KEY_UP and event.name == caps_lock_name:
             do_hotkey(self.name)
         
@@ -454,11 +472,12 @@ class HotKeyUpState(State):
         return False
 
 
-class CapsLockUpState(State):
+class CapsLockUpState(TimeoutState):
     def __init__(self, key_name):
+        super().__init__()
         self.name = key_name
 
-    def on_event(self, event: keyboard.KeyboardEvent):
+    def handle_event(self, event: keyboard.KeyboardEvent):
         if event.event_type == keyboard.KEY_UP and event.name.lower() == self.name:
             do_hotkey(self.name)
         
