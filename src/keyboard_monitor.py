@@ -392,6 +392,8 @@ def do_hotkey(key_name):
 
 
 caps_lock_name = "caps lock"
+caps_lock_scan_code = 58
+#print(keyboard.key_to_scan_codes(caps_lock_name))
 
 class State(object):
     def on_event(self, event: keyboard.KeyboardEvent):
@@ -403,7 +405,8 @@ class State(object):
 
 class InitState(State):
     def on_event(self, event: keyboard.KeyboardEvent):
-        if event.event_type == keyboard.KEY_DOWN and event.name == caps_lock_name:
+        #if event.event_type == keyboard.KEY_DOWN and event.name == caps_lock_name:
+        if event.event_type == keyboard.KEY_DOWN and event.scan_code == caps_lock_scan_code:
             return CapsLockDownState()
         else:
             return self
