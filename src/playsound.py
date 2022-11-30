@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import logging
 logger = logging.getLogger(__name__)
 
@@ -64,3 +65,9 @@ def playsound(sound, block = True):
             logger.warning(u'Failed to close the file: {}'.format(sound))
             # If it fails, there's nothing more that can be done...
             pass
+
+def play_success_sound():
+    audio_filepath = os.path.dirname(os.path.dirname(__file__))
+    audio_filepath = os.path.join(audio_filepath, 'data')
+    audio_filepath = os.path.join(audio_filepath, 'success_3.wav')
+    playsound(audio_filepath)
