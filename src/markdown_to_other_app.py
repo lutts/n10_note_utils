@@ -15,9 +15,12 @@ from clipboard_utils import clipboard_util
 import settings
 
 
-def add_prefix_to_local_images(html, mode, img_dir, img_prefix='http://localhost:9999/'):
+def add_prefix_to_local_images(html, mode, img_dir, img_prefix=None):
     if not img_prefix:
-        return html
+        if mode == markdown_processor_mode.SUPERMEMO:
+            img_prefix = 'http://localhost:9999/'
+        else:
+            img_prefix = 'http://localhost:8888/'
 
     #img1 = '<p><img src="./test_image.jpg" alt="x" /></p>'
     #img2 = '<p><img src="./test%20%20%20%20image.jpeg" alt="x" /></p>'

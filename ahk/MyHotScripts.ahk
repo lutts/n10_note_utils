@@ -126,7 +126,7 @@ SendMarkdownToOnenote()
 
         SplitPath, SelectedFile,, dir
         dirname := quote(dir)
-        RunWait, python -m http.server -d %dirname%  9999
+        RunWait, python -m http.server -d %dirname%  8888
     }
     FixCapsLockBug()
 }
@@ -188,7 +188,7 @@ SendMarkdownToTheBrain()
 
         SplitPath, SelectedFile,, dir
         dirname := quote(dir)
-        RunWait, python -m http.server -d %dirname%  9999
+        RunWait, python -m http.server -d %dirname%  8888
     }
     FixCapsLockBug()
 }
