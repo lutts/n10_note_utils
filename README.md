@@ -375,7 +375,7 @@ region的指定格式为: left, top, right, bottom
 2. 搜索`python`
 3. 安装最新的版本，写这篇文章时是3.10，如下图所示，注意不要安装带(RC)字样的版本
 
-![python_install](img/microsoft_store_python.png)
+![python_install](data/microsoft_store_python.png)
 
 安装完python后，还要安装程序依赖的一些程序包，
 
@@ -445,7 +445,7 @@ C:\Users\<你的用户名>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
 
 渲染结果如下
 
-![x](./img/multiline_table_cell.png)
+![x](./data/multiline_table_cell.png)
 
 语法很简单： 虽然table单元格只能有一行文本，但可以使用`{nl}`来表示换行，如上面的例子，写成多行是下面这样的：
 

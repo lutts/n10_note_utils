@@ -12,6 +12,7 @@ import win32ui
 from PIL import ImageGrab, Image
 import settings
 from clipboard_monitor import py_clipboard_monitor
+from playsound import playsound
 
 
 saved_text = None
@@ -254,6 +255,13 @@ def on_image(seq_no, img):
     global q
     q.put(('image', seq_no, img))
 
+
+def play_success_sound():
+    audio_filepath = os.path.dirname(os.path.dirname(__file__))
+    audio_filepath = os.path.join(audio_filepath, 'data')
+    audio_filepath = os.path.join(audio_filepath, 'success_3.wav')
+    playsound(audio_filepath)
+
 def worker():
     while True:
         item = q.get()
@@ -263,6 +271,7 @@ def worker():
                 append_note(*item[1:])
             elif item[0] == 'image':
                 save_image(*item[1:])
+            threading.Thread(target=play_success_sound).start()
         except:
             pass
 
