@@ -350,7 +350,17 @@ bbbbbbb
 
 脚本中还有一个notes_monitor.py，在PC端模拟了汉王N10的摘抄功能，生成的摘抄文件和汉王N10是一致的，可以使用脚本的其他功能解析
 
-因为不能像电纸书那样获取摘抄时的文件名和页码，程序使用了tesseract进行OCR，文件名和页码的OCR区域需要在settings.json中指定
+因为不能像电纸书那样获取摘抄时的文件名和页码，程序使用了tesseract进行OCR，
+
+使用pc端摘抄功能前，需要额外安装pytesseract，
+
+```bash
+pip install pytesseract
+```
+
+还需要安装tesseract windows版以及中文相关的，安装方法还请自行网上搜索
+
+文件名和页码的OCR区域需要在settings.json中指定
 
 ```json
 "foxit_filename_region": "34, 0, 2641, 48",
