@@ -80,17 +80,17 @@ lbl = Label(root, text="Capslock + t: 即ctrl+shift+f12，用于将supermemo的h
 lbl.grid(row=14, column=0, sticky='w', pady=2)
 
 
-lbl = Label(root, text="Capslock + 1: 和notes_monitor配合，将拷贝的内容转换成markdown level 1 header")
+lbl = Label(root, text="Capslock + 1: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 1 header")
 lbl.grid(row=15, column=0, sticky='w', pady=2)
-lbl = Label(root, text="Capslock + 2: 和notes_monitor配合，将拷贝的内容转换成markdown level 2 header")
+lbl = Label(root, text="Capslock + 2: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 2 header")
 lbl.grid(row=16, column=0, sticky='w', pady=2)
-lbl = Label(root, text="Capslock + 3: 和notes_monitor配合，将拷贝的内容转换成markdown level 3 header")
+lbl = Label(root, text="Capslock + 3: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 3 header")
 lbl.grid(row=17, column=0, sticky='w', pady=2)
-lbl = Label(root, text="Capslock + 4: 和notes_monitor配合，将拷贝的内容转换成markdown level 4 header")
+lbl = Label(root, text="Capslock + 4: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 4 header")
 lbl.grid(row=18, column=0, sticky='w', pady=2)
-lbl = Label(root, text="Capslock + 5: 和notes_monitor配合，将拷贝的内容转换成markdown level 5 header")
+lbl = Label(root, text="Capslock + 5: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 5 header")
 lbl.grid(row=19, column=0, sticky='w', pady=2)
-lbl = Label(root, text="Capslock + 6: 和notes_monitor配合，将拷贝的内容转换成markdown level 6 header")
+lbl = Label(root, text="Capslock + 6: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 6 header")
 lbl.grid(row=20, column=0, sticky='w', pady=2)
 
 # calling mainloop method which is used
