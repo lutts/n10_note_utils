@@ -93,8 +93,13 @@
 
 每次都要到脚本目录下运行脚本有点麻烦，因此我定义了很多快捷键，有两种快捷键实现方式，你可以选择其中一种使用:
 
-1. 纯python实现，位于我的脚本的src目录下的keyboard_monitor.py中，双击运行即可
+1. 纯python实现，位于我的脚本的src目录下，有两种启动方式:
+   1. notes_ui.pyw: 启动一个简单的GUI窗口，除了快捷键外，一些功能可以通过点击按钮
+      1. 缺点：不能放到另一个桌面，一旦执行需要弹出文件选择框的命令，就会切换桌面，有点不便
+   2. keyboard_monitor.py: 启动一个windows console，只支持快捷键，没有按钮
 2. AutoHotKey实现，需要安装AutoHotKey，安装方法后面会详说
+
+推荐使用纯python实现的快捷键，不需要安装额外的AutoHotKey，而且因为是定制实现，比AutoHotKey运行更稳定，没有AutoHotKey的一些Bug
 
 ### 解析汉王N10的摘抄笔记
 

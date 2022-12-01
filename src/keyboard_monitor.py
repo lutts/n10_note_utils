@@ -196,6 +196,7 @@ def list_markdown_latex_equations():
         dirname = os.path.dirname()
         latex_equations_path = os.path.join(dirname, "latex_equations.txt")
         print("latex equations saved to " + latex_equations_path)
+        # TODO: show msgbox
     except Exception as e:
         logging.debug(str(e))
 
@@ -498,11 +499,15 @@ def do_keyboard_hook(event: keyboard.KeyboardEvent):
     cur_state = cur_state.on_event(event)
     return cur_state.should_continue()
 
-# root = tk.Tk()
-# root.withdraw()
+def start_keyboard_hook():
+    keyboard.hook(callback=do_keyboard_hook, suppress=True)
 
-keyboard.hook(callback=do_keyboard_hook, suppress=True)
+if __name__ == '__main__':
+    print("Press ctrl+c to stop.")
+    start_keyboard_hook()
+    keyboard.wait()
 
-print("Press ctrl+c to stop.")
-keyboard.wait()
-#root.mainloop()
+    # root = tk.Tk()
+    # root.withdraw()
+    #print("use tk mainloop")
+    #mainloop()
