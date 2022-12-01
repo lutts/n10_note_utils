@@ -193,12 +193,16 @@ def list_markdown_latex_equations():
     try:
         processor = markdown_processor(markdown_processor_mode.LIST_EQUATION)
         processor.list_latex_equations(filename)
-        dirname = os.path.dirname()
+        dirname = os.path.dirname(filename)
         latex_equations_path = os.path.join(dirname, "latex_equations.txt")
-        print("latex equations saved to " + latex_equations_path)
-        # TODO: show msgbox
+        msg = "latex equations saved to " + latex_equations_path
+
+        def msgbox(msg):
+            tk.messagebox.showinfo(title="latex equations", message=msg)
+
+        threading.Thread(target=msgbox, args=[msg]).start()
     except Exception as e:
-        logging.debug(str(e))
+        traceback.print_exc()
 
 
 @delay_to_worker_thread
