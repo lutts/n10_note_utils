@@ -99,7 +99,32 @@
    2. keyboard_monitor.py: 启动一个windows console，只支持快捷键，没有按钮
 2. AutoHotKey实现，需要安装AutoHotKey，安装方法后面会详说
 
-推荐使用纯python实现的快捷键，不需要安装额外的AutoHotKey，而且因为是定制实现，比AutoHotKey运行更稳定，没有AutoHotKey的一些Bug
+推荐使用纯python实现的快捷键，不需要安装额外的AutoHotKey，而且因为是定制实现，比AutoHotKey运行更稳定，没有AutoHotKey的一些Bug。
+
+我的快捷键都是使用Caps Lock实现的，而且如果你不是程序员，不建议修改快捷键定义。如果你想自定义快捷键，那就需要安装AutoHotKey来实现了
+
+我定义的快捷键汇总如下:
+
+* Capslock + p: 整理读书笔记
+* Capslock + o: 转换markdown为onenote格式
+* Capslock + l: 列出markdown中的LaTex公式
+* Capslock + u: 转换markdown为supermemo html格式
+* Capslock + q: 转换markdown为supermemo Q&A格式
+* Capslock + n: 启动笔记摘抄程序notes monitor
+* Capslock + s: 启动supermemo及相关的http server
+* Capslock + m： 转换剪贴板中的markdown为html格式
+* Capslock + c: 类似于Ctrl+c，但拷贝的结果永远是纯文本
+* Capslock + d: Ctrl+c，然后查询GoldenDict词典，需要将GoldenDict的hotkey设置为Ctrl+Alt+Shift+C
+* Capslock + v: 类似于Ctrl+v，但会对文本进行基于markdown的规范化
+* Capslock + b: 类似于Ctrl+v，但会将粘贴的文本转换为theBrain的markdown格式
+* Capslock + t: 即ctrl+shift+f12，用于将supermemo的html component转换为text component
+* Capslock + 1: 和notes_monitor配合，将拷贝的内容转换成markdown level 1 header
+* Capslock + 2: 和notes_monitor配合，将拷贝的内容转换成markdown level 2 header
+* Capslock + 3: 和notes_monitor配合，将拷贝的内容转换成markdown level 3 header
+* Capslock + 4: 和notes_monitor配合，将拷贝的内容转换成markdown level 4 header
+* Capslock + 5: 和notes_monitor配合，将拷贝的内容转换成markdown level 5 header
+* Capslock + 6: 和notes_monitor配合，将拷贝的内容转换成markdown level 6 header
+
 
 ### 解析汉王N10的摘抄笔记
 
