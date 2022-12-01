@@ -111,9 +111,12 @@
   
   **注： 图片文件不需要选，会自动扫描摘抄文件所在文件夹里的png图片文件**
 
-程序会生成markdown和html两种格式的文本
+程序会生成markdown和html两种格式的文本，并且会生成Cornell笔记方法和supermemo的一些相关文件
 
 * XXX.md: 这个md文件是markdown格式的处理后的文件
+* XXX_review.md: Cornell review
+* XXX_summary.md: Cornell summary
+* XXX_qa.md: supermemo Q&A
 * XXX.html: 这是渲染出的网页文件
   
 如果你喜欢markdown，可以打开md文件进行编辑。
