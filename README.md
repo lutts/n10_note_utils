@@ -597,6 +597,12 @@ a: the differences are:
 people who are in **positive** moods may find it {{harder}}(easier or harder?) to ignore {{irrelevant}} information
 ```
 
+## Visual Studio Code Cornell Note-taking及supermemo扩展
+
+我编写了一个Visual Studio Code的markdown扩展程序，可以高亮显示Q&A句子以及supermemo cloze
+
+可以从<https://github.com/lutts/markdown_cornell_notetaking>下载，我发布了v0.0.1版本的vsix文件，安装到Visual Studio Code即可高亮显示
+
 ### 其他快捷键
 
 * **CapsLock & u**: 将markdown转为适合supermemo的html，并放入剪贴板
