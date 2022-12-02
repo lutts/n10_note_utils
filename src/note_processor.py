@@ -170,16 +170,16 @@ class N10NoteProcessStage1(NoteProcessStage1):
             if (image.endswith(".png")):
                 fullpath = os.path.join(curdir, image)
                 try:
-                    logging.debug(image + " ctime:" +
-                                  str(os.path.getctime(fullpath)))
+                    logging.debug(image + " mtime:" +
+                                  str(os.path.getmtime(fullpath)))
                     logging.debug(
-                        image + " ctime:" + str(datetime.fromtimestamp(os.path.getctime(fullpath))))
+                        image + " mtime:" + str(datetime.fromtimestamp(os.path.getmtime(fullpath))))
                 except Exception as e:
                     logging.debug(e)
 
                 # url in <> to allow space in path names
                 self.image_list.append(
-                    (os.path.getctime(fullpath), "![x](<" + image + ">)"))
+                    (os.path.getmtime(fullpath), "![x](<" + image + ">)"))
 
         self.image_list.sort()
         logging.debug("images: " + str(self.image_list))
@@ -230,21 +230,28 @@ class N10NoteProcessStage1(NoteProcessStage1):
                                 notes_header.group("year", "month", "day", "hour", "minute", "second")])
         logging.debug(datetime_obj)
         ts = datetime_obj.timestamp()
-        if self.image_list:
-            logging.debug("cur ts: " + str(ts) +
-                          ", first img ts: " + str(self.image_list[0][0]))
-            if ts > self.image_list[0][0]:
-                self.add_multi_line_to_cur_block(["", self.image_list[0][1], ""])
-                del self.image_list[0]
 
-        if self.hand_note_list:
+        while self.image_list:
+            img_ts, img_md = self.image_list[0]
             logging.debug("cur ts: " + str(ts) +
-                          ", first hand note ts: " + str(self.hand_note_list[0][0]))
-            if ts > self.hand_note_list[0][0]:
+                          ", first img ts: " + str(img_ts))
+            if ts > img_ts:
+                self.add_multi_line_to_cur_block(["", img_md, ""])
+                del self.image_list[0]
+            else:
+                break
+
+        while self.hand_note_list:
+            hand_ts, hand_notes = self.hand_note_list[0]
+            logging.debug("cur ts: " + str(ts) +
+                          ", first hand note ts: " + str(hand_ts))
+            if ts > hand_ts:
                 self.add_line_to_cur_block("")
-                self.add_multi_line_to_cur_block(self.hand_note_list[0][1])
+                self.add_multi_line_to_cur_block(hand_notes)
                 self.add_line_to_cur_block("")
                 del self.hand_note_list[0]
+            else:
+                break
 
         self.new_block(notes_header.group("filename"), notes_header.group("page_number"))
     

@@ -508,11 +508,15 @@ def start_keyboard_hook():
     keyboard.hook(callback=do_keyboard_hook, suppress=True)
 
 if __name__ == '__main__':
-    print("Press ctrl+c to stop.")
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
+    
     start_keyboard_hook()
-    keyboard.wait()
 
-    # root = tk.Tk()
-    # root.withdraw()
+    print("close the console to stop.")
+    #keyboard.wait()
+
+    root = tk.Tk()
+    root.withdraw()
     #print("use tk mainloop")
-    #mainloop()
+    tk.mainloop()

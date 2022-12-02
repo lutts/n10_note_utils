@@ -131,7 +131,6 @@
 * **Capslock + 5**: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 5 header
 * **Capslock + 6**: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 6 header
 
-
 ### 解析汉王N10的摘抄笔记
 
 快捷键如下：
