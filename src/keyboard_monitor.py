@@ -277,7 +277,7 @@ def generate_supermemo_qa():
         return
 
     generate_qa_file(filename)
-    
+
 
 def get_capslock_state():
     hllDll = ctypes.WinDLL ("User32.dll")
@@ -369,26 +369,27 @@ threading.Thread(target=worker, daemon=True).start()
 #                     run_supermemo,
 #                     suppress=True)
 
-hotkeys = {'t': supermemo_component_to_plain,
+hotkeys = {'b': normalized_paste_the_brain,
            'c': copy_plain_text,
+           'd': look_up_dictionary,
+           'i': send_markdown_to_the_brain,
+           'l': list_markdown_latex_equations,
+           'm': clipboard_markdown_to_html,
+           'n': start_note_monitor,
+           'o': send_markdown_to_onenote,
+           'p': n10notes_process,
+           'q': generate_supermemo_qa,
+           'u': send_markdown_to_supermemo,
+           'v': normalized_paste,
+           's': run_supermemo,
+           't': supermemo_component_to_plain,
            '1': copy_as_markdown_header1,
            '2': copy_as_markdown_header2,
            '3': copy_as_markdown_header3,
            '4': copy_as_markdown_header4,
            '5': copy_as_markdown_header5,
-           '6': copy_as_markdown_header6,
-           'd': look_up_dictionary,
-           'm': clipboard_markdown_to_html,
-           'p': n10notes_process,
-           'o': send_markdown_to_onenote,
-           'l': list_markdown_latex_equations,
-           'u': send_markdown_to_supermemo,
-           'i': send_markdown_to_the_brain,
-           'v': normalized_paste,
-           'b': normalized_paste_the_brain,
-           'q': generate_supermemo_qa,
-           'n': start_note_monitor,
-           's': run_supermemo}
+           '6': copy_as_markdown_header6
+           }
 
 def do_hotkey(key_name):
     # print("do hotkey " + key_name)
