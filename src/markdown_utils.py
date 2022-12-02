@@ -299,8 +299,10 @@ class markdown_processor:
                 continue
 
             line = line.replace('![x]', '![]')
-
-            line = self.process_newline_in_table_cell(line)
+            if line.startswith('Q: ') or line.startswith('q: '):
+                line = '<span style="color: #ff6600;">' + line + '</span>'
+            else:
+                line = self.process_newline_in_table_cell(line)
             processed_markdown_lines.append(line)
 
         raw_html = self.render_markdown_with_parser(processed_markdown_lines)
