@@ -144,11 +144,13 @@
 
 程序会生成markdown和html两种格式的文本，并且会生成Cornell笔记方法和supermemo的一些相关文件
 
-* XXX.md: 这个md文件是markdown格式的处理后的文件
-* XXX_review.md: Cornell review
-* XXX_summary.md: Cornell summary
-* XXX_qa.md: supermemo Q&A
-* XXX.html: 这是渲染出的网页文件
+* notes.md: 这个md文件是markdown格式的处理后的文件
+* cue.md: Cornell review
+* summary.md: Cornell summary
+* qa.md: supermemo Q&A
+* notes.html: 这是渲染出的网页文件
+
+如果当前目录下有同名文件，会在文件名后拼上数字序号以示区分
   
 如果你喜欢markdown，可以打开md文件进行编辑。
 

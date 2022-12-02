@@ -583,17 +583,24 @@ class NotesWriter:
 class CornellNotesWriter:
     @staticmethod
     def write(title, markdown_lines, notes_filepath):
-        root, _ = os.path.splitext(notes_filepath)
+        # root, _ = os.path.splitext(notes_filepath)
 
-        markdown_filepath = uniqe_name(root + ".md")
-        html_filepath = uniqe_name(root + ".html")
-        review_filepath = uniqe_name(root + "_review.md")
-        summary_filepath = uniqe_name(root + "_summary.md")
-        qa_filepath = uniqe_name(root + "_qa.md")
+        # markdown_filepath = uniqe_name(root + ".md")
+        # html_filepath = uniqe_name(root + ".html")
+        # review_filepath = uniqe_name(root + "_review.md")
+        # summary_filepath = uniqe_name(root + "_summary.md")
+        # qa_filepath = uniqe_name(root + "_qa.md")
+
+        rootdir = os.path.dirname(notes_filepath)
+        markdown_filepath = uniqe_name(os.path.join(rootdir, "notes.md"))
+        cue_filepath = uniqe_name(os.path.join(rootdir, "cue.md"))
+        summary_filepath = uniqe_name(os.path.join(rootdir, "summary.md"))
+        qa_filepath = uniqe_name(os.path.join(rootdir, "qa.md"))
+        html_filepath = uniqe_name(os.path.join(rootdir, "notes.html"))
 
         NotesWriter.write(markdown_lines, markdown_filepath, html_filepath)
 
-        with open(review_filepath, 'w', encoding="utf-8") as f:
+        with open(cue_filepath, 'w', encoding="utf-8") as f:
             f.write(title)
 
         with open(summary_filepath, 'w', encoding="utf-8") as f:
