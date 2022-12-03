@@ -141,6 +141,12 @@
   
   **注： 图片文件不需要选，会自动扫描摘抄文件所在文件夹里的png图片文件**
 
+关于图片文件的时间戳：
+
+* 我试用了很多安卓ftp服务器，只有Amaze File Manager能保持图片文件的修改时间，并精确到秒，Amaze File Manager开源、小巧、无广告。其他诸如ES浏览器、小米互传等都只能精确到分钟，无法满足我们的排序要求
+* Windows上的FTP客户端推荐WinScp，不需要任何设置就能正确处理时区并且能保存时间戳，
+  * FileZilla: 需要手动设置时区，默认不保存时间戳
+
 程序会生成markdown和html两种格式的文本，并且会生成Cornell笔记方法和supermemo的一些相关文件
 
 * **notes.md**: 这个md文件是markdown格式的处理后的文件
