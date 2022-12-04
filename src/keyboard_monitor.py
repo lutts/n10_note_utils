@@ -281,6 +281,7 @@ def generate_supermemo_qa():
 
 @delay_to_worker_thread
 def triggle_italic():
+    print("triggle italic")
     keyboard.send("ctrl+i")
 
 
