@@ -279,6 +279,11 @@ def generate_supermemo_qa():
     generate_qa_file(filename)
 
 
+@delay_to_worker_thread
+def triggle_italic():
+    keyboard.send("ctrl+i")
+
+
 def get_capslock_state():
     hllDll = ctypes.WinDLL ("User32.dll")
     VK_CAPITAL = 0x14
@@ -381,6 +386,7 @@ hotkeys = {'b': normalized_paste_the_brain,
            'q': generate_supermemo_qa,
            'u': send_markdown_to_supermemo,
            'v': normalized_paste,
+           'w': triggle_italic,
            's': run_supermemo,
            't': supermemo_component_to_plain,
            '1': copy_as_markdown_header1,
