@@ -285,6 +285,15 @@ def triggle_italic():
     keyboard.send("ctrl+i")
 
 
+@delay_to_worker_thread
+def insert_date_time():
+    print("insert date time")
+    cur_time = time.strftime('%Y年%m月%d日 %H:%M:%S', time.localtime())
+    clipboard_util.put_text(cur_time)
+    py_clipboard_monitor.wait_for_text(cur_time, 2)
+    keyboard.send("ctrl+v")
+
+
 def get_capslock_state():
     hllDll = ctypes.WinDLL ("User32.dll")
     VK_CAPITAL = 0x14
@@ -379,6 +388,7 @@ hotkeys = {'b': normalized_paste_the_brain,
            'c': copy_plain_text,
            'd': look_up_dictionary,
            'e': triggle_italic,
+           'h': insert_date_time,
            'i': send_markdown_to_the_brain,
            'l': list_markdown_latex_equations,
            'm': clipboard_markdown_to_html,
@@ -386,10 +396,10 @@ hotkeys = {'b': normalized_paste_the_brain,
            'o': send_markdown_to_onenote,
            'p': n10notes_process,
            'q': generate_supermemo_qa,
-           'u': send_markdown_to_supermemo,
-           'v': normalized_paste,
            's': run_supermemo,
            't': supermemo_component_to_plain,
+           'u': send_markdown_to_supermemo,
+           'v': normalized_paste,
            '1': copy_as_markdown_header1,
            '2': copy_as_markdown_header2,
            '3': copy_as_markdown_header3,
