@@ -123,7 +123,7 @@
 * **Capslock + d**: Ctrl+c，然后查询GoldenDict词典，需要将GoldenDict的hotkey设置为Ctrl+Alt+Shift+C
 * **Capslock + v**: 类似于Ctrl+v，但会对文本进行基于markdown的规范化
 * **Capslock + b**: 类似于Ctrl+v，但会将粘贴的文本转换为theBrain的markdown格式
-* **Capslock + w**: 即Ctrl + i，用于markdown将选中文本转为斜体，右手握住鼠标时，左手单手Ctrl+i太难按了
+* **Capslock + e**: 即Ctrl + i，用于markdown将选中文本转为斜体(Emphasis)，右手握住鼠标时，左手单手Ctrl+i太难按了
 * **Capslock + t**: 即ctrl+shift+f12，用于将supermemo的html component转换为text component
 * **Capslock + 1**: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 1 header
 * **Capslock + 2**: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 2 header
