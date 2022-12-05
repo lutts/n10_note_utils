@@ -257,17 +257,19 @@ class NoteProcessStage1:
         logging.debug("normal line: " + line)
         self.add_line_to_cur_block(line)
 
-    def process_file(self, filepath, encoding):
+    def process_file(self, filepath):
         logging.debug("process file: " + filepath)
 
         raw_lines = None
-        try:
-            with open(filepath, 'r', encoding="utf-8") as notes:
-                raw_lines = notes.readlines()
-        except:
-            logging.debug("open file with utf-8 failed, retry with " + encoding)
-            with open(filepath, 'r', encoding=encoding) as notes:
-                raw_lines = notes.readlines()
+        for encoding in ["utf-8", "utf-16be", "utf_8_sig"]:
+            try:
+                with open(filepath, 'r', encoding=encoding) as notes:
+                    raw_lines = notes.readlines()
+            except:
+                pass
+
+            if raw_lines:
+                break
 
         if not raw_lines:
             logging.debug("read file failed")
@@ -307,18 +309,13 @@ class NoteProcessStage1:
         pass
 
 class N10NoteProcessStage1(NoteProcessStage1):
-    def __init__(self, notes_filepath, *extra_files):
+    def __init__(self, note_dir,  *note_files):
         super().__init__()
-        self.notes_filepath = notes_filepath
-        self.extra_files = extra_files
-        logging.debug("n10 notes_filepath: ")
-        logging.debug(notes_filepath)
+        self.note_dir = note_dir
+        self.note_files = note_files
 
     def get_images_in_directory(self):
-        if not self.notes_filepath:
-            return
-
-        curdir = os.path.dirname(self.notes_filepath)
+        curdir = self.note_dir
         if curdir == "":
             curdir = "."
 
@@ -347,9 +344,8 @@ class N10NoteProcessStage1(NoteProcessStage1):
     
     def do_process(self):
         self.get_images_in_directory()
-        for f in self.extra_files:
-            self.process_file(f, encoding="utf-16be")
-        self.process_file(self.notes_filepath, encoding='utf_8_sig')
+        for f in self.note_files:
+            self.process_file(f)
 
 
 class RawNoteProcessStage1(NoteProcessStage1):
@@ -652,21 +648,12 @@ class NotesWriter:
 
 class CornellNotesWriter:
     @staticmethod
-    def write(title, markdown_lines, notes_filepath):
-        # root, _ = os.path.splitext(notes_filepath)
-
-        # markdown_filepath = uniqe_name(root + ".md")
-        # html_filepath = uniqe_name(root + ".html")
-        # review_filepath = uniqe_name(root + "_review.md")
-        # summary_filepath = uniqe_name(root + "_summary.md")
-        # qa_filepath = uniqe_name(root + "_qa.md")
-
-        rootdir = os.path.dirname(notes_filepath)
-        markdown_filepath = uniqe_name(os.path.join(rootdir, "notes.md"))
-        cue_filepath = uniqe_name(os.path.join(rootdir, "cue.md"))
-        summary_filepath = uniqe_name(os.path.join(rootdir, "summary.md"))
-        qa_filepath = uniqe_name(os.path.join(rootdir, "qa.md"))
-        html_filepath = uniqe_name(os.path.join(rootdir, "notes.html"))
+    def write(title, markdown_lines, notes_dir):
+        markdown_filepath = uniqe_name(os.path.join(notes_dir, "notes.md"))
+        cue_filepath = uniqe_name(os.path.join(notes_dir, "cue.md"))
+        summary_filepath = uniqe_name(os.path.join(notes_dir, "summary.md"))
+        qa_filepath = uniqe_name(os.path.join(notes_dir, "qa.md"))
+        html_filepath = uniqe_name(os.path.join(notes_dir, "notes.html"))
 
         NotesWriter.write(markdown_lines, markdown_filepath, html_filepath)
 
@@ -684,11 +671,14 @@ class N10NoteProcessor:
     def __init__(self, n10_notes_filepath, *extra_files):
         self.title = None
         self.markdown_lines = None
-        self.n10_notes_filepath = n10_notes_filepath
-        self.extra_files = extra_files
+        self.notes_dir = os.path.dirname(n10_notes_filepath)
+        self.note_files = (n10_notes_filepath, ) + extra_files
+        logging.debug("notes_dir: " + self.notes_dir)
+        logging.debug("note_files:")
+        logging.debug(self.note_files)
 
     def process(self):
-        stage1 = N10NoteProcessStage1(self.n10_notes_filepath, *self.extra_files)
+        stage1 = N10NoteProcessStage1(self.notes_dir, *self.note_files)
         stage1.process()
         stage2 = NoteProcessStage2(stage1)
         stage2.process()
@@ -696,7 +686,7 @@ class N10NoteProcessor:
         self.markdown_lines = stage2.get_markdown_lines()
 
     def write(self):
-        CornellNotesWriter.write(self.title, self.markdown_lines, self.n10_notes_filepath)
+        CornellNotesWriter.write(self.title, self.markdown_lines, self.notes_dir)
 
 
 class RawNoteProcessor:
@@ -714,40 +704,29 @@ class RawNoteProcessor:
 
 
 def process_files(fullpaths):
-    notes_filepath = None
-    hand_notes_filepath = None
+    print("process files: ")
+    print(fullpaths)
+    none_markdown_files = []
     for fullpath in fullpaths:
         logging.debug("file: " + fullpath)
         filename = os.path.basename(fullpath)
         if filename.endswith(".md"):
             markdown_processor().markdown_file_to_html_file(fullpath)
             continue
-        elif '摘抄' in filename:
-            notes_filepath = fullpath
         else:
-            if not notes_filepath:
-                notes_filepath = fullpath
-            else:
-                hand_notes_filepath = fullpath
+            none_markdown_files.append(fullpath)
 
-    if notes_filepath:
-        # only one file, it must be notes file
-        if notes_filepath == hand_notes_filepath:
-            hand_notes_filepath = None
-        
-        logging.debug("notes_filepath: " + notes_filepath)
-        if hand_notes_filepath:
-            logging.debug("hand_notes_filepath: " + hand_notes_filepath)
+    if not none_markdown_files:
+        return
 
-        try:
-            processor = N10NoteProcessor(n10_notes_filepath=notes_filepath,
-                                     hand_notes_filepath=hand_notes_filepath)
-            processor.process()
-            processor.write()
-        except Exception as e:
-            logging.error(str(e))
+    try:
+        processor = N10NoteProcessor(*none_markdown_files)
+        processor.process()
+        processor.write()
+    except Exception as e:
+        logging.error(str(e))
 
-        logging.debug("process done")
+    logging.debug("process done")
 
 
 def main():
@@ -757,7 +736,7 @@ def main():
         print('usage: python3 -m n10_note_processor <摘抄文件> [手写笔记导出文本文件]')
         sys.exit(1)
 
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
     if args[0].endswith(".md"):
