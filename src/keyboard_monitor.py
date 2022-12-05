@@ -79,6 +79,11 @@ def start_http_server_for_supermemo():
         run_http_server(rootdir=webroot, port="9999")
 
 
+def show_msgbox(msg):
+    def target_func(m): return tk.messagebox.showinfo(title="info", message=m)
+
+    threading.Thread(target=target_func, args=[msg]).start()
+
 @delay_to_worker_thread
 def supermemo_component_to_plain():
     print("supermemo component to plain")
@@ -195,12 +200,7 @@ def list_markdown_latex_equations():
         processor.list_latex_equations(filename)
         dirname = os.path.dirname(filename)
         latex_equations_path = os.path.join(dirname, "latex_equations.txt")
-        msg = "latex equations saved to " + latex_equations_path
-
-        def msgbox(msg):
-            tk.messagebox.showinfo(title="latex equations", message=msg)
-
-        threading.Thread(target=msgbox, args=[msg]).start()
+        show_msgbox("latex equations saved to " + latex_equations_path)
     except Exception as e:
         traceback.print_exc()
 
@@ -261,12 +261,20 @@ def run_supermemo():
     start_http_server_for_supermemo()
 
 
+notes_monitor_proc = None
+
 @delay_to_worker_thread
 def start_note_monitor():
     print("start note monitor")
+    global notes_monitor_proc
     script_path = os.path.dirname(__file__)
-    subprocess.Popen(['python', os.path.join(script_path, "notes_monitor.py")],
+    is_running = notes_monitor_proc is not None and notes_monitor_proc.poll() is None
+
+    if not is_running:
+        notes_monitor_proc = subprocess.Popen(['python', os.path.join(script_path, "notes_monitor.py")],
                      creationflags=subprocess.CREATE_NEW_CONSOLE)
+    else:
+        show_msgbox("notes monitor is already running")
 
 
 @delay_to_worker_thread
