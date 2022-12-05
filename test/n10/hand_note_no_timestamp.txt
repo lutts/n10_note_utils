@@ -1,0 +1,1 @@
+hand note with no timestamp should appear in the end of the file

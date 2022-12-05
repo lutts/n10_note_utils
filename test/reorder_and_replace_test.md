@@ -1,7 +1,7 @@
 
 ([1]p196s)
 
-最终结果: 1, 5, b, 2, 7, 9, 6, 8, 4, a
+最终结果: 1, 5, b, 2, 7, 9, 6, 8, 4, r, a
 
 11111111111111111111111111111111111111111111111
 
@@ -40,6 +40,12 @@ bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 4444444444444444444444444444444
 
 ([1]p198e)
+
+([1]p600s)
+
+rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+
+([1]p600e)
 
 ([1]p196s)
 

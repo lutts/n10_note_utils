@@ -8,6 +8,7 @@ Module documentation.
 import sys
 import regex
 import os
+import bisect
 import logging
 from datetime import datetime
 import css_inline
@@ -20,10 +21,10 @@ from text_normalizer import py_text_normalizer
 from markdown_normalizer import py_markdown_normalizer
 
 
-# Global variables
+def is_filename_untitled(filename):
+    return filename == "untitled"
 
-# Class declarations
-
+    
 class NoteBlock:
     replacement_re = regex.compile(r'^\[(?P<placeholder>[^]]+)\]:\.$')
     placeholder_re = regex.compile(r'^\[(?P<placeholder>[^]]+)\](:-)?$')
@@ -32,32 +33,46 @@ class NoteBlock:
     stick_marker = "[]:."
     delete_marker = "[]:-"
 
-    def __init__(self, filename:str=None, phy_page_number:str=None):
-        if filename is None and phy_page_number is None:
-            self.is_dummy = True
-        else:
-            self.is_dummy = False
-        
-        if not filename or filename == "untitled":
+    def __init__(self, timestamp:float=0, filename:str=None, phy_page_number:str=None):
+        self.timestamp = timestamp
+
+        if is_filename_untitled(filename):
             self.filename = str(uuid.uuid4())
         else:
             self.filename = filename
 
-        if phy_page_number:
-            self.phy_page_number = phy_page_number
-        else:
+        if phy_page_number == "0":
             self.phy_page_number = str(uuid.uuid4())
+        else:
+            self.phy_page_number = phy_page_number
 
-        self.sort_key: str = self.filename + self.phy_page_number
+        self.sort_key_generated = False
+        self._sort_key = None
 
         self.lines : list[str] = []
         self.next : NoteBlock = None
 
         self.is_cache_block = False
 
+    def is_dummy_block(self):
+        return self.timestamp == 0 and self.filename is None and self.phy_page_number is None
+
+    def get_sort_key(self):
+        if self.sort_key_generated:
+            return self._sort_key
+
+        if self.filename and self.phy_page_number:
+            self._sort_key = self.filename + self.phy_page_number
+            
+        self.sort_key_generated = True
+        return self._sort_key
+
+    def random_sort_key(self):
+        self._sort_key = str(uuid.uuid4())
+        self.sort_key_generated = True
+
     def make_cache_block(self):
-        block = NoteBlock(self.filename, self.phy_page_number)
-        block.is_dummy = self.is_dummy
+        block = NoteBlock(self.timestamp, self.filename, self.phy_page_number)
         block.is_cache_block = True
         return block
 
@@ -71,19 +86,37 @@ class NoteBlock:
     def add_multi_line(self, lines:list):
         self.lines.extend(lines)
 
-class NoteProcessStage1:
-    def __init__(self):
-        self._prev_block : NoteBlock = None
-        self._cur_block : NoteBlock = NoteBlock()
 
-        self.ordered_block_dict: OrderedDict[str, list[NoteBlock]] = OrderedDict()
+class NoteProcessStage1:
+    DEFAULT_BLOCK_HEADER_RE = regex.compile(
+        r"(?P<year>[0-9]{4})年(?P<month>[0-9]{2})月(?P<day>[0-9]{2})日\s*(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})\s*摘自<<(?P<filename>.*?)>>\s*第(?P<page_number>[0-9]+)页")
+    DEFAULT_BLOCK_HEADER_DATETIME_RE = regex.compile(
+        r"(?P<year>[0-9]{4})年(?P<month>[0-9]{2})月(?P<day>[0-9]{2})日\s*(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})")
+    DEFAULT_HAND_NOTES_HEADER_RE = regex.compile(
+        r"(?P<year>[0-9]{4})\.(?P<month>[0-9]{1,2})\.(?P<day>[0-9]{1,2})-(?P<hour>[0-9]{1,2}):(?P<minute>[0-9]{1,2})")
+    BAIDU_INPUT_DATETIME_RE = regex.compile(
+        r"(?P<month>[0-9]{1,2})月(?P<day>[0-9]{1,2})日\s*(?P<hour>[0-9]{1,2}):(?P<minute>[0-9]{1,2}):(?P<second>[0-9]{1,2})")
+
+    def __init__(self):
+        self.block_list = []
         self.replacement_dict: dict[str, NoteBlock] = {}
         self.filename_dict: dict[str, str] = {}
+
+        self._prev_block: NoteBlock = None
+        self._cur_block: NoteBlock = None
+        self.ordered_block_dict: OrderedDict[str, list[NoteBlock]] = OrderedDict()
+        self.datetime_ordered_list: list[NoteBlock] = []
 
     def need_add_file_info(self):
         return True
 
     def check_filename(self, filename):
+        if filename is None:
+            return
+
+        if is_filename_untitled(filename):
+            return
+
         if filename not in self.filename_dict:
             num_filenames = len(self.filename_dict.keys())
             self.filename_dict[filename] = str(num_filenames + 1)
@@ -94,29 +127,21 @@ class NoteProcessStage1:
         else:
             return ''
 
-    def add_cur_block_to_ordered_dict(self):
-        sort_key = self._cur_block.sort_key
-        if sort_key in self.ordered_block_dict:
-            self.ordered_block_dict[sort_key].append(self._cur_block)
-        else:
-            self.ordered_block_dict[sort_key] = [self._cur_block]
-    
-    def finish_current_block(self):
+    def do_finish_current_block(self):
         if not self._cur_block.lines:
-            self.add_cur_block_to_ordered_dict()
-            return
+            return False
 
         first_line = self._cur_block.lines[0].strip()
         if first_line == NoteBlock.delete_marker:
             self._cur_block.lines.clear()
         if first_line == NoteBlock.stick_marker:
             del self._cur_block.lines[0]
-            self._cur_block.sort_key = self._cur_block.filename + str(uuid.uuid4())
+            self._cur_block.random_sort_key()
         elif first_line == NoteBlock.follow_marker:
             del self._cur_block.lines[0]
             if self._prev_block:
                 self._prev_block.next = self._cur_block
-            return
+            return True
         else:
             m = NoteBlock.replacement_re.match(first_line)
             if m:
@@ -124,16 +149,42 @@ class NoteProcessStage1:
                 placeholder = m.group('placeholder')
                 self.replacement_dict[placeholder] = self._cur_block
 
-        self.add_cur_block_to_ordered_dict()
+        return False
 
-    def new_block(self, filename:str, phy_page_number:str):
-        self.finish_current_block()
+    def finish_current_block(self):
+        finished = self.do_finish_current_block()
+        if not finished:
+            sort_key = self._cur_block.get_sort_key()
+            if sort_key:
+                if sort_key in self.ordered_block_dict:
+                    self.ordered_block_dict[sort_key].append(self._cur_block)
+                else:
+                    self.ordered_block_dict[sort_key] = [self._cur_block]
+
+        bisect.insort(self.datetime_ordered_list,
+                      self._cur_block, key=lambda b: b.timestamp)
         self._prev_block = self._cur_block
-        filename, extension = os.path.splitext(filename)
-        filename = py_markdown_normalizer.normalize_line(filename, add_newline_char=False)
-        filename += extension
-        self.check_filename(filename)
-        self._cur_block = NoteBlock(filename, phy_page_number)
+
+    def new_block(self, timestamp:float, filename:str=None, phy_page_number:str=None):
+        do_finish = True
+        if self._cur_block.is_dummy_block():
+            if self._cur_block.lines:
+                self._cur_block.timestamp = timestamp - 0.1
+                if filename and phy_page_number:
+                    self._cur_block.random_sort_key()
+            else:
+                do_finish = False
+
+        if do_finish:
+            self.finish_current_block()
+        
+        if filename:
+            filename, extension = os.path.splitext(filename)
+            filename = py_markdown_normalizer.normalize_line(filename, add_newline_char=False)
+            filename += extension
+            self.check_filename(filename)
+
+        self._cur_block = NoteBlock(timestamp, filename, phy_page_number)
 
     def add_line_to_cur_block(self, line:str):
         self._cur_block.add_line(line)
@@ -141,19 +192,127 @@ class NoteProcessStage1:
     def add_multi_line_to_cur_block(self, lines:list):
         self._cur_block.add_multi_line(lines)
 
+    def begin_process_file(self):
+        self._prev_block = None
+        self._cur_block = NoteBlock()
+
+    def end_process_file(self):
+        if self._cur_block.is_dummy_block():
+            # dummy block is the only block of this file
+            if not self._cur_block.lines:
+                return
+
+            self._cur_block.timestamp = datetime(3000, 1, 1).timestamp()
+            
+
+        self.finish_current_block()
+
+    def parse_block_header_info(self, line):
+        ts = None
+        filename = None
+        page_number = None
+        datetime_items = None
+
+        m = NoteProcessStage1.DEFAULT_BLOCK_HEADER_RE.match(line)
+        if m:
+            filename = m.group("filename")
+            page_number = m.group("page_number")
+            datetime_items = [int(i) for i in m.group(
+                "year", "month", "day", "hour", "minute", "second")]
+        else:
+            m = NoteProcessStage1.DEFAULT_BLOCK_HEADER_DATETIME_RE.match(line)
+            if m:
+                datetime_items = [int(i) for i in m.group(
+                    "year", "month", "day", "hour", "minute", "second")]
+            else:
+                m = NoteProcessStage1.DEFAULT_HAND_NOTES_HEADER_RE.match(line.strip())
+                if m:
+                    datetime_items = [int(i) for i in m.group(
+                        "year", "month", "day", "hour", "minute")]
+                else:
+                    m = NoteProcessStage1.BAIDU_INPUT_DATETIME_RE.match(line)
+                    if m:
+                        now = datetime.now()
+                        datetime_items = [int(i) for i in m.group(
+                            "month", "day", "hour", "minute", "second")]
+                        datetime_items.insert(0, now.year)
+
+        if datetime_items:
+            datetime_obj = datetime(*datetime_items)
+            logging.debug(datetime_obj)
+            ts = datetime_obj.timestamp()
+ 
+        return (ts, filename, page_number)
+
+    def process_block_header(self, line):
+        ts, filename, page_number = self.parse_block_header_info(line)
+        if not ts:
+            return False
+
+        logging.debug("found header line: " + line)
+        self.new_block(ts, filename, page_number)
+        return True
+
+    def process_normal_line(self, line):
+        logging.debug("normal line: " + line)
+        self.add_line_to_cur_block(line)
+
+    def process_file(self, filepath, encoding):
+        logging.debug("process file: " + filepath)
+
+        raw_lines = None
+        try:
+            with open(filepath, 'r', encoding="utf-8") as notes:
+                raw_lines = notes.readlines()
+        except:
+            logging.debug("open file with utf-8 failed, retry with " + encoding)
+            with open(filepath, 'r', encoding=encoding) as notes:
+                raw_lines = notes.readlines()
+
+        if not raw_lines:
+            logging.debug("read file failed")
+            return
+
+        self.begin_process_file()
+
+        for line in raw_lines:
+            if not self.process_block_header(line):
+                self.process_normal_line(line)
+
+        self.end_process_file()
+
+    def process(self):
+        self.do_process()
+
+        host_block = None
+        for block in self.datetime_ordered_list:
+            sort_key = block.get_sort_key()
+            if not sort_key:
+                if host_block:
+                    while host_block.next:
+                        host_block = host_block.next
+
+                    host_block.next = block
+                    host_block = block
+                else:
+                    self.block_list.append(block)
+            else:
+                host_block = block
+
+        for block_list in self.ordered_block_dict.values():
+            for block in block_list:
+                self.block_list.append(block)
+
+    def do_process(self):
+        pass
 
 class N10NoteProcessStage1(NoteProcessStage1):
-    def __init__(self, notes_filepath, hand_notes_filepath=None):
+    def __init__(self, notes_filepath, *extra_files):
         super().__init__()
         self.notes_filepath = notes_filepath
-        self.hand_notes_filepath = hand_notes_filepath
+        self.extra_files = extra_files
         logging.debug("n10 notes_filepath: ")
         logging.debug(notes_filepath)
-        logging.debug("n10 hand_note_filepath:")
-        logging.debug(hand_notes_filepath)
-
-        self.image_list = []
-        self.hand_note_list = []
 
     def get_images_in_directory(self):
         if not self.notes_filepath:
@@ -165,9 +324,10 @@ class N10NoteProcessStage1(NoteProcessStage1):
 
         logging.debug("get images in dir: " + curdir)
         # curdir = os.path.abspath(curdir)
+        self.begin_process_file()
         for image in os.listdir(curdir):
             # check if the image ends with png
-            if (image.endswith(".png")):
+            if image.endswith(".png"):
                 fullpath = os.path.join(curdir, image)
                 try:
                     logging.debug(image + " mtime:" +
@@ -178,114 +338,18 @@ class N10NoteProcessStage1(NoteProcessStage1):
                     logging.debug(e)
 
                 # url in <> to allow space in path names
-                self.image_list.append(
-                    (os.path.getmtime(fullpath), "![x](<" + image + ">)"))
-
-        self.image_list.sort()
-        logging.debug("images: " + str(self.image_list))
-
-
-    HAND_NOTES_HEADER_RE = regex.compile(
-        r"([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})-([0-9]{1,2}):([0-9]{1,2})")
-
-    def read_hand_notes(self):
-        if not self.hand_notes_filepath:
-            return
-
-        last_ts = 0
-        cur_notes = []
-
-        with open(self.hand_notes_filepath, 'r', encoding="utf-16be") as hand_notes:
-            for line in hand_notes:
-                logging.debug("hand note: " + line)
-                line = line.strip()
-                m = self.HAND_NOTES_HEADER_RE.match(line)
-                if m:
-                    datetime_obj = datetime(*[int(i) for i in
-                                            m.group(1, 2, 3, 4, 5)])
-                    logging.debug(datetime_obj)
-                    if cur_notes:
-                        self.hand_note_list.append((last_ts, cur_notes))
-                        cur_notes = []
-
-                    last_ts = datetime_obj.timestamp()
-                else:
-                    # 手写笔迹不会合并行，用户写的一行就是一行
-                    if line:
-                        cur_notes.append("> " + line)
-                    else:  # avoid trailing space
-                        cur_notes.append(">")
-
-        if cur_notes:
-            self.hand_note_list.append((last_ts, cur_notes))
-
-        self.hand_note_list.sort()
-        logging.debug(self.hand_note_list)
-    
-    HW_NOTES_HEADER_RE = regex.compile(
-        r"(?P<year>[0-9]{4})年(?P<month>[0-9]{2})月(?P<day>[0-9]{2})日\s+(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})\s+摘自<<(?P<filename>.*?)>>\s+第(?P<page_number>[0-9]+)页")
-
-    def process_head_line(self, notes_header):
-        datetime_obj = datetime(*[int(i) for i in
-                                notes_header.group("year", "month", "day", "hour", "minute", "second")])
-        logging.debug(datetime_obj)
-        ts = datetime_obj.timestamp()
-
-        while self.image_list:
-            img_ts, img_md = self.image_list[0]
-            logging.debug("cur ts: " + str(ts) +
-                          ", first img ts: " + str(img_ts))
-            if ts > img_ts:
-                self.add_multi_line_to_cur_block(["", img_md, ""])
-                del self.image_list[0]
-            else:
-                break
-
-        while self.hand_note_list:
-            hand_ts, hand_notes = self.hand_note_list[0]
-            logging.debug("cur ts: " + str(ts) +
-                          ", first hand note ts: " + str(hand_ts))
-            if ts > hand_ts:
+                self.new_block(os.path.getmtime(fullpath))
                 self.add_line_to_cur_block("")
-                self.add_multi_line_to_cur_block(hand_notes)
+                self.add_line_to_cur_block("![x](<" + image + ">)")
                 self.add_line_to_cur_block("")
-                del self.hand_note_list[0]
-            else:
-                break
 
-        self.new_block(notes_header.group("filename"), notes_header.group("page_number"))
+        self.end_process_file()
     
-    def process(self):
+    def do_process(self):
         self.get_images_in_directory()
-        self.read_hand_notes()
-
-        with open(self.notes_filepath, 'r', encoding='utf_8_sig') as n10notes:
-            for line in n10notes:
-                logging.debug("process line: " + line)
-                # check if is header line
-                notes_header = self.HW_NOTES_HEADER_RE.match(line)
-                if notes_header:
-                    logging.debug("header line: " + line)
-                    self.process_head_line(notes_header)
-                else:
-                    logging.debug("normal line: " + line)
-                    self.add_line_to_cur_block(line)
-
-        if self.image_list:
-            left_image_blocks = [""]
-            for _, img in self.image_list:
-                left_image_blocks.append(img)
-                left_image_blocks.append("")
-            self.add_multi_line_to_cur_block(left_image_blocks)
-
-        if self.hand_note_list:
-            left_hand_blocks = [""]
-            for _, note in self.hand_note_list:
-                left_hand_blocks.extend(note)
-                left_hand_blocks.append("")
-            self.add_multi_line_to_cur_block(left_hand_blocks)
-
-        self.finish_current_block()
+        for f in self.extra_files:
+            self.process_file(f, encoding="utf-16be")
+        self.process_file(self.notes_filepath, encoding='utf_8_sig')
 
 
 class RawNoteProcessStage1(NoteProcessStage1):
@@ -299,7 +363,7 @@ class RawNoteProcessStage1(NoteProcessStage1):
     def process(self):
         block = NoteBlock()
         block.lines = self.raw_text.splitlines(keepends=True)
-        self.ordered_block_dict["untitled"] = [block]
+        self.block_list.append(block)
 
 
 class NoteProcessStage2:
@@ -310,8 +374,8 @@ class NoteProcessStage2:
         self.stage1 : NoteProcessStage1 = stage1
         self.title = "# untitled"
         self.markdown_lines : list[str] = []
-        self.markdown_normalizer = py_markdown_normalizer()
 
+        self.markdown_normalizer = py_markdown_normalizer()
         self.title_line_pos = 0
         self.cur_line:str = ""
         self.last_line_is_empty = False
@@ -456,37 +520,32 @@ class NoteProcessStage2:
             return
 
         if ref_block.filename != self.last_filename or ref_block.phy_page_number != self.last_page_number:
-            if self.last_filename:
+            if self.last_filename and self.last_page_number:
                 self.add_empty_line()
                 seqno = self.stage1.get_filename_seqno(self.last_filename)
                 self.add_literal_line("(" + seqno + "p" + self.last_page_number + "e)\n")
                 self.add_empty_line()
             
-            if not ref_block.is_dummy:
+            if ref_block.filename and ref_block.phy_page_number:
                 self.add_empty_line()
                 seqno = self.stage1.get_filename_seqno(ref_block.filename)
                 self.add_literal_line("(" + seqno + "p" + ref_block.phy_page_number + "s)\n")
                 self.add_empty_line()
             
-                self.last_filename = ref_block.filename
-                self.last_page_number = ref_block.phy_page_number
+            self.last_filename = ref_block.filename
+            self.last_page_number = ref_block.phy_page_number
 
-    def get_block_lines(self, block:NoteBlock):
-        if not block.lines:
+    def _get_block_lines(self, lines, owner_block:NoteBlock):
+        if not lines:
             return
 
         may_need_filename_page_number_info = True
-
-        lines = block.lines
-        followers = block.next
-        block.clear()
-
         line_number = 0
         for line in lines:
             line_number += 1
             replace_block, delete_block = self.get_replacement_block(line, line_number)
             if replace_block:
-                logging.debug("replace block fond, end cache mode")
+                logging.debug("replace block found, end cache mode")
                 self.end_cache_mode()
                 self.get_block_lines(replace_block)
                 if delete_block:
@@ -495,13 +554,18 @@ class NoteProcessStage2:
                 may_need_filename_page_number_info = True
             else:
                 if may_need_filename_page_number_info:
-                    self.add_filename_page_number_info(block)
+                    self.add_filename_page_number_info(owner_block)
                     may_need_filename_page_number_info = False
                 logging.debug("check line: " + line)
                 if not self.cache_line(line):
-                    self.process_normal_line(line, block)
-        
-        logging.debug("finished cur block, end cache mode")
+                    self.process_normal_line(line, owner_block)
+
+    def get_block_lines(self, block:NoteBlock):
+        lines = block.lines
+        followers = block.next
+        block.clear()
+
+        self._get_block_lines(lines, owner_block=block)
         self.end_cache_mode()
 
         while followers:
@@ -509,9 +573,8 @@ class NoteProcessStage2:
             followers = followers.next
 
     def process(self):
-        for block_list in self.stage1.ordered_block_dict.values():
-            for block in block_list:
-                self.get_block_lines(block)
+        for block in self.stage1.block_list:
+            self.get_block_lines(block)
 
         self.finish_cur_line()
 
@@ -618,14 +681,14 @@ class CornellNotesWriter:
 
 
 class N10NoteProcessor:
-    def __init__(self, n10_notes_filepath, hand_notes_filepath=None):
+    def __init__(self, n10_notes_filepath, *extra_files):
         self.title = None
         self.markdown_lines = None
         self.n10_notes_filepath = n10_notes_filepath
-        self.hand_notes_filepath = hand_notes_filepath
+        self.extra_files = extra_files
 
     def process(self):
-        stage1 = N10NoteProcessStage1(self.n10_notes_filepath, self.hand_notes_filepath)
+        stage1 = N10NoteProcessStage1(self.n10_notes_filepath, *self.extra_files)
         stage1.process()
         stage2 = NoteProcessStage2(stage1)
         stage2.process()
@@ -694,7 +757,7 @@ def main():
         print('usage: python3 -m n10_note_processor <摘抄文件> [手写笔记导出文本文件]')
         sys.exit(1)
 
-    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
     if args[0].endswith(".md"):

@@ -1,5 +1,5 @@
 2022年10月04日 10:08:16  摘自<<Psychology and Life 20th.pdf>> 第196页
-最终结果: 1, 5, b, 2, 7, 9, 6, 8, 4, a
+最终结果: 1, 5, b, 2, 7, 9, 6, 8, 4, r, a
 
 11111111111111111111111111111111111111111111111
 
@@ -47,6 +47,10 @@ cccccccccccccccccccccccccccccccc
 delete delete delete
 
 line line line
+
+2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第600页
+[]:+
+rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 
 2022年10月04日 12:51:08  摘自<<Psychology and Life 20th.pdf>> 第196页
 []:.
