@@ -47,9 +47,13 @@ def ask_open_filename(multiple=False, filetypes=["md"]):
     filetypes.append("*.*")
     filetypes_opts = tuple([get_filetype_tuple(ext) for ext in filetypes])
     
-    return filedialog.askopenfilename(title="Select file",
+    filepaths = filedialog.askopenfilename(title="Select file",
                                       multiple=multiple,
                                       filetypes=filetypes_opts)
+    print("user selected files:")
+    print(str(filepaths))
+
+    return filepaths
 
 
 http_server_dict:dict[str, subprocess.Popen] = {}
