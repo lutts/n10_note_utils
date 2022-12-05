@@ -127,13 +127,13 @@ filename_re = re.compile(r'(.*?)\s+-\s+(福\s*昕\s*阅\s*读\s*器|Adobe\s*Acro
 
 def extract_filename(filename_ocr):
     print("extract_filename: " + filename_ocr)
-    m = filename_re.search(filename_ocr)
+    filename = filename_ocr.strip()
+    m = filename_re.search(filename)
     if m:
         filename = m.group(1).strip()
 
+    if filename:
         set_current_filename(filename)
-    else:
-        filename = None
 
     print("filename: " + str(filename))
 
