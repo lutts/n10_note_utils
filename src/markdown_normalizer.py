@@ -123,6 +123,23 @@ class py_markdown_normalizer:
 
         return False
 
+    def has_front_matter(self, lines):
+        if not lines:
+            return False
+
+        self.seq_number = 1
+
+        if not self._is_in_front_matter(lines[0]):
+            return False
+        
+        for i in range(1, len(lines)):
+            self.seq_number += 1
+            fm = self._is_in_front_matter(lines[i])
+            if not fm:
+                return True
+
+        return False
+
     def _is_in_math_context(self, line):
         if '$$' in line:
             if self.in_math_context:

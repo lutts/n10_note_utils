@@ -14,6 +14,7 @@ from datetime import datetime
 import css_inline
 from collections import OrderedDict
 import uuid
+import chardet
 
 from markdown_utils import markdown_processor, uniqe_name
 from clipboard_utils import clipboard_util
@@ -23,6 +24,42 @@ from markdown_normalizer import py_markdown_normalizer
 
 def is_filename_untitled(filename):
     return filename == "untitled"
+
+
+def detect_file_encoding(filepath):
+    with open(filepath, 'rb') as f:
+        result = chardet.detect(f.read())
+        if result['confidence'] > 0.8:
+            return result['encoding']
+
+    return None
+
+
+def read_file_lines(filepath):
+    logging.debug("read lines from " + filepath)
+    raw_lines = None
+    encoding = detect_file_encoding(filepath)
+    logging.debug("detected file encoding: " + str(encoding))
+    if encoding:
+        try:
+            with open(filepath, 'r', encoding=encoding) as notes:
+                raw_lines = notes.readlines()
+        except:
+            pass
+
+    if not raw_lines:
+        for encoding in ["utf-8", "utf_8_sig", "utf-16", "utf-16be"]:
+            logging.debug("try encoding " + encoding)
+            try:
+                with open(filepath, 'r', encoding=encoding) as notes:
+                    raw_lines = notes.readlines()
+            except:
+                pass
+
+            if raw_lines:
+                break
+
+    return raw_lines
 
     
 class NoteBlock:
@@ -174,7 +211,11 @@ class NoteProcessStage1:
         discard_cur_block = False
         if self._cur_block.is_dummy_block():
             if self._cur_block.lines:
-                self._cur_block.timestamp = timestamp - 0.1
+                has_front_matter = py_markdown_normalizer().has_front_matter(self._cur_block.lines)
+                logging.debug("dummy block has_front_matter: " + str(has_front_matter))
+                if not has_front_matter:
+                    self._cur_block.timestamp = timestamp - 0.1
+
                 if filename and phy_page_number:
                     self._cur_block.random_sort_key()
             else:
@@ -265,18 +306,7 @@ class NoteProcessStage1:
     def process_file(self, filepath):
         logging.debug("process file: " + filepath)
 
-        raw_lines = None
-        for encoding in ["utf-8", "utf-16", "utf-16be", "utf_8_sig"]:
-            logging.debug("try encoding " + encoding)
-            try:
-                with open(filepath, 'r', encoding=encoding) as notes:
-                    raw_lines = notes.readlines()
-            except:
-                pass
-
-            if raw_lines:
-                break
-
+        raw_lines = read_file_lines(filepath)
         if not raw_lines:
             logging.debug("read file failed")
             return

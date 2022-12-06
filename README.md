@@ -446,6 +446,7 @@ region的指定格式为: left, top, right, bottom
 5. `pip install pywin32`
 6. `pip install pathlib2`
 7. `pip install pillow`
+8. `pip install chardet`
 
 或者进入到我的程序目录，使用`pip install -r requirements.txt`来安装所有的依赖
 

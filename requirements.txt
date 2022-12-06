@@ -6,3 +6,4 @@ Pillow
 pytesseract
 pywin32
 regex
+chardet
