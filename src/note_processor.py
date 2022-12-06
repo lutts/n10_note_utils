@@ -151,31 +151,36 @@ class NoteProcessStage1:
 
         return False
 
+    def add_cur_block_to_ordered_dict(self):
+        sort_key = self._cur_block.get_sort_key()
+        if not sort_key:
+            return 
+
+        if sort_key in self.ordered_block_dict:
+            self.ordered_block_dict[sort_key].append(self._cur_block)
+        else:
+            self.ordered_block_dict[sort_key] = [self._cur_block]
+
     def finish_current_block(self):
         finished = self.do_finish_current_block()
         if not finished:
-            sort_key = self._cur_block.get_sort_key()
-            if sort_key:
-                if sort_key in self.ordered_block_dict:
-                    self.ordered_block_dict[sort_key].append(self._cur_block)
-                else:
-                    self.ordered_block_dict[sort_key] = [self._cur_block]
+            self.add_cur_block_to_ordered_dict()
 
         bisect.insort(self.datetime_ordered_list,
                       self._cur_block, key=lambda b: b.timestamp)
         self._prev_block = self._cur_block
 
     def new_block(self, timestamp:float, filename:str=None, phy_page_number:str=None):
-        do_finish = True
+        discard_cur_block = False
         if self._cur_block.is_dummy_block():
             if self._cur_block.lines:
                 self._cur_block.timestamp = timestamp - 0.1
                 if filename and phy_page_number:
                     self._cur_block.random_sort_key()
             else:
-                do_finish = False
+                discard_cur_block = True
 
-        if do_finish:
+        if not discard_cur_block:
             self.finish_current_block()
         
         if filename:

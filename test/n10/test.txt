@@ -1,3 +1,14 @@
+---
+"lang": "en",
+"title": "Euler's Identity",
+"subtitle": "How to combine 5 important math constants to a short formula",
+"authors": ["Max Muster<sup>1</sup>", "Lisa Master<sup>2</sup>"],
+"adresses": ["<sup>1</sup>Hochschule Gartenstadt","<sup>2</sup>Universität Übersee"],
+"date": "May 2021",
+"description": "mdmath LaTeX demo site",
+"tags": ["markdown+math","VSCode","static page","publication","LaTeX","math"]
+---
+
 2022年12月05日 23:55:00 摘自<<pdf filename.pdf>> 第36页
 
 excerpt paragraph 11111
