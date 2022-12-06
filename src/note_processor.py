@@ -87,6 +87,9 @@ class NoteBlock:
         self.next : NoteBlock = None
 
         self.is_cache_block = False
+        self.is_reordered = False
+        self.is_follower = False
+        self.is_replacement = False
 
     def is_dummy_block(self):
         return self.timestamp == 0 and self.filename is None and self.phy_page_number is None
@@ -175,12 +178,14 @@ class NoteProcessStage1:
             del self._cur_block.lines[0]
             if self._prev_block:
                 self._prev_block.next = self._cur_block
+            self._cur_block.is_follower = True
             return True
         else:
             m = NoteBlock.replacement_re.match(first_line)
             if m:
                 del self._cur_block.lines[0]
                 placeholder = m.group('placeholder')
+                self._cur_block.is_replacement = True
                 self.replacement_dict[placeholder] = self._cur_block
 
         return False
@@ -191,7 +196,10 @@ class NoteProcessStage1:
             return 
 
         if sort_key in self.ordered_block_dict:
-            self.ordered_block_dict[sort_key].append(self._cur_block)
+            owner_page_blocks = self.ordered_block_dict[sort_key]
+            if owner_page_blocks[-1] is not self._prev_block:
+                self._cur_block.is_reordered = True
+            owner_page_blocks.append(self._cur_block)
         else:
             self.ordered_block_dict[sort_key] = [self._cur_block]
 
@@ -324,7 +332,7 @@ class NoteProcessStage1:
                     host_block = block
                 else:
                     self.block_list.append(block)
-            else:
+            elif not block.is_replacement and not block.is_follower and not block.is_reordered:
                 host_block = block
 
         for block_list in self.ordered_block_dict.values():
