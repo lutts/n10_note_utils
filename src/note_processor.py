@@ -266,7 +266,8 @@ class NoteProcessStage1:
         logging.debug("process file: " + filepath)
 
         raw_lines = None
-        for encoding in ["utf-8", "utf-16be", "utf_8_sig"]:
+        for encoding in ["utf-8", "utf-16", "utf-16be", "utf_8_sig"]:
+            logging.debug("try encoding " + encoding)
             try:
                 with open(filepath, 'r', encoding=encoding) as notes:
                     raw_lines = notes.readlines()

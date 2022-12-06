@@ -1,4 +1,4 @@
----
+﻿---
 "lang": "en",
 "title": "Euler's Identity",
 "subtitle": "How to combine 5 important math constants to a short formula",
@@ -29,7 +29,7 @@ image 2 should insert after here
 
 2022年12月05日 23:59:55 摘自<<pdf filename.pdf>> 第36页
 
-excerpt paragraph 44444
+摘抄段落 44444
 
 hand note 2 should insert after here
 
