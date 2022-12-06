@@ -197,7 +197,7 @@ def list_markdown_latex_equations():
     if not filename:
         return
 
-    logging.debug("list latex equatioins from " + filename)
+    print("list latex equatioins from " + filename)
 
     try:
         processor = markdown_processor(markdown_processor_mode.LIST_EQUATION)
@@ -216,7 +216,7 @@ def send_markdown_to_supermemo():
     if not filename:
         return
 
-    logging.debug("send " + filename + " to supermemo")
+    print("send " + filename + " to supermemo")
     send_markdown(filename, markdown_processor_mode.SUPERMEMO)
     start_http_server_for_supermemo()
 
