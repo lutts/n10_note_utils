@@ -111,7 +111,7 @@ class NoteProcessStage1:
         return True
 
     def check_filename(self, filename):
-        if filename is None:
+        if not filename:
             return
 
         if is_filename_untitled(filename):
