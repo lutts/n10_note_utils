@@ -36,10 +36,8 @@ def detect_file_encoding(filepath):
 
 
 def read_file_lines(filepath):
-    logging.debug("read lines from " + filepath)
     raw_lines = None
     encoding = detect_file_encoding(filepath)
-    logging.debug("detected file encoding: " + str(encoding))
     if encoding:
         try:
             with open(filepath, 'r', encoding=encoding) as notes:
@@ -49,7 +47,6 @@ def read_file_lines(filepath):
 
     if not raw_lines:
         for encoding in ["utf-8", "utf_8_sig", "utf-16", "utf-16be"]:
-            logging.debug("try encoding " + encoding)
             try:
                 with open(filepath, 'r', encoding=encoding) as notes:
                     raw_lines = notes.readlines()
@@ -212,7 +209,6 @@ class NoteProcessStage1:
         if self._cur_block.is_dummy_block():
             if self._cur_block.lines:
                 has_front_matter = py_markdown_normalizer().has_front_matter(self._cur_block.lines)
-                logging.debug("dummy block has_front_matter: " + str(has_front_matter))
                 if not has_front_matter:
                     self._cur_block.timestamp = timestamp - 0.1
 
@@ -285,7 +281,6 @@ class NoteProcessStage1:
 
         if datetime_items:
             datetime_obj = datetime(*datetime_items)
-            logging.debug(datetime_obj)
             ts = datetime_obj.timestamp()
  
         return (ts, filename, page_number)
@@ -295,20 +290,15 @@ class NoteProcessStage1:
         if not ts:
             return False
 
-        logging.debug("found header line: " + line)
         self.new_block(ts, filename, page_number)
         return True
 
     def process_normal_line(self, line):
-        logging.debug("normal line: " + line)
         self.add_line_to_cur_block(line)
 
     def process_file(self, filepath):
-        logging.debug("process file: " + filepath)
-
         raw_lines = read_file_lines(filepath)
         if not raw_lines:
-            logging.debug("read file failed")
             return
 
         self.begin_process_file()
@@ -355,20 +345,12 @@ class N10NoteProcessStage1(NoteProcessStage1):
         if curdir == "":
             curdir = "."
 
-        logging.debug("get images in dir: " + curdir)
         # curdir = os.path.abspath(curdir)
         self.begin_process_file()
         for image in os.listdir(curdir):
             # check if the image ends with png
             if image.endswith(".png"):
                 fullpath = os.path.join(curdir, image)
-                try:
-                    logging.debug(image + " mtime:" +
-                                  str(os.path.getmtime(fullpath)))
-                    logging.debug(
-                        image + " mtime:" + str(datetime.fromtimestamp(os.path.getmtime(fullpath))))
-                except Exception as e:
-                    logging.debug(e)
 
                 # url in <> to allow space in path names
                 self.new_block(os.path.getmtime(fullpath))
@@ -468,7 +450,6 @@ class NoteProcessStage2:
 
     def begin_cache_mode(self, mode, line, ref_block):
         self.finish_cur_line()
-        logging.debug("begin cache mode: " + str(mode))
         self.cache_mode = mode
         self.cache_block = ref_block.make_cache_block()
         self.cache_block.add_line(line)
@@ -477,7 +458,6 @@ class NoteProcessStage2:
         if self.cache_mode == NoteProcessStage2.CACHE_MODE_NONE:
             return
 
-        logging.debug("end cache mode: " + str(self.cache_mode))
         last_cache_mode = self.cache_mode
         self.cache_mode = NoteProcessStage2.CACHE_MODE_NONE
         processed = False
@@ -498,16 +478,13 @@ class NoteProcessStage2:
 
         rstriped_line = line.rstrip()
         if not rstriped_line:
-            logging.debug("blank line, end cache mode")
             self.end_cache_mode()
             return False
         else:
-            logging.debug("cache line: " + line)
             self.cache_block.add_line(rstriped_line)
             return True
 
     def process_normal_line(self, line:str, owner_block:NoteBlock):
-        logging.debug("process normal line: " + line)
         # trim tailing spaces if not literal line
         rstriped_line = line.rstrip()
         line_type = self.markdown_normalizer.check_line(rstriped_line)
@@ -515,7 +492,6 @@ class NoteProcessStage2:
         if line_type == py_markdown_normalizer.FENCED_CODE_LINE:
             info_string = self.markdown_normalizer.code_fence_info_string
             if info_string == "delete":
-                logging.debug("fenced code marked as deleted")
                 return
 
             is_literal_text = True
@@ -526,25 +502,20 @@ class NoteProcessStage2:
             is_literal_text = True
 
         if is_literal_text:
-            logging.debug("literal text")
             self.add_literal_line(line)
             return
 
         if line_type:
             if line_type == '#':
-                logging.debug("title line")
                 self.add_title_line(rstriped_line)
                 self.add_empty_line()
             elif not owner_block.is_cache_block and line_type == py_markdown_normalizer.TABLE_LINE:
                 self.begin_cache_mode(self.CACHE_MODE_TABLE, rstriped_line, owner_block)
             else:
-                logging.debug("markdown line")
                 self.new_line(rstriped_line)
         elif not rstriped_line:
-            logging.debug("empty line")
             self.add_empty_line()
         else:
-            logging.debug("concat line")
             self.concat_line(rstriped_line)
 
     def add_filename_page_number_info(self, ref_block:NoteBlock):
@@ -577,7 +548,6 @@ class NoteProcessStage2:
             line_number += 1
             replace_block, delete_block = self.get_replacement_block(line, line_number)
             if replace_block:
-                logging.debug("replace block found, end cache mode")
                 self.end_cache_mode()
                 self.get_block_lines(replace_block)
                 if delete_block:
@@ -588,7 +558,6 @@ class NoteProcessStage2:
                 if may_need_filename_page_number_info:
                     self.add_filename_page_number_info(owner_block)
                     may_need_filename_page_number_info = False
-                logging.debug("check line: " + line)
                 if not self.cache_line(line):
                     self.process_normal_line(line, owner_block)
 
@@ -621,7 +590,6 @@ class NoteProcessStage2:
                 self.add_literal_line('[' + seqno + ']: <' + filename + ">\n")
         else:
             # markdownlint: markdown file should end with a single new line
-            logging.debug("last step, check if last_line_is_empty=" + str(self.last_line_is_empty))
             if self.last_line_is_empty:
                 self.markdown_lines.pop()
 
@@ -709,9 +677,6 @@ class N10NoteProcessor:
         self.markdown_lines = None
         self.notes_dir = os.path.dirname(n10_notes_filepath)
         self.note_files = (n10_notes_filepath, ) + extra_files
-        logging.debug("notes_dir: " + self.notes_dir)
-        logging.debug("note_files:")
-        logging.debug(self.note_files)
 
     def process(self):
         stage1 = N10NoteProcessStage1(self.notes_dir, *self.note_files)
@@ -744,7 +709,6 @@ def process_files(fullpaths):
     print(fullpaths)
     none_markdown_files = []
     for fullpath in fullpaths:
-        logging.debug("file: " + fullpath)
         filename = os.path.basename(fullpath)
         if filename.endswith(".md"):
             markdown_processor().markdown_file_to_html_file(fullpath)
@@ -762,8 +726,6 @@ def process_files(fullpaths):
     except Exception as e:
         logging.error(str(e))
 
-    logging.debug("process done")
-
 
 def main():
     args = sys.argv[1:]
@@ -776,7 +738,6 @@ def main():
     #logging.basicConfig(level=logging.DEBUG)
 
     if args[0].endswith(".md"):
-        logging.debug("process markdown file: " + args[0])
         markdown_processor().markdown_file_to_html_file(args[0])
     else:
         processor = N10NoteProcessor(*args)

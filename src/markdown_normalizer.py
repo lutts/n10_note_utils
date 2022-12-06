@@ -175,8 +175,6 @@ class py_markdown_normalizer:
 
     @staticmethod
     def normalize_line(line: str, add_newline_char=True):
-        logging.debug("normalize line: " + line)
-
         line = line.replace('\0', '')
 
         heading_spaces = ""
@@ -185,19 +183,15 @@ class py_markdown_normalizer:
             heading_spaces = m.group()
 
         # indented code block, return the orignal line
-        logging.debug("heading space len: " + str(len(heading_spaces)))
 
         # 避免随后的处理误伤link/img link
         image_or_links = py_markdown_normalizer.img_link_re.findall(line)
         if image_or_links:
             image_or_links = ["".join(i) for i in image_or_links]
-            logging.debug("found img or links: " + str(image_or_links))
             line = py_markdown_normalizer.double_brace_re.sub(r'\1\1', line)
             line = py_markdown_normalizer.img_link_re.sub('{}', line)
 
         line = py_text_normalizer.normalize_text_line(line)
-
-        # logging.debug("after normalize_text_line: " + line)
 
         line = py_markdown_normalizer.emphasis_normalizer_re.sub(
             r'\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', line)
@@ -209,7 +203,6 @@ class py_markdown_normalizer:
             normalized_line = heading_spaces + line + "\n"
         else:
             normalized_line = heading_spaces + line
-        logging.debug("normalized result: " + normalized_line)
         return normalized_line
 
     # 这里的表格定义和commonmark的不同，因为我们的目的是从错乱的文本中”恢复“表格，
@@ -265,25 +258,20 @@ class py_markdown_normalizer:
             return (False, table_lines)
 
         first_line = table_lines[0]
-        logging.debug("first line: " + first_line)
         if not first_line:
-            logging.debug("first line of table is empty, ignore")
             return (False, table_lines)
 
         parse_result = py_markdown_normalizer.parse_table_line(first_line)
         has_leading_pipe, has_trailing_pipe, cells = parse_result
         if not has_leading_pipe and not has_trailing_pipe and len(cells) == 1:
-            logging.debug("first line of table has no pipe, ignore")
             return (False, table_lines)
 
         all_cells = []
         delimiter_cells = None
         # default num columns is the number cells of the first line
         num_columns = len(cells)
-        logging.debug("first line columns: " + str(num_columns))
 
         if py_markdown_normalizer.is_delimiter_row(first_line, parse_result):
-            logging.debug("first line is delimiter row")
             delimiter_cells = cells
             has_trailing_pipe = True
         else:
@@ -292,27 +280,21 @@ class py_markdown_normalizer:
         last_line_has_trailing_pipe = has_trailing_pipe
 
         for line in table_lines[1:]:
-            logging.debug("checking line: " + line)
             if not line:
-                logging.debug("empty line, break")
                 break
 
             parse_result = py_markdown_normalizer.parse_table_line(line)
-            logging.debug("parse result: " + str(parse_result))
             has_leading_pipe, has_trailing_pipe, cells = parse_result
             if not delimiter_cells and py_markdown_normalizer.is_delimiter_row(line, parse_result):
-                logging.debug("found delimiter row, num all_cells:" + str(len(all_cells)) + ", num_columns: " + str(num_columns))
                 num_columns = len(cells)
                 # if delimiter row is not the first line, column number MUST be the number of cells currently parsed
                 if len(all_cells) != num_columns:
                     break
 
                 delimiter_cells = cells
-                logging.debug("delimiter row is valid")
                 last_line_has_trailing_pipe = True
             else:
                 if not has_leading_pipe and not last_line_has_trailing_pipe:
-                    logging.debug("no leading pipe and last line has no trailing pipe")
                     if not all_cells:
                         all_cells.append(cells[0])
                     else:
@@ -334,9 +316,6 @@ class py_markdown_normalizer:
 
         all_cells = [py_markdown_normalizer.normalize_line(
             cell, add_newline_char=False) for cell in all_cells]
-
-        logging.debug("all_cells:")
-        logging.debug(all_cells)
 
         header_line = '| ' + (' | '.join(all_cells[0:num_columns])) + ' |\n'
         table_lines = [header_line]

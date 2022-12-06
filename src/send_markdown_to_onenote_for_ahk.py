@@ -15,12 +15,9 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        logging.debug('no file selected\n')
         sys.exit(1)
 
     filename = args[0]
-
-    logging.debug("send " + filename + " to onenote")
     send_markdown(filename, markdown_processor_mode.ONENOTE)
 
 

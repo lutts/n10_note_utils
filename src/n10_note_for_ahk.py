@@ -15,21 +15,15 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        logging.debug('no file selected\n')
         sys.exit(1)
 
     args = "".join(args)
     args = args.split("\n")
 
-    logging.debug("###".join(args))
-
     if len(args) < 2:
-        logging.debug("args len < 2")
         sys.exit(1)
 
     dirname = args[0]
-
-    logging.debug("dirname: " + dirname)
 
     fullpaths = []
     for filename in args[1:]:

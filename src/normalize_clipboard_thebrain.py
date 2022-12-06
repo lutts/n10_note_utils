@@ -86,7 +86,6 @@ normal text
 
 def do_normlize_clipboard_thebrain():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
-    logging.debug("normalize clipboard for thebrain")
     raw_text = clipboard_util.get_text()
 
     if not raw_text:
@@ -95,8 +94,6 @@ def do_normlize_clipboard_thebrain():
     processor = RawNoteProcessor(raw_text = raw_text)
     processor.process()
 
-    logging.debug("markdown_lines")
-    logging.debug(processor.markdown_lines)
     if processor.markdown_lines:
         processor.markdown_lines[-1] = processor.markdown_lines[-1].rstrip()
 
@@ -109,16 +106,12 @@ def do_normlize_clipboard_thebrain():
         thebrain_lines = []
 
         for line in processor.markdown_lines:
-            #logging.debug("checking line: " + line)
             m = list_markers_re.match(line)
             if m:
-                logging.debug("found list: ")
-                logging.debug(line)
                 spaces = m.group('spaces')
                 list_marker = m.group('list_marker')
                 item_content = m.group('item_content')
                 level = level_of_spaces(spaces, list_markers)
-                logging.debug("level: " + str(level))
                 line = '\t' * level + list_marker + item_content + '\n'
                 
                 list_markers = list_markers[0:level]
@@ -129,13 +122,9 @@ def do_normlize_clipboard_thebrain():
 
             m = leading_spaces_re.match(line)
             if m:
-                logging.debug("found line with leading spaces:")
-                logging.debug(line)
                 spaces = m.group('spaces')
                 content = m.group('content')
                 level = level_of_spaces(spaces, list_markers)
-                logging.debug("level: " + str(level))
-                logging.debug("content:" + content)
 
                 q = blockquote_re.match(content)
                 if not q:

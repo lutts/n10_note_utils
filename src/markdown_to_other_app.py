@@ -49,11 +49,6 @@ def add_prefix_to_local_images(html, mode, img_dir, img_prefix=None):
         
         img_idx = 0
 
-        logging.debug("webroot:")
-        logging.debug(webroot)
-        logging.debug("imgroot:")
-        logging.debug(imgroot)
-
         img_orig_url_to_seq_url = {}
 
         def modify_image_url(matchobj):

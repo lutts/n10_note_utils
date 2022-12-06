@@ -32,7 +32,6 @@ class Block:
         clozes_hints = cloze_re.findall(joined_lines)
         joined_lines = cloze_re.sub(r'{}', joined_lines)
 
-        logging.debug(clozes_hints)
         clozes = [i[0] for i in clozes_hints]
         hints = ['<span>' + i[1] + '</span>' if i[1] else i[1] for i in clozes_hints]
 
@@ -133,7 +132,6 @@ def convert_html_to_qa_text(title, html_body):
 def generate_qa_file(filename):
     title, qa_markdown_lines = generate_qa_markdown(filename)
     if not qa_markdown_lines:
-        logging.debug('empty file')
         return
 
     # print(qa_markdown_lines)
@@ -160,7 +158,6 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        logging.debug('no file selected\n')
         sys.exit(1)
 
     filename = args[0]

@@ -11,7 +11,6 @@ import webbrowser
 
 
 def do_send_markdown_to_the_brain(filename):
-    logging.debug("send " + filename + " to thebrain")
     processor = markdown_processor(markdown_processor_mode.THEBRAIN, filename)
     full_html = None
     with open(filename, 'r', encoding='utf-8') as m:
@@ -37,7 +36,6 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        logging.debug('no file selected\n')
         sys.exit(1)
 
     filename = args[0]

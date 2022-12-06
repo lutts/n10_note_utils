@@ -103,20 +103,14 @@ class markdown_processor:
         if curdir == "":
             curdir = "."
 
-        logging.debug("get images in dir: " + curdir)
         # curdir = os.path.abspath(curdir)
         for image in os.listdir(curdir):
             # check if the image ends with png or jpg
             if image.endswith(".png") or image.endswith(".jpg"):
                 hashdigest = os.path.splitext(image)[0]
-                logging.debug("found image file: " + image)
                 self.images_dict[hashdigest] = image
 
     def katex_renderer(self, content, display_mode):
-        logging.debug("katex render coontent " + content +
-                      " with  display_mode " + str(display_mode))
-        logging.debug("render mode: " + str(self.mode))
-
         is_display_mode = display_mode['display_mode']
 
         one_line_tex = ""
@@ -126,7 +120,6 @@ class markdown_processor:
             one_line_tex = multiline_tex_to_one_line(content, is_display_mode)
             hash_object = hashlib.md5(one_line_tex.encode())
             hexdigest = hash_object.hexdigest()
-            logging.debug("equation digest: " + hexdigest)
 
         if self.mode is markdown_processor_mode.ONENOTE:
             if not is_display_mode:
@@ -166,7 +159,6 @@ class markdown_processor:
             options['display-mode'] = True
 
         html = tex2html(content, options)
-        logging.debug("tex " + content + " render to " + html)
 
         self.has_latex_equations = True
         return html
@@ -191,14 +183,13 @@ class markdown_processor:
             .use(dollarmath_plugin, renderer=self.katex_renderer)
             .enable('strikethrough')
             .enable('table'))
-        logging.debug(md.get_all_rules())
+        #logging.debug(md.get_all_rules())
 
         return md.render("".join(markdown_lines))
 
     def process_newline_in_table_cell(self, markdown_line):
         if markdown_line.startswith("| "):
             table_cells = markdown_line.split('|')
-            #logging.debug("table cells: " + str(table_cells))
             markdown_cells = []
             for cell in table_cells:
                 if not cell:
@@ -206,8 +197,6 @@ class markdown_processor:
                     continue
 
                 if "{nl}" in cell:
-                    logging.debug(
-                        "custom new line in table cell found: " + cell)
                     cell = cell.strip()
                     inline_lines = cell.split("{nl}")
                     cell = self.render_markdown_with_parser(
@@ -294,7 +283,6 @@ class markdown_processor:
             self.line_number += 1
 
             if self.line_is_in_code_fence(line):
-                logging.debug("fenced code remained: " + line)
                 processed_markdown_lines.append(line)
                 continue
 

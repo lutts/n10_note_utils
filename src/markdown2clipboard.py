@@ -18,5 +18,4 @@ def markdown_to_clipboard():
 
 if __name__ == "__main__":
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
-    logging.debug("markdown to clipboard")
     markdown_to_clipboard()

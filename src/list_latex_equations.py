@@ -11,13 +11,9 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        logging.debug('no file selected\n')
         sys.exit(1)
 
     filename = args[0]
-
-    logging.debug("list latex equatioins from " + filename)
-
     try:
         processor = markdown_processor(markdown_processor_mode.LIST_EQUATION)
         processor.list_latex_equations(filename)
