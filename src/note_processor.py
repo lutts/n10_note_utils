@@ -164,7 +164,7 @@ class NoteProcessStage1:
         else:
             return ''
 
-    def do_finish_current_block(self):
+    def check_cur_block_special_markers(self):
         if not self._cur_block.lines:
             return False
 
@@ -193,7 +193,11 @@ class NoteProcessStage1:
     def add_cur_block_to_ordered_dict(self):
         sort_key = self._cur_block.get_sort_key()
         if not sort_key:
-            return 
+            return
+
+        finished = self.check_cur_block_special_markers()
+        if finished:
+            return
 
         if sort_key in self.ordered_block_dict:
             owner_page_blocks = self.ordered_block_dict[sort_key]
@@ -204,10 +208,7 @@ class NoteProcessStage1:
             self.ordered_block_dict[sort_key] = [self._cur_block]
 
     def finish_current_block(self):
-        finished = self.do_finish_current_block()
-        if not finished:
-            self.add_cur_block_to_ordered_dict()
-
+        self.add_cur_block_to_ordered_dict()
         bisect.insort(self.datetime_ordered_list,
                       self._cur_block, key=lambda b: b.timestamp)
         self._prev_block = self._cur_block
