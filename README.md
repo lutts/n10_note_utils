@@ -127,9 +127,9 @@
 * **Capslock + l**: 列出markdown中的LaTex公式
 * **Capslock + u**: 转换markdown为supermemo html格式
 * **Capslock + q**: 转换markdown为supermemo Q&A格式
-* **Capslock + n**: 启动笔记摘抄程序notes monitor
+* **Capslock + n**: 启动PC端的剪贴板管理器notes monitor
 * **Capslock + s**: 启动supermemo及相关的http server
-* **Capslock + m**： 转换剪贴板中的markdown为html格式
+* **Capslock + m**: 转换剪贴板中的markdown为html格式
 * **Capslock + c**: 类似于Ctrl+c，但拷贝的结果永远是纯文本
 * **Capslock + d**: Ctrl+c，然后查询GoldenDict词典，需要将GoldenDict的hotkey设置为Ctrl+Alt+Shift+C
 * **Capslock + v**: 类似于Ctrl+v，但会对文本进行基于中文、英文、markdown的规范化
