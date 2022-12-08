@@ -1,5 +1,16 @@
 # 读书笔记处理程序
 
+## 目标
+
+* **电纸书辅助功能**
+  * 电纸书操作不便，程序会尽量提供相关的功能来减轻在电纸书上的操作负担
+  * 使导出的笔记更容易阅读
+  * 通过一些自定义的特殊标志，允许读者对笔记有更灵活的内容管理，
+* **电脑端的读书笔记辅助功能**
+  * 实现了一个**为阅读定制的剪贴板管理器**，收集阅读过程中Ctrl+C拷贝的文本，并自动收集文件名、页码等信息，存放到一个文本文件中
+  * **文本规范化**：主要体现在Capslock+v快捷键，这个类似于Ctrl+v，但是会对剪贴板中的内容进行markdown规范化后再粘贴
+* 一些方便和诸如**theBrain, supermemo，Cornell note-taking**等学习辅助软件/系统交互的快捷功能
+
 ## 现有笔记功能的问题
 
 1. 摘抄出来的文本乱糟糟的
@@ -87,7 +98,7 @@
     * 替换：使用一个新的摘抄替换掉某个不想要的摘抄
 * 删除某个摘抄(`[]:-`)
 * 删除摘抄中的某些文本: 使用language为`delete`的fenced block
-* PC端的摘抄监控程序
+* PC端为阅读定制的剪贴板管理器
   * 支持多来源混合笔记: 从多个文件，甚至是从网页摘抄笔记
 * 其他辅助功能
 
@@ -132,6 +143,27 @@
 * **Capslock + 4**: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 4 header
 * **Capslock + 5**: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 5 header
 * **Capslock + 6**: Ctrl+c, 但会和notes_monitor配合，将拷贝的内容转换成markdown level 6 header
+
+### Capslock + p和Capslock + v特别说明
+
+Capslock+p是对选中的笔记文件进行处理
+
+Capslock + v则是对剪贴板中的内容进行同样的处理，例如，如果你从pdf中Ctrl + C拷贝出以下文本:
+
+```text
+这是
+一句话，
+应该在
+一行才对。
+```
+
+此时使用Capslock + v粘贴得到的结果就是整合的一行了：
+
+```text
+这是一句话，应该在一行才对。
+```
+
+Capslock + v拥有笔记整理的所有功能，后面还有智能表格处理的示例
 
 ### 解析汉王N10的摘抄笔记
 
@@ -222,7 +254,16 @@ text
 | |
 ```
 
-经过程序处理后的结果如下:
+全选上面的文本，然后**ctrl+c**全部拷贝，然后**Capslock + v**，得到的结果如下:
+
+```text
+| column 1 | column 2 | column 3 |
+| --- | --- | --- |
+| col1 row1 text | col2 row1 | col3 row1 |
+| col1 row2 text | col2 row2 |  |
+```
+
+渲染出的网页效果如下
 
 | column 1 | column 2 | column 3 |
 | --- | --- | --- |
@@ -361,7 +402,7 @@ aaaaaaa
 bbbbbbb
 ```
 
-### PC端的摘抄功能
+### PC端为阅读定制的剪贴板管理器
 
 脚本中还有一个notes_monitor.py，在PC端模拟了汉王N10的摘抄功能，生成的摘抄文件和汉王N10是一致的，可以使用脚本的其他功能解析
 
@@ -373,7 +414,9 @@ bbbbbbb
 pip install pytesseract
 ```
 
-还需要安装tesseract windows版以及中文相关的，安装方法还请自行网上搜索
+还需要安装tesseract windows版，安装方法还请自行网上搜索
+
+中文识别训练库不是必须的，程序默认从当前窗口的标题文本中搜索文件名，一般都能成功获取，只在获取窗口标题失败时才会进行可能含中文的文件名OCR识别
 
 文件名和页码的OCR区域需要在settings.json中指定
 
@@ -406,6 +449,8 @@ region的指定格式为: left, top, right, bottom
 * CapsLock & 5:: 将文本拷贝为markdown level 5 header(#####)
 * CapsLock & 6:: 将文本拷贝为markdown level 6 header(######)
 * CapsLock & n:: 启动notes_monitor.py
+
+从浏览器拷贝时，只支持纯文本，不会保留格式。你可以自行安装CopyCat(拷贝猫)这样的浏览器插件来自由选择需要的格式
 
 ### 其他辅助功能
 
