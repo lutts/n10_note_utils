@@ -199,6 +199,8 @@ class NoteProcessStage1:
         if finished:
             return
 
+        # sort key may changed after check special markers
+        sort_key = self._cur_block.get_sort_key()
         if sort_key in self.ordered_block_dict:
             owner_page_blocks = self.ordered_block_dict[sort_key]
             if owner_page_blocks[-1] is not self._prev_block:
@@ -429,26 +431,30 @@ class NoteProcessStage2:
         if not self.cur_line:
             return
 
-        self.last_line_is_empty = False
-        self.markdown_lines.append(py_markdown_normalizer.normalize_line(self.cur_line))
-        self.cur_line = ""
+        normalized_line = py_markdown_normalizer.normalize_line(self.cur_line)
+        if py_markdown_normalizer.level_1_header_re.match(normalized_line):
+            self.title = normalized_line
+            self.markdown_lines.insert(self.title_line_pos, self.title)
+            self._add_empty_line()
+        else:
+            self.markdown_lines.append(normalized_line)
+            self.last_line_is_empty = False
 
-    def add_title_line(self, title):
-        self.finish_cur_line()
-        self.title = py_markdown_normalizer.normalize_line(title)
-        self.markdown_lines.insert(self.title_line_pos, self.title)
-        self.last_line_is_empty = False
+        self.cur_line = ""
 
     def add_literal_line(self, line):
         self.finish_cur_line()
         self.markdown_lines.append(line)
         self.last_line_is_empty = False
 
-    def add_empty_line(self):
-        self.finish_cur_line()
+    def _add_empty_line(self):
         if not self.last_line_is_empty:
             self.markdown_lines.append("\n")    
             self.last_line_is_empty = True
+
+    def add_empty_line(self):
+        self.finish_cur_line()
+        self._add_empty_line()
 
     def new_line(self, line):
         self.finish_cur_line()
@@ -515,10 +521,7 @@ class NoteProcessStage2:
             return
 
         if line_type:
-            if line_type == '#':
-                self.add_title_line(rstriped_line)
-                self.add_empty_line()
-            elif not owner_block.is_cache_block and line_type == py_markdown_normalizer.TABLE_LINE:
+            if not owner_block.is_cache_block and line_type == py_markdown_normalizer.TABLE_LINE:
                 self.begin_cache_mode(self.CACHE_MODE_TABLE, rstriped_line, owner_block)
             else:
                 self.new_line(rstriped_line)

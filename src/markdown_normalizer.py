@@ -50,6 +50,7 @@ class py_markdown_normalizer:
     list_markers_re = regex.compile(r'[ ]*(?P<markdown_marker>[-*+]|[0-9]+\.|Q:|q:|A:|a:)[ ]')
     blockquote_re = regex.compile(r'[ ]{,3}(?P<quote_marker>>(?:$|[> ]*))')
     markdown_header_re = regex.compile(r'[ ]{,3}(?P<header_marker>#{1,6})[ ]')
+    level_1_header_re = regex.compile(r'[ ]{,3}#[ ]')
     maybe_table_re = regex.compile(r'[ ]{,3}\|')
     table_line_re = regex.compile(r'^[ ]{,3}\|[ ]*|[ ]*(?<=[^\\])\|[ ]*')
     table_delimiter_row_cell_re = regex.compile(r'^:?-+:?$')
