@@ -344,67 +344,6 @@ def worker():
 
 threading.Thread(target=worker, daemon=True).start()
 
-# keyboard.add_hotkey("caps lock+t",
-#                     supermemo_component_to_plain,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+c",
-#                     copy_plain_text,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+1",
-#                     copy_as_markdown_header1,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+2",
-#                     copy_as_markdown_header2,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+3",
-#                     copy_as_markdown_header3,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+4",
-#                     copy_as_markdown_header4,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+5",
-#                     copy_as_markdown_header5,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+6",
-#                     copy_as_markdown_header6,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+d",
-#                     look_up_dictionary,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+m",
-#                     clipboard_markdown_to_html,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+p",
-#                     n10notes_process,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+o",
-#                     send_markdown_to_onenote,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+l",
-#                     list_markdown_latex_equations,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+u",
-#                     send_markdown_to_supermemo,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+i",
-#                     send_markdown_to_the_brain,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+v",
-#                     normalized_paste,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+b",
-#                     normalized_paste_the_brain,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+q",
-#                     generate_supermemo_qa,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+n",
-#                     start_note_monitor,
-#                     suppress=True)
-# keyboard.add_hotkey("caps lock+s",
-#                     run_supermemo,
-#                     suppress=True)
-
 hotkeys = {'b': normalized_paste_the_brain,
            'c': copy_plain_text,
            'd': look_up_dictionary,
