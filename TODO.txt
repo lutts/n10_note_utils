@@ -1,0 +1,13 @@
+* normalize_text_line: markdown marker不应该参与normalize，主要是“中文标点前后都不需要空格”这一点，比如"# 【测试】标题"，还有比如"# )xxx"这样的，虽然不规范，但也是一个level1 heading
+
+multiline cell中如果出现 "* item1{nl}* 【item2】"这样的，仍然会导致问题呀
+
+    list_markers_re = regex.compile(r'[ ]*(?P<markdown_marker>[-*+]|[0-9]+\.|Q:|q:|A:|a:)[ ]')
+    blockquote_re = regex.compile(r'[ ]{,3}(?P<quote_marker>>(?:$|[> ]*))')
+    markdown_header_re = regex.compile(r'[ ]{,3}(?P<header_marker>#{1,6})[ ]')
+	
+多个空格被缩减为一个也会导致multiline cell中的缩进失效！！！
+
+multiline cell太复杂了！！！
+
+由于note processor处理的对象是摘抄笔记，出现multiline cell的情况应该极少，所以我暂时不考虑处理这种复杂的情形

@@ -183,15 +183,18 @@ class py_markdown_normalizer:
         line = line.replace('\0', '')
 
         if not markdown_prefix:
-            res = [py_markdown_normalizer.list_markers_re,
-                   py_markdown_normalizer.blockquote_re,
-                   py_markdown_normalizer.markdown_header_re,
-                   py_markdown_normalizer.leading_whitespaces_re]
-            for r in res:
-                m = r.match(line)
-                if m:
-                    markdown_prefix = m.group()
-                    break
+            # res = [py_markdown_normalizer.list_markers_re,
+            #        py_markdown_normalizer.blockquote_re,
+            #        py_markdown_normalizer.markdown_header_re,
+            #        py_markdown_normalizer.leading_whitespaces_re]
+            # for r in res:
+            #     m = r.match(line)
+            #     if m:
+            #         markdown_prefix = m.group()
+            #         break
+            m = py_markdown_normalizer.leading_whitespaces_re.match(line)
+            if m:
+                markdown_prefix = m.group()
 
         if markdown_prefix:
             line = line[len(markdown_prefix):]
@@ -218,7 +221,7 @@ class py_markdown_normalizer:
         normalized_line = markdown_prefix + line
         if add_newline_char:
             normalized_line = normalized_line + "\n"
-            
+
         return normalized_line
 
     # 这里的表格定义和commonmark的不同，因为我们的目的是从错乱的文本中”恢复“表格，
