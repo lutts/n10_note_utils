@@ -746,12 +746,7 @@ def main():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
-    if args[0].endswith(".md"):
-        markdown_processor().markdown_file_to_html_file(args[0])
-    else:
-        processor = N10NoteProcessor(*args)
-        processor.process()
-        processor.write()
+    process_files(args)
 
 
 # Main body
