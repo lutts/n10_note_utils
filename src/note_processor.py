@@ -403,6 +403,7 @@ class NoteProcessStage2:
         self.markdown_normalizer = py_markdown_normalizer()
         self.title_line_pos = 0
         self.cur_line:str = ""
+        self.cur_line_markdown_prefix = None
         self.last_line_is_empty = False
         self.last_filename:str = None
         self.last_page_number:str = None
@@ -431,7 +432,7 @@ class NoteProcessStage2:
         if not self.cur_line:
             return
 
-        normalized_line = py_markdown_normalizer.normalize_line(self.cur_line)
+        normalized_line = py_markdown_normalizer.normalize_line(self.cur_line, markdown_prefix=self.cur_line_markdown_prefix)
         if py_markdown_normalizer.level_1_header_re.match(normalized_line):
             self.title = normalized_line
             self.markdown_lines.insert(self.title_line_pos, self.title)
@@ -441,6 +442,7 @@ class NoteProcessStage2:
             self.last_line_is_empty = False
 
         self.cur_line = ""
+        self.cur_line_markdown_prefix = None
 
     def add_literal_line(self, line):
         self.finish_cur_line()
@@ -456,9 +458,10 @@ class NoteProcessStage2:
         self.finish_cur_line()
         self._add_empty_line()
 
-    def new_line(self, line):
+    def new_line(self, line, markdown_prefix):
         self.finish_cur_line()
         self.cur_line = line
+        self.cur_line_markdown_prefix = markdown_prefix
 
     def concat_line(self, line):
         self.cur_line = py_text_normalizer.concat_line(self.cur_line, line)
@@ -482,6 +485,7 @@ class NoteProcessStage2:
                 self.last_line_is_empty = False
                 self.markdown_lines.extend(lines)
                 self.cur_line = ""
+                self.cur_line_markdown_prefix = None
 
         if not processed:
             self.get_block_lines(self.cache_block)
@@ -524,7 +528,11 @@ class NoteProcessStage2:
             if not owner_block.is_cache_block and line_type == py_markdown_normalizer.TABLE_LINE:
                 self.begin_cache_mode(self.CACHE_MODE_TABLE, rstriped_line, owner_block)
             else:
-                self.new_line(rstriped_line)
+                if line_type == py_markdown_normalizer.TABLE_LINE:
+                    markdown_prefix = ""
+                else:
+                    markdown_prefix = self.markdown_normalizer.last_markdown_prefix
+                self.new_line(rstriped_line, markdown_prefix)
         elif not rstriped_line:
             self.add_empty_line()
         else:

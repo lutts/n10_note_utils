@@ -66,6 +66,7 @@ class py_markdown_normalizer:
         self.code_fence = None
         self.code_fence_info_string = None
         self.in_math_context = False
+        self.last_markdown_prefix = None
     
     def check_line(self, line: str) -> str:
         self.seq_number += 1
@@ -81,14 +82,17 @@ class py_markdown_normalizer:
 
         m = py_markdown_normalizer.markdown_header_re.match(line)
         if m:
+            self.last_markdown_prefix = m.group(0)
             return m.group(1)
 
         m = py_markdown_normalizer.blockquote_re.match(line)
         if m:
+            self.last_markdown_prefix = m.group(0)
             return ">"
 
         m = py_markdown_normalizer.list_markers_re.match(line)
         if m:
+            self.last_markdown_prefix = m.group(0)
             return m.group(1)
 
         m = py_markdown_normalizer.maybe_table_re.match(line)
@@ -175,13 +179,24 @@ class py_markdown_normalizer:
         return False
 
     @staticmethod
-    def normalize_line(line: str, add_newline_char=True):
+    def normalize_line(line: str, add_newline_char=True, markdown_prefix=None):
         line = line.replace('\0', '')
 
-        heading_spaces = ""
-        m = py_markdown_normalizer.leading_whitespaces_re.match(line)
-        if m:
-            heading_spaces = m.group()
+        if not markdown_prefix:
+            res = [py_markdown_normalizer.list_markers_re,
+                   py_markdown_normalizer.blockquote_re,
+                   py_markdown_normalizer.markdown_header_re,
+                   py_markdown_normalizer.leading_whitespaces_re]
+            for r in res:
+                m = r.match(line)
+                if m:
+                    markdown_prefix = m.group()
+                    break
+
+        if markdown_prefix:
+            line = line[len(markdown_prefix):]
+        else:
+            markdown_prefix = ""
 
         # indented code block, return the orignal line
 
@@ -200,10 +215,10 @@ class py_markdown_normalizer:
         if image_or_links:
             line = line.format(*image_or_links)
 
+        normalized_line = markdown_prefix + line
         if add_newline_char:
-            normalized_line = heading_spaces + line + "\n"
-        else:
-            normalized_line = heading_spaces + line
+            normalized_line = normalized_line + "\n"
+            
         return normalized_line
 
     # 这里的表格定义和commonmark的不同，因为我们的目的是从错乱的文本中”恢复“表格，
