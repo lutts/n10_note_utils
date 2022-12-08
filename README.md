@@ -8,7 +8,7 @@
   * 通过一些自定义的特殊标志，允许读者对笔记有更灵活的内容管理，
 * **电脑端的读书笔记辅助功能**
   * 实现了一个**为阅读定制的剪贴板管理器**，收集阅读过程中Ctrl+C拷贝的文本，并自动收集文件名、页码等信息，存放到一个文本文件中
-  * **文本规范化**：主要体现在Capslock+v快捷键，这个类似于Ctrl+v，但是会对剪贴板中的内容进行markdown规范化后再粘贴
+  * **文本规范化**：主要体现在Capslock+v快捷键，这个类似于Ctrl+v，但是会对剪贴板中的内容进行中文、英文、markdown规范化后再粘贴
 * 一些方便和诸如**theBrain, supermemo，Cornell note-taking**等学习辅助软件/系统交互的快捷功能
 
 ## 现有笔记功能的问题
@@ -132,7 +132,7 @@
 * **Capslock + m**： 转换剪贴板中的markdown为html格式
 * **Capslock + c**: 类似于Ctrl+c，但拷贝的结果永远是纯文本
 * **Capslock + d**: Ctrl+c，然后查询GoldenDict词典，需要将GoldenDict的hotkey设置为Ctrl+Alt+Shift+C
-* **Capslock + v**: 类似于Ctrl+v，但会对文本进行基于markdown的规范化
+* **Capslock + v**: 类似于Ctrl+v，但会对文本进行基于中文、英文、markdown的规范化
 * **Capslock + b**: 类似于Ctrl+v，但会将粘贴的文本转换为theBrain的markdown格式
 * **Capslock + e**: 即Ctrl + i，用于markdown将选中文本转为斜体(Emphasis)，右手握住鼠标时，左手单手Ctrl+i太难按了
 * **Capslock + h**: 插入当前年月日时间，例如: 2022年12月04日 23:45:55
