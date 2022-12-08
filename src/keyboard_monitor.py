@@ -275,8 +275,17 @@ def start_note_monitor():
     is_running = notes_monitor_proc is not None and notes_monitor_proc.poll() is None
 
     if not is_running:
-        notes_monitor_proc = subprocess.Popen(['python', os.path.join(script_path, "notes_monitor.py")],
-                     creationflags=subprocess.CREATE_NEW_CONSOLE)
+        notes_dir = filedialog.askdirectory(title="Select Notes Directory")
+        if not notes_dir:
+            print("no notes dir selected, do nothing")
+            return
+
+        args = ['python',
+                os.path.join(script_path, "notes_monitor.py"),
+                notes_dir]
+        creationflags = subprocess.CREATE_NEW_CONSOLE
+
+        notes_monitor_proc = subprocess.Popen(args, creationflags=creationflags)
     else:
         show_msgbox("notes monitor is already running")
 

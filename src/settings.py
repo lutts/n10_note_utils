@@ -52,7 +52,7 @@ def get_tesseract_cmd():
 
 def get_bbox(key):
     v = _get_key_value(key)
-    print("get bbox for " + key + ", " + v)
+    #print("get bbox for " + key + ", " + v)
     bbox_re = re.compile(r'(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)')
     m = bbox_re.match(v)
     if m:

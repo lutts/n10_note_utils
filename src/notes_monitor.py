@@ -3,6 +3,7 @@
 import re
 import time
 import os
+import sys
 import threading
 import queue
 import json
@@ -31,6 +32,9 @@ foxit_filename_bbox  = settings.get_foxit_filename_region()
 foxit_pagenumber_bbox = settings.get_foxit_pagenumber_region()
 adobe_filename_bbox = settings.get_adobe_filename_region()
 adobe_pagenumber_bbox = settings.get_adobe_pagenumber_region()
+
+
+monitor_notes_dir = None
 
 
 def get_current_filename():
@@ -142,7 +146,7 @@ def extract_filename(filename_ocr):
 
 def get_filename(filename_cap):
     if isinstance(filename_cap, str):
-        print("str cap: " + filename_cap)
+        # print("str cap: " + filename_cap)
         filename = extract_filename(filename_cap)
         if filename:
             return filename
@@ -158,7 +162,6 @@ def get_filename(filename_cap):
 
 
 def get_note_header(filename_caps, page_number_caps):
-    print("get note header")
     filename = None
     for cap in filename_caps:
         filename = get_filename(cap)
@@ -185,12 +188,8 @@ def get_note_header(filename_caps, page_number_caps):
 
 
 def append_note(seq_no, note, filename_caps, page_number_caps):
-    temp_notes_dir = settings.get_temp_notes_dir()
-    if not temp_notes_dir:
-        return
-
     note_header = get_note_header(filename_caps, page_number_caps)
-    notes_filepath = os.path.join(temp_notes_dir, 'notes.txt')
+    notes_filepath = os.path.join(monitor_notes_dir, 'notes.txt')
     with open(notes_filepath, 'a', encoding='utf_8_sig') as f:
         f.write('\n\n')
         f.write(note_header)
@@ -235,12 +234,8 @@ def on_text(seq_no, text):
 
 
 def save_image(seq_no, img):
-    temp_notes_dir = settings.get_temp_notes_dir()
-    if not temp_notes_dir:
-        return
-
     img_filename = str(seq_no) + '.png'
-    img_filepath = os.path.join(temp_notes_dir, img_filename)
+    img_filepath = os.path.join(monitor_notes_dir, img_filename)
     img.save(img_filepath, 'PNG')
 
     #append_note(seq_no, '![x](' + img_filename + ')')
@@ -272,19 +267,41 @@ def worker():
         q.task_done()
 
 
-if __name__ == '__main__':
-    temp_notes_dir = settings.get_temp_notes_dir()
-    settings_file = os.path.join(temp_notes_dir, 'notes_monitor_settings.json')
-    if os.path.exists(settings_file):
-        with open(settings_file, 'r', encoding='utf-8') as f:
-            setting_json = json.load(f)
-            single_book_mode = setting_json.get('single_book_mode')
+def start_notes_monitor(notes_dir: str = None):
+    global single_book_mode
+    global monitor_notes_dir
 
-     # Path of tesseract executable
+    monitor_notes_dir = notes_dir
+
+    if monitor_notes_dir:
+        try:
+            if not os.path.exists(monitor_notes_dir):
+                print(monitor_notes_dir + " not exist, create")
+                os.makedirs(monitor_notes_dir)
+        except:
+            print("ERROR: make directory " + monitor_notes_dir + " failed!")
+            monitor_notes_dir = None
+
+    if not monitor_notes_dir:
+        monitor_notes_dir = settings.get_temp_notes_dir()
+    if not monitor_notes_dir:
+        print("ERROR: notes directory not specified")
+        return
+
+    # Path of tesseract executable
     pytesseract.pytesseract.tesseract_cmd = settings.get_tesseract_cmd()
 
+    settings_file = os.path.join(monitor_notes_dir, 'notes_monitor_settings.json')
+    if os.path.exists(settings_file):
+        try:
+            with open(settings_file, 'r', encoding='utf-8') as f:
+                setting_json = json.load(f)
+                single_book_mode = setting_json.get('single_book_mode')
+        except:
+            print("ERROR: read notes_monitor_settings.json failed")
+
     print('start notes monitor(pid: ' + str(os.getpid()) + ')')
-    print('temp notes directory: ' + str(temp_notes_dir))
+    print('temp notes directory: ' + str(monitor_notes_dir))
     print('single_book_mode: ' + str(single_book_mode))
     print('foxit_filename_bbox: ' + str(foxit_filename_bbox))
     print('foxit_pagenumber_bbox: ' + str(foxit_pagenumber_bbox))
@@ -297,3 +314,10 @@ if __name__ == '__main__':
         on_text=on_text,
         on_image=on_image)
     monitor.listen()
+
+
+if __name__ == '__main__':
+    notes_dir = None
+    if len(sys.argv) > 1:
+        notes_dir = sys.argv[1]
+    start_notes_monitor(notes_dir)
