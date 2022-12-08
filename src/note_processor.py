@@ -740,7 +740,7 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        print('usage: python3 -m n10_note_processor <摘抄文件> [手写笔记导出文本文件]')
+        print('usage: python3 -m note_processor <txt or md files>')
         sys.exit(1)
 
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
