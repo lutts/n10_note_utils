@@ -433,8 +433,8 @@ region的指定格式为: left, top, right, bottom
 
 上面还有两个设置项:
 
-* temp_notes_dir: 摘抄和截图保存目录
-* tesseract_cmd：tesseract.exe的位置
+* temp_notes_dir: 摘抄和截图保存目录，这个可以不指定，通过快捷键Capslock + n打开notes monitor时，会弹出选择目录的对话框
+* tesseract_cmd：tesseract.exe的位置。如果不指定的话，你需要确保tesseract.exe在PATH环境变量中
 
 脚本会监控剪贴板，因此一般情况下只需要使用`Ctrl+C`拷贝，就能自动拼到摘抄文件里
 

@@ -289,7 +289,9 @@ def start_notes_monitor(notes_dir: str = None):
         return
 
     # Path of tesseract executable
-    pytesseract.pytesseract.tesseract_cmd = settings.get_tesseract_cmd()
+    ocr_cmd = settings.get_tesseract_cmd()
+    if ocr_cmd:
+        pytesseract.pytesseract.tesseract_cmd = ocr_cmd
 
     settings_file = os.path.join(monitor_notes_dir, 'notes_monitor_settings.json')
     if os.path.exists(settings_file):
