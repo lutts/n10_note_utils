@@ -334,8 +334,8 @@ def worker():
         callback = worker_queue.get()
 
         try:
-            callback()
             toggle_capslock()
+            callback()
         except:
             print("failed do work in worker")
             traceback.print_exc()
