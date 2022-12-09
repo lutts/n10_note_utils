@@ -6,11 +6,19 @@ Module documentation.
 import re
 import hanzi
 import unicodedata
+import string
 
 class py_text_normalizer:
-    english_punctuation = r'-!"#$%&\'()*+,./:;<=>?@\[\\\]^_`{|}~'
-    punctuation_and_numbers = english_punctuation + hanzi.punctuation + '0123456789'
+    punctuation_and_numbers = string.punctuation + hanzi.punctuation + '0123456789'
     blank_line_re = re.compile(r'^\s*$')
+
+    en_to_ch_punc_map = {
+
+    }
+
+    ch_to_en_punc_map = {
+        
+    }
 
     @staticmethod
     def is_blank_line(line):
