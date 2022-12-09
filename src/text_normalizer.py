@@ -5,6 +5,7 @@ Module documentation.
 
 import re
 import hanzi
+import unicodedata
 
 class py_text_normalizer:
     english_punctuation = r'-!"#$%&\'()*+,./:;<=>?@\[\\\]^_`{|}~'
@@ -132,6 +133,10 @@ class py_text_normalizer:
                     chars.append(')')
                 else:
                     chars.append(cur_char)
+            elif '\ufb00' < cur_char and cur_char < '\ufb12':
+                # Alphabetic Presentation Forms is a Unicode block containing standard ligatures
+                ligature_chars = unicodedata.normalize('NFKD', cur_char)
+                chars.extend(list(ligature_chars))
             else:
                 chars.append(cur_char)
 
