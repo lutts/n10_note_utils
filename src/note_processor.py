@@ -11,6 +11,7 @@ import os
 import bisect
 import logging
 from datetime import datetime
+import traceback
 import css_inline
 from collections import OrderedDict
 import uuid
@@ -744,7 +745,7 @@ def process_files(fullpaths):
         processor.process()
         processor.write()
     except Exception as e:
-        logging.error(str(e))
+        traceback.print_exc()
 
 
 def main():
