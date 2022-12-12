@@ -89,7 +89,7 @@ def convert_html_to_qa_text(title, html_body):
     qa_text = []
 
     q_re = re.compile(r'<p>q: ')
-    a_re = re.compile(r'<p>a: ')
+    a_re = re.compile(r'<p>a: *')
     hr_re = re.compile('<hr\s*/?>')
 
     if title:
