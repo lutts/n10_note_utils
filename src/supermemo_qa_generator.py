@@ -16,7 +16,7 @@ class Block:
         self.lines.append(line)
 
     def generate_qa_markdown(self):
-        if self.lines[1].startswith('q: '):
+        if self.lines[1].startswith('Q: ') or self.lines[1].startswith('q: '):
             return self.lines
 
         qa_lines = []
@@ -88,8 +88,8 @@ def generate_qa_markdown(filename):
 def convert_html_to_qa_text(title, html_body):
     qa_text = []
 
-    q_re = re.compile(r'<p>q: ')
-    a_re = re.compile(r'<p>a: *')
+    q_re = re.compile(r'<p>(q|Q): ')
+    a_re = re.compile(r'<p>(a|A): *')
     hr_re = re.compile('<hr\s*/?>')
 
     if title:

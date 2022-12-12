@@ -251,11 +251,22 @@ class markdown_processor:
         return False
 
     thebrain_text_color_re = regex.compile(r':[{](?P<text>.*?):[(]style=&quot;(?P<style>.*?)&quot;[)]:[}]:')
+    q_re = re.compile(r'<p>(q|Q): ')
+    a_re = re.compile(r'<p>(a|A):')
 
     def process_html_body_extras(self, raw_html):
         processed_html = []
 
+        question_pending = False
         for line in raw_html.splitlines():
+            if self.q_re.match(line):
+                line = self.q_re.sub(r'<p><span style="color:#ff6600">\1: ', line, count=1)
+                question_pending = True
+            if question_pending and line.endswith('</p>'):
+                line = line[0:len(line) - len('</p>')] + "</span></p>"
+                question_pending = False
+
+            line = self.a_re.sub(r'<p><span style="color:#ff6600">\1:</span>', line, count=1)
             processed_html.append(self.thebrain_text_color_re.sub(r'<span style="\2">\1</span>', line))
         
         return "\n".join(processed_html)
@@ -287,10 +298,7 @@ class markdown_processor:
                 continue
 
             line = line.replace('![x]', '![]')
-            if line.startswith('Q: ') or line.startswith('q: '):
-                line = '<span style="color: #ff6600;">' + line + '</span>'
-            else:
-                line = self.process_newline_in_table_cell(line)
+            line = self.process_newline_in_table_cell(line)
             processed_markdown_lines.append(line)
 
         raw_html = self.render_markdown_with_parser(processed_markdown_lines)
@@ -460,7 +468,6 @@ class markdown_processor:
                 if line_number == 1 and level_1_header_re.match(line):
                     questions.append(line)
                     questions.append("\n")
-                    first_line = False
                 elif question_found and in_paragraph_re.match(line):
                     questions.append(line)
                 elif line.startswith("q: ") or line.startswith("Q: "):
