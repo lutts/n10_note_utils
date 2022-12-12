@@ -669,12 +669,20 @@ people who are in **positive** moods may find it {{harder}}(easier or harder?) t
 生成的cue.md相应内容如下:
 
 ```markdown
-Q: How do you master your notes?
+Q: How do you master your notes? {#q4564}
+
+A:
 
 [check answer](notes.md#L22)
 ```
 
-使用Ctrl + 鼠标点击`notes.md#L22`能跳转到notes.md第22行相应的answer处
+其中：
+
+* `{#q4564}`是对每个question生成的随机ID
+* `A:`：你可以在recite的时候将你的答案写在这里
+* 使用Ctrl + 鼠标点击`notes.md#L22`能跳转到notes.md第22行相应的answer处
+
+如果你更新了笔记文件notes.md，你可以再次执行`Capslock + r`来更新cue.md，更新的时候，cue.md中你recite时写下的答案会保留，不会删掉
 
 ## Visual Studio Code Cornell Note-taking及supermemo扩展
 

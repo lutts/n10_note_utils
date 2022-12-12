@@ -22,6 +22,7 @@ from markdown_utils import markdown_processor, markdown_processor_mode, uniqe_na
 import settings
 from supermemo_qa_generator import generate_qa_file
 from send_markdown_to_thebrain_from_ahk import do_send_markdown_to_the_brain
+from cue_extractor import generate_cornell_cue
 
 
 worker_queue = queue.Queue()
@@ -322,7 +323,7 @@ def extract_questions():
     if not filename:
         return
 
-    markdown_processor.extract_questions(filename)
+    generate_cornell_cue(filename)
 
 
 def get_capslock_state():
