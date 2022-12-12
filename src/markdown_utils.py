@@ -447,7 +447,6 @@ class markdown_processor:
 
         in_paragraph_re = re.compile(r'^(\s*[-=]{3,}\s*$|[ ]{4,}\S)')
         level_1_header_re = re.compile(r'[ ]{,3}#[ ]')
-        first_line = True
 
         filedir = os.path.dirname(markdown_filepath)
         filename = os.path.basename(markdown_filepath)
@@ -455,17 +454,10 @@ class markdown_processor:
         line_number = 0
         question_found = False
 
-        def add_to_questions(q):
-            questions.extend(q)
-            questions.append("\n")
-            questions.append("[check answer](filename#L{})\n".format(line_number))
-            questions.append("\n")
-            q = None
-
         with open(markdown_filepath, 'r', encoding='utf-8') as f:
             for line in f:
                 line_number += 1
-                if first_line and level_1_header_re.match(line):
+                if line_number == 1 and level_1_header_re.match(line):
                     questions.append(line)
                     questions.append("\n")
                     first_line = False
@@ -476,13 +468,13 @@ class markdown_processor:
                     question_found = True
                 else:
                     if question_found:
-                        if not line:
+                        if not line.strip():
                             answer_line_number = line_number + 1
                         else:
                             answer_line_number = line_number
 
                         questions.append("\n")
-                        questions.append("[check answer](filename#L{})\n".format(answer_line_number))
+                        questions.append("[check answer]({}#L{})\n".format(filename, answer_line_number))
                         questions.append("\n")
 
                         question_found = False
