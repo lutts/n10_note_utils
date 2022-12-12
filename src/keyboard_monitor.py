@@ -355,7 +355,6 @@ def worker():
 threading.Thread(target=worker, daemon=True).start()
 
 hotkeys = {
-    'a': extract_questions,
     'b': normalized_paste_the_brain,
     'c': copy_plain_text,
     'd': look_up_dictionary,
@@ -368,6 +367,7 @@ hotkeys = {
     'o': send_markdown_to_onenote,
     'p': n10notes_process,
     'q': generate_supermemo_qa,
+    'r': extract_questions,
     's': run_supermemo,
     't': supermemo_component_to_plain,
     'u': send_markdown_to_supermemo,

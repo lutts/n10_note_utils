@@ -100,6 +100,7 @@
 * 删除摘抄中的某些文本: 使用language为`delete`的fenced block
 * PC端为阅读定制的剪贴板管理器
   * 支持多来源混合笔记: 从多个文件，甚至是从网页摘抄笔记
+* Cornell笔记辅助功能
 * 其他辅助功能
 
 上面这些功能有些涉及到一些特殊的标志，你可以借助输入法的短语功能来辅助使用这些标志
@@ -127,6 +128,7 @@
 * **Capslock + l**: 列出markdown中的LaTex公式
 * **Capslock + u**: 转换markdown为supermemo html格式
 * **Capslock + q**: 转换markdown为supermemo Q&A格式
+* **Capslock + r**: 从markdown中抽取Cornell Question生成cue.md，为recite服务
 * **Capslock + n**: 启动PC端的剪贴板管理器notes monitor
 * **Capslock + s**: 启动supermemo及相关的http server
 * **Capslock + m**: 转换剪贴板中的markdown为html格式
@@ -184,7 +186,6 @@ Capslock + v拥有笔记整理的所有功能，后面还有智能表格处理�
 程序会生成markdown和html两种格式的文本，并且会生成Cornell笔记方法和supermemo的一些相关文件
 
 * **notes.md**: 这个md文件是markdown格式的处理后的文件
-* **cue.md**: Cornell cue
 * **summary.md**: Cornell summary
 * **qa.md**: supermemo Q&A
 * **notes.html**: 这是渲染出的网页文件
@@ -649,6 +650,31 @@ a: the differences are:
 
 people who are in **positive** moods may find it {{harder}}(easier or harder?) to ignore {{irrelevant}} information
 ```
+
+## Cornell笔记辅助功能
+
+使用Cornell笔记系统时，recite阶段要将answer遮挡，然后根据question来用自已的话来回答，但我们无法将markdown分为cue和note两列，因此我提供了一个功能，将markdown里的question到一个单独的cue.md文件中，并且question下提供check answer链接跳转到notes.md中相应answer处
+
+相关快捷键: Capslock + r:
+
+示例：下面是notes.md里的一段内容，其中前面的数字是行号
+
+```markdown
+20    Q: How do you master your notes?
+21
+22    A: **review** it carefully, **recite** it regularly, and **reflect** on it deeply until it becomes a permanent part of your 
+      knowledge.
+```
+
+生成的cue.md相应内容如下:
+
+```markdown
+Q: How do you master your notes?
+
+[check answer](notes.md#L22)
+```
+
+使用Ctrl + 鼠标点击`notes.md#L22`能跳转到notes.md第22行相应的answer处
 
 ## Visual Studio Code Cornell Note-taking及supermemo扩展
 
