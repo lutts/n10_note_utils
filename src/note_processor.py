@@ -675,15 +675,15 @@ class CornellNotesWriter:
     @staticmethod
     def write(title, markdown_lines, notes_dir):
         markdown_filepath = uniqe_name(os.path.join(notes_dir, "notes.md"))
-        cue_filepath = uniqe_name(os.path.join(notes_dir, "cue.md"))
+        # cue_filepath = uniqe_name(os.path.join(notes_dir, "cue.md"))
         summary_filepath = uniqe_name(os.path.join(notes_dir, "summary.md"))
         qa_filepath = uniqe_name(os.path.join(notes_dir, "qa.md"))
         html_filepath = uniqe_name(os.path.join(notes_dir, "notes.html"))
 
         NotesWriter.write(markdown_lines, markdown_filepath, html_filepath)
 
-        with open(cue_filepath, 'w', encoding="utf-8") as f:
-            f.write(title)
+        # with open(cue_filepath, 'w', encoding="utf-8") as f:
+        #     f.write(title)
 
         with open(summary_filepath, 'w', encoding="utf-8") as f:
             f.write(title)

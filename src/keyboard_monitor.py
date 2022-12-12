@@ -315,6 +315,16 @@ def insert_date_time():
     keyboard.send("ctrl+v")
 
 
+@delay_to_worker_thread
+def extract_questions():
+    print("extract questions to cue")
+    filename = ask_open_filename()
+    if not filename:
+        return
+
+    markdown_processor.extract_questions(filename)
+
+
 def get_capslock_state():
     hllDll = ctypes.WinDLL ("User32.dll")
     VK_CAPITAL = 0x14
@@ -344,29 +354,31 @@ def worker():
 
 threading.Thread(target=worker, daemon=True).start()
 
-hotkeys = {'b': normalized_paste_the_brain,
-           'c': copy_plain_text,
-           'd': look_up_dictionary,
-           'e': triggle_italic,
-           'h': insert_date_time,
-           'i': send_markdown_to_the_brain,
-           'l': list_markdown_latex_equations,
-           'm': clipboard_markdown_to_html,
-           'n': start_note_monitor,
-           'o': send_markdown_to_onenote,
-           'p': n10notes_process,
-           'q': generate_supermemo_qa,
-           's': run_supermemo,
-           't': supermemo_component_to_plain,
-           'u': send_markdown_to_supermemo,
-           'v': normalized_paste,
-           '1': copy_as_markdown_header1,
-           '2': copy_as_markdown_header2,
-           '3': copy_as_markdown_header3,
-           '4': copy_as_markdown_header4,
-           '5': copy_as_markdown_header5,
-           '6': copy_as_markdown_header6
-           }
+hotkeys = {
+    'a': extract_questions,
+    'b': normalized_paste_the_brain,
+    'c': copy_plain_text,
+    'd': look_up_dictionary,
+    'e': triggle_italic,
+    'h': insert_date_time,
+    'i': send_markdown_to_the_brain,
+    'l': list_markdown_latex_equations,
+    'm': clipboard_markdown_to_html,
+    'n': start_note_monitor,
+    'o': send_markdown_to_onenote,
+    'p': n10notes_process,
+    'q': generate_supermemo_qa,
+    's': run_supermemo,
+    't': supermemo_component_to_plain,
+    'u': send_markdown_to_supermemo,
+    'v': normalized_paste,
+    '1': copy_as_markdown_header1,
+    '2': copy_as_markdown_header2,
+    '3': copy_as_markdown_header3,
+    '4': copy_as_markdown_header4,
+    '5': copy_as_markdown_header5,
+    '6': copy_as_markdown_header6
+}
 
 def do_hotkey(key_name):
     # print("do hotkey " + key_name)

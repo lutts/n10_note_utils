@@ -6,7 +6,7 @@ Module documentation.
 import sys
 import os
 import logging
-#import re
+import re
 import regex
 #import markdown
 #import markdown2
@@ -437,3 +437,59 @@ class markdown_processor:
                 equations.write(
                     "\n\n------------block equations-------------\n\n")
                 equations.write("\n\n".join(self.block_latex_equations))
+
+    @staticmethod
+    def extract_questions(markdown_filepath):
+        if not markdown_filepath:
+            return
+
+        questions = []
+
+        in_paragraph_re = re.compile(r'^(\s*[-=]{3,}\s*$|[ ]{4,}\S)')
+        level_1_header_re = re.compile(r'[ ]{,3}#[ ]')
+        first_line = True
+
+        filedir = os.path.dirname(markdown_filepath)
+        filename = os.path.basename(markdown_filepath)
+
+        line_number = 0
+        question_found = False
+
+        def add_to_questions(q):
+            questions.extend(q)
+            questions.append("\n")
+            questions.append("[check answer](filename#L{})\n".format(line_number))
+            questions.append("\n")
+            q = None
+
+        with open(markdown_filepath, 'r', encoding='utf-8') as f:
+            for line in f:
+                line_number += 1
+                if first_line and level_1_header_re.match(line):
+                    questions.append(line)
+                    questions.append("\n")
+                    first_line = False
+                elif question_found and in_paragraph_re.match(line):
+                    questions.append(line)
+                elif line.startswith("q: ") or line.startswith("Q: "):
+                    questions.append(line)
+                    question_found = True
+                else:
+                    if question_found:
+                        if not line:
+                            answer_line_number = line_number + 1
+                        else:
+                            answer_line_number = line_number
+
+                        questions.append("\n")
+                        questions.append("[check answer](filename#L{})\n".format(answer_line_number))
+                        questions.append("\n")
+
+                        question_found = False
+
+        cue_file = uniqe_name(os.path.join(filedir, "cue.md"))
+        if questions:
+            with open(cue_file, 'w', encoding='utf-8') as cue:
+                cue.writelines(questions)
+                    
+
