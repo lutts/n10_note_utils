@@ -481,6 +481,8 @@ class markdown_processor:
                             answer_line_number = line_number
 
                         questions.append("\n")
+                        questions.append("A:\n")
+                        questions.append("\n")
                         questions.append("[check answer]({}#L{})\n".format(filename, answer_line_number))
                         questions.append("\n")
 
@@ -488,6 +490,9 @@ class markdown_processor:
 
         cue_file = uniqe_name(os.path.join(filedir, "cue.md"))
         if questions:
+            if questions[-1] == "\n":
+                questions.pop()
+                
             with open(cue_file, 'w', encoding='utf-8') as cue:
                 cue.writelines(questions)
                     
