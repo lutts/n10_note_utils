@@ -686,6 +686,8 @@ question id是自动生成的，是为了方便在notes.md更新后更新cue.md�
 
 如果你更新了笔记文件notes.md，你可以再次执行`Capslock + r`来更新cue.md，更新的时候，cue.md中你recite时写下的答案会保留，不会删掉
 
+question id可以通过我写的Visual studio code cornell插件变成不显眼的颜色，不会干扰正常阅读，参见下面关于扩展的说明
+
 ## Visual Studio Code Cornell Note-taking及supermemo扩展
 
 我编写了一个Visual Studio Code的markdown扩展程序，可以高亮显示Q&A句子以及supermemo cloze
