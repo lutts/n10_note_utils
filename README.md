@@ -653,7 +653,7 @@ people who are in **positive** moods may find it {{harder}}(easier or harder?) t
 
 ## Cornell笔记辅助功能
 
-使用Cornell笔记系统时，recite阶段要将answer遮挡，然后根据question来用自已的话来回答，但我们无法将markdown分为cue和note两列，因此我提供了一个功能，将markdown里的question到一个单独的cue.md文件中，并且question下提供check answer链接跳转到notes.md中相应answer处
+使用Cornell笔记系统时，recite阶段要将answer遮挡，然后根据question来用自已的话来回答，但我们无法将markdown分为cue和note两列，因此我提供了一个功能，将markdown里的question抽取到一个单独的cue.md文件中，并且question下提供check answer链接跳转到notes.md中相应answer处
 
 相关快捷键: Capslock + r:
 
