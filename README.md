@@ -682,6 +682,8 @@ A:
 * `A:`：你可以在recite的时候将你的答案写在这里
 * 使用Ctrl + 鼠标点击`notes.md#L22`能跳转到notes.md第22行相应的answer处
 
+question id是自动生成的，是为了方便在notes.md更新后更新cue.md，尽量不要手动添加question id.
+
 如果你更新了笔记文件notes.md，你可以再次执行`Capslock + r`来更新cue.md，更新的时候，cue.md中你recite时写下的答案会保留，不会删掉
 
 ## Visual Studio Code Cornell Note-taking及supermemo扩展
