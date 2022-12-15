@@ -755,7 +755,7 @@ def main():
         print('usage: python3 -m note_processor <txt or md files>')
         sys.exit(1)
 
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
     process_files(args)
