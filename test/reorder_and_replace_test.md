@@ -1,7 +1,7 @@
 
 ([1]p196s)
 
-最终结果: 1, 5, b, 2, 7, 9, 6, 8, 4, r, a
+最终结果：1, 5, b, 2, 7, 9, 6, 8, 4, r, a
 
 11111111111111111111111111111111111111111111111
 
@@ -51,7 +51,7 @@ rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-接下来测试循环替换的处理，结果是: xxx, zzz, yyy
+接下来测试循环替换的处理，结果是：xxx, zzz, yyy
 
 ([1]p196e)
 

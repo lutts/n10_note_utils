@@ -6,7 +6,7 @@ Module documentation.
 import regex
 import logging
 
-from text_normalizer import py_text_normalizer
+from text_normalizer import py_normalize_text_line, py_concat_line
 
 
 class py_markdown_normalizer:
@@ -210,7 +210,7 @@ class py_markdown_normalizer:
             line = py_markdown_normalizer.double_brace_re.sub(r'\1\1', line)
             line = py_markdown_normalizer.img_link_re.sub('{}', line)
 
-        line = py_text_normalizer.normalize_text_line(line)
+        line = py_normalize_text_line(line)
 
         line = py_markdown_normalizer.emphasis_normalizer_re.sub(
             r'\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', line)
@@ -317,7 +317,7 @@ class py_markdown_normalizer:
                     if not all_cells:
                         all_cells.append(cells[0])
                     else:
-                        all_cells[-1] = py_text_normalizer.concat_line(all_cells[-1], cells[0])
+                        all_cells[-1] = py_concat_line(all_cells[-1], cells[0])
                     cells = cells[1:]
                 
                 all_cells.extend(cells)

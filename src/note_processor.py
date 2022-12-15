@@ -19,7 +19,7 @@ import chardet
 
 from markdown_utils import markdown_processor, uniqe_name
 from clipboard_utils import clipboard_util
-from text_normalizer import py_text_normalizer
+from text_normalizer import py_concat_line
 from markdown_normalizer import py_markdown_normalizer
 
 
@@ -465,7 +465,7 @@ class NoteProcessStage2:
         self.cur_line_markdown_prefix = markdown_prefix
 
     def concat_line(self, line):
-        self.cur_line = py_text_normalizer.concat_line(self.cur_line, line)
+        self.cur_line = py_concat_line(self.cur_line, line)
 
     def begin_cache_mode(self, mode, line, ref_block):
         self.finish_cur_line()
@@ -755,7 +755,7 @@ def main():
         print('usage: python3 -m note_processor <txt or md files>')
         sys.exit(1)
 
-    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
     process_files(args)

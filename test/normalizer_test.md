@@ -14,11 +14,11 @@
 
 ## 测试合并行
 
-冥想 (meditation)是一种改变意识的形式，它通过获得深度的宁静状态而增强自我认识和幸福感口在专注冥想期间，人们把注意力集中在自己的呼吸和调节呼吸上. 采取某些身体姿势（如瑜伽姿势），使外部刺激减至最小，产生特定的心理表象，或什么都不想。而在专念冥想中，个体要学会如何让思想和回忆自由地穿行，而心理不对其做出反应。
+冥想 (meditation) 是一种改变意识的形式，它通过获得深度的宁静状态而增强自我认识和幸福感口在专注冥想期间，人们把注意力集中在自己的呼吸和调节呼吸上。采取某些身体姿势 (如瑜伽姿势)，使外部刺激减至最小，产生特定的心理表象，或什么都不想。而在专念冥想中，个体要学会如何让思想和回忆自由地穿行，而心理不对其做出反应。
 
-Psychology's great strength is that it uses scientific observation to systematically answer questions about all sorts of behaviors. rats' behavior is observered. rats' behavior is measured. "what is psychology" psychology is
+Psychology's great strength is that it uses scientific observation to systematically answer questions about all sorts of behaviors. rats' behavior is observered. rats’ behavior is measured. “what is psychology” psychology is
 
-### markdown会被保留
+### markdown 会被保留
 
 ```python
         inliner = css_inline.CSSInliner(remove_style_tags=True)
@@ -43,15 +43,15 @@ hoho    xxx
 | Command | Description |
 | --- | --- |
 | git status | List all new or modified files |
-| git diff | To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].{nl}{nl}* [x] #739{nl}* [ ] [octo-org](https://github.com/octo-org/octo-repo/issues/740){nl}* [ ] Add delight to the experience when all tasks are complete : tada:{nl} {nl}If a task list item description begins with a parenthesis, you'll need to escape it with \: |
+| git diff | To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].{nl}{nl}* [x] #739 {nl}* [ ] [octo-org](https://github.com/octo-org/octo-repo/issues/740){nl}* [ ] Add delight to the experience when all tasks are complete: tada:{nl} {nl}If a task list item description begins with a parenthesis, you'll need to escape it with \: |
 
 To create a task list, preface list items with a hyphen and space followed by [ ]. To mark a task as complete, use [x].
 
 * [x] #739
 * [ ] [octo-org](https://github.com/octo-org/octo-repo/issues/740)
-* [ ] Add delight to the experience when all tasks are complete : tada:
+* [ ] Add delight to the experience when all tasks are complete: tada:
 
-If a task list item description begins with a parenthesis, you'll need to escape it with \:
+If a task list item description begins with a parenthesis, you'll need to escape it with "\"
 
 * [ ] \(Optional) Open a followup issue
 
@@ -61,23 +61,7 @@ Parse ~~strikethrough~~ formatting
 
 Hey Jane, 周末要不要一起吃早茶，叫上 Jennie 和 Jone, 预计花费 100 元
 
-## 根据下文将中文引号转为英文引号
-
-s1 = "some 'english' text"
-
-s2 = "一些‘中文’文字"
-
-s3 = 'some "english" text'
-
-s4 = '一些“中文”文字'
-
-## 根据上下文将中文括号转为英文括号
-
-s5 = "some (english) text"
-
-s6 = "一些（中文）文字"
-
-## markdown加粗带括号中文的规范
+## markdown 加粗带括号中文的规范
 
 * 这**是**(**is**)一个苹果。
 * 这*是*(*is*)一个苹果。
@@ -86,16 +70,16 @@ s6 = "一些（中文）文字"
 * 这**是**《**is**》一个苹果。
 * 这**是**<**is**>一个苹果。
 * 这**是**(**is**)一个苹果。
-* 这**是**(**is**)一个苹果。
-* The third set of concerns relates to **divinity(神性)** vs. **神性**(**divinity**)测试:
-* The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)**。
-* The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)**
-* The third set of concerns relates to **divinity(神性)** vs. **神性(divinity)** vs. others
-* The third set of concerns relates to *divinity(神性)* vs. *神性*(*divinity*)测试:
-* The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)*。
-* The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)*
-* The third set of concerns relates to *divinity(神性)* vs. *神性(divinity)* vs. others
-* **心理学**(**psychology**)是关于**个体**的**行为**及**心智 (mind)过程**的**科学研究**
+* 这**是**(**is**) 一个苹果。
+* The third set of concerns relates to **divinity (神性)** vs. **神性**(**divinity**)测试：
+* The third set of concerns relates to **divinity (神性)** vs. **神性 (divinity)**.
+* The third set of concerns relates to **divinity (神性)** vs. **神性 (divinity)**
+* The third set of concerns relates to **divinity (神性)** vs. **神性 (divinity)** vs. others
+* The third set of concerns relates to *divinity (神性)* vs. *神性*(*divinity*)测试：
+* The third set of concerns relates to *divinity (神性)* vs. *神性 (divinity)*.
+* The third set of concerns relates to *divinity (神性)* vs. *神性 (divinity)*
+* The third set of concerns relates to *divinity (神性)* vs. *神性 (divinity)* vs. others
+* **心理学**(**psychology**)是关于**个体**的**行为**及**心智 (mind) 过程**的**科学研究**
 * **reference list:** Reference list entries should have a hanging indent of 0.5 in
 
 ## 空格的处理
@@ -104,13 +88,11 @@ s6 = "一些（中文）文字"
 
 a. string, has; no: space? after punctuation! another, string; has: space? after puctuation! ok!
 
-### 但如果这些英文禁点后面有其他标点符号或数字，则不加空格
+### 但如果这些英文标点后面有其他标点符号，则不加空格
 
 中文:【不要加空格】
 
 english:[english]
-
-number:123
 
 ### 连续空格只保留一个，但行首的不动
 
@@ -131,14 +113,14 @@ number:123
     * item222
 * item3
 
-### code block里的文字保留不变
+### code block 里的文字保留不变
 
 ```text
     this         is      a   code block
     should not normalize
 ```
 
-### http Link和图片相关的markdown识别
+### http Link 和图片相关的 markdown 识别
 
 ![x](<./test    image.jpeg>)
 
@@ -265,7 +247,7 @@ haha | hoho
 | Variable |  |  |
 | --- | --- | --- |
 | Encodings | The way you categorize information about yourself, other people, events, and situations | As soon as Bob meets someone, he tries to figure out how wealthy he or she is. |
-| Expectancies and beliefs | Your beliefs about the social world and likely outcomes for given actions in particular situations; your beliefs about your ability to bring outcomes about | Greg invites friends to the movies, but he never expects them to say "yes." |
+| Expectancies and beliefs | Your beliefs about the social world and likely outcomes for given actions in particular situations; your beliefs about your ability to bring outcomes about | Greg invites friends to the movies, but he never expects them to say “yes.” |
 | Affects | Your feelings and emotions, including physiological responses | Cindy blushes very easily. |
 | Goals and values | The outcomes and affective states you do and do not value; your goals and life projects | Peter wants to be president of his college class. |
 | Competencies and self-regulatory plans | The behaviors you can accomplish and plans for generating cognitive and behavioral outcomes | Jan can speak English, French, Russian, and Japanese and expects to work for the United Nations. |
