@@ -206,25 +206,25 @@ class py_text_normalizer:
                 allowed = True
 
         if not allowed:
-            logging.debug("add_space: ignore")
+            #logging.debug("add_space: ignore")
             if self.prev_char == regular_space:
-                logging.debug("but change auto_added to false")
+                #logging.debug("but change auto_added to false")
                 self.prev_space_is_auto_added = False
             return
 
         self.normalized_chars.append(regular_space)
         self.prev_char = regular_space
         self.prev_space_is_auto_added = False
-        logging.debug("cur norm line: |{}|".format("".join(self.normalized_chars)))
+        #logging.debug("cur norm line: |{}|".format("".join(self.normalized_chars)))
 
     def add_char(self, c, is_punc=True, is_full_char=False, add_space_before=False, add_space_after=False):
-        logging.debug("self.add_char, c:{}, is_punc:{}, is_full_char:{}, add_space_before:{}, add_space_after:{}".format(
-            c, is_punc, is_full_char, add_space_before, add_space_after))
-        logging.debug("self.add_char, self.prev_char:{}, prev_is_func:{}, self.prev_is_full_width:{}".format(
-            self.prev_char, self.prev_is_punc, self.prev_is_full_width))
+        #logging.debug("self.add_char, c:{}, is_punc:{}, is_full_char:{}, add_space_before:{}, add_space_after:{}".format(
+        #    c, is_punc, is_full_char, add_space_before, add_space_after))
+        #logging.debug("self.add_char, self.prev_char:{}, prev_is_func:{}, self.prev_is_full_width:{}".format(
+        #    self.prev_char, self.prev_is_punc, self.prev_is_full_width))
 
         if add_space_before and self.space_allowed(is_punc):
-            logging.debug("add space before")
+            #logging.debug("add space before")
             self.normalized_chars.append(regular_space)
             self.prev_char = regular_space
             self.prev_space_is_auto_added = True
@@ -237,7 +237,7 @@ class py_text_normalizer:
         if self.prev_char == regular_space:
             pop_space = False
             if self.prev_is_full_width and cur_is_full_width:
-                logging.debug("remove whitespapce between full width chars")
+                #logging.debug("remove whitespapce between full width chars")
                 pop_space = True
             if is_punc and cur_is_full_width:
                 pop_space = True
@@ -293,14 +293,14 @@ class py_text_normalizer:
                 elif is_full_char and prev_prev_char in puncs_unaware_space:
                     pop_space = self.prev_space_is_auto_added
 
-            logging.debug("remove space before puncs, pop_space={}".format(pop_space))
+            #logging.debug("remove space before puncs, pop_space={}".format(pop_space))
             if pop_space:
                 self.normalized_chars.pop()
 
         self.normalized_chars.append(c)
 
         if add_space_after:
-            logging.debug("add space after")
+            #logging.debug("add space after")
             self.normalized_chars.append(regular_space)
             self.prev_char = regular_space
             self.prev_space_is_auto_added = True
@@ -310,10 +310,10 @@ class py_text_normalizer:
         self.prev_is_punc = is_punc
         self.prev_is_full_width = cur_is_full_width
 
-        logging.debug("cur norm line: |{}|".format("".join(self.normalized_chars)))
+        #logging.debug("cur norm line: |{}|".format("".join(self.normalized_chars)))
 
     def process_full_width_char(self):
-        logging.debug("is full width")
+        #logging.debug("is full width")
         context_changed = (self.cur_context != FULL_WIDTH_CONTEXT)
         if context_changed:
             self.prev_context = self.cur_context
@@ -322,7 +322,7 @@ class py_text_normalizer:
                 add_space_before=context_changed)
 
     def process_half_width_char(self):
-        logging.debug("is half width")
+        #logging.debug("is half width")
         context_changed = (self.cur_context != HALF_WIDTH_CONTEXT)
         if context_changed:
             self.prev_context = self.cur_context
@@ -330,7 +330,7 @@ class py_text_normalizer:
         self.add_char(self.cur_char, is_punc=False, add_space_before=context_changed)
 
     def process_punctuation(self):
-        logging.debug("is punc")
+        #logging.debug("is punc")
         if self.cur_char in left_parens:
             self.add_char(self.cur_char, add_space_before=True)
             return
@@ -360,7 +360,7 @@ class py_text_normalizer:
             # else, pass through
         
         if not self.cur_context:
-            logging.debug("env not determinied")
+            #logging.debug("env not determinied")
             search_pos = self.idx + 1
             while search_pos < self.line_len:
                 c = self.line[search_pos]
@@ -374,13 +374,13 @@ class py_text_normalizer:
                     self.cur_context = HALF_WIDTH_CONTEXT
                     break
             
-            logging.debug("env searched: {}".format(self.cur_context))
+            #logging.debug("env searched: {}".format(self.cur_context))
             if not self.cur_context:
-                logging.debug("using prev dev: {}".format(self.prev_context))
+                #logging.debug("using prev dev: {}".format(self.prev_context))
                 self.cur_context = self.prev_context
 
             if not self.cur_context:
-                logging.debug("env not found until end, finish!")
+                #logging.debug("env not found until end, finish!")
                 while self.idx < self.line_len:
                     self.add_char(self.line[self.idx])
                     self.idx += 1
@@ -390,7 +390,7 @@ class py_text_normalizer:
 
         # stops are only considered stops if they are in half or full env
         if self.cur_char in stops:
-            logging.debug("stops found")
+            #logging.debug("stops found")
             self.sentence_end_context = True
             if self.cur_char == '.' and self.idx + 1 < self.line_len:
                 next_char = self.line[self.idx + 1]
@@ -400,7 +400,7 @@ class py_text_normalizer:
         if self.cur_context == FULL_WIDTH_CONTEXT:
             if self.normalized_chars:
                 if self.prev_char in cn_full_to_half:
-                    logging.debug("标点挤压")
+                    #logging.debug("标点挤压")
                     self.prev_char = cn_full_to_half[self.prev_char]
                     self.normalized_chars[-1] = self.prev_char
 
@@ -416,7 +416,7 @@ class py_text_normalizer:
             self.add_char(self.cur_char, add_space_after=add_space_after)
 
     def normalize_text_line(self, orig_line:str):
-        logging.debug("normalize line: " + orig_line)
+        #logging.debug("normalize line: " + orig_line)
         self.line = self.pre_process_text_line(orig_line)
         self.line_len = len(self.line)
 
@@ -434,10 +434,10 @@ class py_text_normalizer:
         self.idx = 0
         while self.idx < self.line_len:
             self.cur_char = self.line[self.idx]
-            logging.debug("norm char: {}({})".format(self.cur_char, hex(ord(self.cur_char))))
+            #logging.debug("norm char: {}({})".format(self.cur_char, hex(ord(self.cur_char))))
 
             if self.sentence_end_context and self.cur_char not in all_stops:
-                logging.debug("sentence end")
+                #logging.debug("sentence end")
                 self.sentence_end_context = False
                 self.prev_context = self.cur_context
                 self.cur_context = NONE_CONTEXT
