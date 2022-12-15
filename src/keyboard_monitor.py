@@ -23,6 +23,7 @@ import settings
 from supermemo_qa_generator import generate_qa_file
 from send_markdown_to_thebrain_from_ahk import do_send_markdown_to_the_brain
 from cue_extractor import generate_cornell_cue
+from playsound import play_success_sound
 
 
 worker_queue = queue.Queue()
