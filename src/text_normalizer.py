@@ -35,6 +35,10 @@ def char_is_number(c):
     return '0' <= c and c <= '9'
 
 
+def char_is_letter(c):
+    return ('A' <= c and c <= 'Z') or ('a' <= c and c <= 'z')
+
+
 ############### full width chars #######################
 hiragana = '[\\u3040-\\u309F]'
 katakana = '[\\u30A0-\\u30FF]'
@@ -217,6 +221,36 @@ class py_text_normalizer:
         self.prev_space_is_auto_added = False
         #logging.debug("cur norm line: |{}|".format("".join(self.normalized_chars)))
 
+    def char_is_in_abbr(self, c):
+        if not char_is_letter(c):
+            return False
+
+        if self.idx + 1 < self.line_len:
+            next_char = self.line[self.idx + 1]
+            if char_is_letter(next_char):
+                return False
+        
+        prev_prev_char = self.normalized_chars[-2]
+        if prev_prev_char != '.':
+            return False
+
+        num_norm_chars = len(self.normalized_chars)
+        if num_norm_chars < 3:
+            return False
+
+        ppp_char = self.normalized_chars[-3]
+        if not char_is_letter(ppp_char):
+            return False
+
+        if num_norm_chars == 3:
+            return True
+
+        pppp_char = self.normalized_chars[-4]
+        if char_is_letter(pppp_char):
+            return False
+
+        return True
+
     def add_char(self, c, is_punc=True, is_full_char=False, add_space_before=False, add_space_after=False):
         #logging.debug("self.add_char, c:{}, is_punc:{}, is_full_char:{}, add_space_before:{}, add_space_after:{}".format(
         #    c, is_punc, is_full_char, add_space_before, add_space_after))
@@ -278,7 +312,7 @@ class py_text_normalizer:
                     pop_space = False
                 elif c in puncs_need_space_after or c in right_parens:
                     pop_space = True
-                else:
+                elif not self.char_is_in_abbr(c):
                     prev_prev_char = self.normalized_chars[-2]
                     if prev_prev_char in puncs_need_space_after:
                         pop_space = False
@@ -582,12 +616,18 @@ def test():
         'this is:\d',
 
         '| --- | --- | --- |':
-        '| --- | --- | --- |'
+        '| --- | --- | --- |',
+
+        'e.g. in U.S.A there (a.m)':
+        'e.g. in U.S.A there (a.m)',
+
+        'e. g. in U. S.A there (a.m)':
+        'e. g. in U. S.A there (a.m)'
     }
 
     testcase_dict2 = {
-        '神性)** vs. **神性':
-        '神性)** vs. **神性'
+        'e.g. in U.S.A there (a.m)':
+        'e.g. in U.S.A there (a.m)'
     }
 
     for test_line, expect_result in testcase_dict.items():
