@@ -199,15 +199,19 @@ class py_markdown_normalizer:
 
     @staticmethod
     def _restore_special_inlines(line:str, matcher, reserves):
+        restored_num = 0
         def restore_func(matchobj):
+            nonlocal restored_num
+
             idx = int(matchobj.group('idx'))
             if idx < len(reserves):
+                restored_num += 1
                 return reserves[idx]
             else:
                 return matchobj.group()
 
         orig_line = matcher.sub(restore_func, line)
-        return orig_line
+        return (orig_line, restored_num)
 
     @staticmethod
     def normalize_line(line: str, add_newline_char=True, markdown_prefix=None):
@@ -247,16 +251,17 @@ class py_markdown_normalizer:
         line = py_markdown_normalizer.emphasis_normalizer_re.sub(
             r'\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', line)
 
+        restored_code_spans = 0
         if code_spans:
-            line = py_markdown_normalizer._restore_special_inlines(
+            line, restored_code_spans = py_markdown_normalizer._restore_special_inlines(
                 line, py_markdown_normalizer.code_span_restore_re, code_spans)
 
         if image_or_links:
-            line = py_markdown_normalizer._restore_special_inlines(
+            line, _ = py_markdown_normalizer._restore_special_inlines(
                 line, py_markdown_normalizer.img_link_restore_re, image_or_links)
 
-        if code_spans:
-            line = py_markdown_normalizer._restore_special_inlines(
+        if code_spans and restored_code_spans < len(code_spans):
+            line, _ = py_markdown_normalizer._restore_special_inlines(
                 line, py_markdown_normalizer.code_span_restore_re, code_spans)
 
         normalized_line = markdown_prefix + line
