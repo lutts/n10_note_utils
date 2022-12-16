@@ -366,7 +366,7 @@ class markdown_processor:
             full_html += self.common_blockquote_css_style
         
         if not for_inline:
-            full_html += "\nimg { width:100%; }\n"
+            full_html += "\nimg { max-width:100%; }\n"
 
         full_html += "</style>\n"
         full_html += "</head><body>\n"
