@@ -749,9 +749,10 @@ def process_files(fullpaths):
 
 
 def raw_test():
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
-    s = '[haha](<http://good morning `haha` hoho.html>)'
+    #s = '[haha](<http://good morning `haha` hoho.html>)'
+    s = '<https://github.com/lutts/n10_note_utils>'
     # s = 'is it `text11` or `text2` or `text3`'
     processor = RawNoteProcessor(s)
     processor.process()

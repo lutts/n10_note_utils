@@ -55,7 +55,10 @@ def is_full_width_char(c):
 
 
 ############### punctuations #######################
-all_punctuations = string.punctuation + hanzi.punctuation
+ellipsis_punc = '\u2026'
+# chinese_ellipsis = '\u22ef'
+
+all_punctuations = string.punctuation + hanzi.punctuation + ellipsis_punc
 regular_space = ' '
 
 left_parens = '([{<'
@@ -73,7 +76,7 @@ all_stops = stops + extra_stops
 
 puncs_need_space_after = '.?!,;:'
 number_delimiters = ',:.'
-puncs_unaware_space = '"#$%&\'*+-/=@\\^`|~'
+puncs_unaware_space = '"#$%&\'*+-/=@\\^`|~' + ellipsis_punc
 
 contraction_suffix_re = re.compile(r'\s*(d|m|s|t|re|ve|ll)(\s+|$)')
 o_clock_re = re.compile(r"o\s*’\s*clock(\s+|$)", re.IGNORECASE)
@@ -85,7 +88,7 @@ def char_is_punctuation(c):
 
 
 def punc_is_half_width(punc):
-    return punc in string.punctuation
+    return punc in string.punctuation or punc == ellipsis_punc
 
 
 def punc_is_full_width(punc):
@@ -191,7 +194,7 @@ class py_text_normalizer:
             if is_punc:
                 # space is not allowed between puctuations
                 return False
-            elif self.prev_char in hanzi.punctuation:
+            elif self.prev_is_full_width:
                 if self.prev_char in all_smart_quotes:
                     return True
                 else:
@@ -363,6 +366,19 @@ class py_text_normalizer:
         self.cur_context = HALF_WIDTH_CONTEXT
         self.add_char(self.cur_char, is_punc=False, add_space_before=context_changed)
 
+    def try_convert_to_ellipsis(self):
+        if self.cur_char != '.':
+            return
+
+        if self.idx + 2 >= self.line_len:
+            return
+
+        n_c = self.line[self.idx + 1]
+        nn_c = self.line[self.idx + 2]
+        if n_c == '.' and nn_c == '.':
+            self.idx += 2
+            self.cur_char = ellipsis_punc
+
     def process_punctuation(self):
         #logging.debug("is punc")
         if self.cur_char in left_parens:
@@ -421,6 +437,8 @@ class py_text_normalizer:
                 # finished!
                 return
             # else, pass through
+
+        self.try_convert_to_ellipsis()
 
         # stops are only considered stops if they are in half or full env
         if self.cur_char in stops:
@@ -622,12 +640,18 @@ def test():
         'e.g. in U.S.A there (a.m)',
 
         'e. g. in U. S.A there (a.m)':
-        'e. g. in U. S.A there (a.m)'
+        'e. g. in U. S.A there (a.m)',
+
+        'english ellipsis..., ok?':
+        'english ellipsis…, ok?',
+
+        '中文省略号......，可以转换':
+        '中文省略号……，可以转换'
     }
 
     testcase_dict2 = {
-        'e.g. in U.S.A there (a.m)':
-        'e.g. in U.S.A there (a.m)'
+        'english ellipsis..., ok?':
+        'english ellipsis…, ok?',
     }
 
     for test_line, expect_result in testcase_dict.items():
