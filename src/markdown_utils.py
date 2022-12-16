@@ -350,7 +350,7 @@ class markdown_processor:
         }
     """
 
-    katex_stylesheet='<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.2/dist/katex.min.css" integrity="sha384-bYdxxUwYipFNohQlHt0bjN/LCpueqWz13HufFEV1SUatKs1cm4L6fFgCi1jT643X" crossorigin="anonymous">'
+    katex_stylesheet='<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">'
 
     def html_body_to_full_html(self, html_body, for_inline=False):
         full_html = '<html><head><meta charset="UTF-8">\n'
