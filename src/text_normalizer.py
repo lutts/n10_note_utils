@@ -645,6 +645,9 @@ def test():
         'english ellipsis..., ok?':
         'english ellipsis…, ok?',
 
+        'english ellipsis.., ok?':
+        'english ellipsis.., ok?',
+
         '中文省略号......，可以转换':
         '中文省略号……，可以转换'
     }
