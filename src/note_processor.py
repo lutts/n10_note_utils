@@ -748,6 +748,16 @@ def process_files(fullpaths):
         traceback.print_exc()
 
 
+def raw_test():
+    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
+    s = '[haha](<http://good morning `haha` hoho.html>)'
+    # s = 'is it `text11` or `text2` or `text3`'
+    processor = RawNoteProcessor(s)
+    processor.process()
+    print(processor.markdown_lines)
+
+
 def main():
     args = sys.argv[1:]
 
@@ -763,4 +773,5 @@ def main():
 
 # Main body
 if __name__ == '__main__':
+    #raw_test()
     main()

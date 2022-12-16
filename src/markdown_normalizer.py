@@ -44,6 +44,12 @@ class py_markdown_normalizer:
         r'(!?)(?P<text_group>\[(?>[^\[\]]+|(?&text_group))*\])(?P<left_paren>\()(?P<left_angle><)?(?:(?P<url>(?(left_angle).*?>|\S*?))(?:(?P<title_begin>[ ]")(?P<title>(?:[^"]|(?<=\\)")*?)(?P<title_end>"))?(?P<right_paren>\)))')
     double_brace_re = regex.compile(r'(?P<b>\{|\})')
 
+    IMG_LINK_PLACEHOLDER_PREFIX = "md_image_links"
+    img_link_restore_re = regex.compile(r'{' + IMG_LINK_PLACEHOLDER_PREFIX + r'_(?P<idx>\d+)}')
+
+    code_span_re = regex.compile("(`+)((?:[^`]|(?!(?<!`)\\1(?!`))`)*+)(\\1)")
+    CODE_SPANS_PLACEHOLDER_PREFIX = "md_code_spans"
+    code_span_restore_re = regex.compile(r'{' + CODE_SPANS_PLACEHOLDER_PREFIX + r'_(?P<idx>\d+)}')
     code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
     front_matter_re = regex.compile(r'-{3,}')
 
@@ -179,6 +185,31 @@ class py_markdown_normalizer:
         return False
 
     @staticmethod
+    def _reserve_special_inlines(line:str, matcher, placeholder_prefix):
+        reserves = []
+
+        def replace_func(matchobj):
+            placeholder = "{" + placeholder_prefix + "_" + str(len(reserves)) + "}"
+            reserves.append(matchobj.group())
+            return placeholder
+            
+        new_line = matcher.sub(replace_func, line)
+        return (new_line, reserves)
+
+
+    @staticmethod
+    def _restore_special_inlines(line:str, matcher, reserves):
+        def restore_func(matchobj):
+            idx = int(matchobj.group('idx'))
+            if idx < len(reserves):
+                return reserves[idx]
+            else:
+                return matchobj.group()
+
+        orig_line = matcher.sub(restore_func, line)
+        return orig_line
+
+    @staticmethod
     def normalize_line(line: str, add_newline_char=True, markdown_prefix=None):
         line = line.replace('\0', '')
 
@@ -203,20 +234,30 @@ class py_markdown_normalizer:
 
         # indented code block, return the orignal line
 
-        # 避免随后的处理误伤link/img link
-        image_or_links = py_markdown_normalizer.img_link_re.findall(line)
-        if image_or_links:
-            image_or_links = ["".join(i) for i in image_or_links]
-            line = py_markdown_normalizer.double_brace_re.sub(r'\1\1', line)
-            line = py_markdown_normalizer.img_link_re.sub('{}', line)
+        # 避免随后的处理误伤code span, link/img link
+        line, code_spans = py_markdown_normalizer._reserve_special_inlines(line,
+                                                                           py_markdown_normalizer.code_span_re,
+                                                                           py_markdown_normalizer.CODE_SPANS_PLACEHOLDER_PREFIX)
+        line, image_or_links = py_markdown_normalizer._reserve_special_inlines(line,
+                                                                               py_markdown_normalizer.img_link_re,
+                                                                               py_markdown_normalizer.IMG_LINK_PLACEHOLDER_PREFIX)
 
         line = py_normalize_text_line(line)
 
         line = py_markdown_normalizer.emphasis_normalizer_re.sub(
             r'\g<asterisks>\g<word1>\g<asterisks>\g<punc1>\g<asterisks>\g<word2>\g<asterisks>\g<punc2>', line)
 
+        if code_spans:
+            line = py_markdown_normalizer._restore_special_inlines(
+                line, py_markdown_normalizer.code_span_restore_re, code_spans)
+
         if image_or_links:
-            line = line.format(*image_or_links)
+            line = py_markdown_normalizer._restore_special_inlines(
+                line, py_markdown_normalizer.img_link_restore_re, image_or_links)
+
+        if code_spans:
+            line = py_markdown_normalizer._restore_special_inlines(
+                line, py_markdown_normalizer.code_span_restore_re, code_spans)
 
         normalized_line = markdown_prefix + line
         if add_newline_char:
