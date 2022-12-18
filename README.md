@@ -698,6 +698,8 @@ Qh: this is a hidden question?
 
 当然，要实现隐藏，还需要在你的 Visual studio code 的配色设置里，将 `cornell.question.hidden` 这个 token 的颜色设置成和背景色一样的颜色，通过这种取巧的方式来实现**隐藏**的目的
 
+如果要再次显示，将小写字母 h 删掉就行了
+
 ## Visual Studio Code Cornell Note-taking 及 supermemo 扩展
 
 我编写了一个 Visual Studio Code 的 markdown 扩展程序，可以高亮显示 Q&A 句子以及 supermemo cloze
