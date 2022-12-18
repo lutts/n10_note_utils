@@ -688,6 +688,12 @@ question id 是自动生成的，是为了方便在 `notes.md` 更新后更新 `
 
 question id 可以通过我写的 Visual studio code cornell 插件变成不显眼的颜色，不会干扰正常阅读，参见下面关于扩展的说明
 
+### question 隐藏功能
+
+Cornell note-taking 里还有遮住 answer 来回忆 question 的情况，这个功能是由后面会讲到的 Visual studio code 的扩展来完成的，用法很简单，在原来 `Q:` 这样的开头基础上，添加一个小写的字母 `h` 到字母 `q或Q` 后面即可
+
+当然，要实现隐藏，还需要在你的 Visual studio code 的配色设置里，将 `cornell.question.hidden` 这个 token 的颜色设置成和背景色一样的颜色，通过这种取巧的方式来实现**隐藏**的目的
+
 ## Visual Studio Code Cornell Note-taking 及 supermemo 扩展
 
 我编写了一个 Visual Studio Code 的 markdown 扩展程序，可以高亮显示 Q&A 句子以及 supermemo cloze
