@@ -690,7 +690,11 @@ question id 可以通过我写的 Visual studio code cornell 插件变成不显�
 
 ### question 隐藏功能
 
-Cornell note-taking 里还有遮住 answer 来回忆 question 的情况，这个功能是由后面会讲到的 Visual studio code 的扩展来完成的，用法很简单，在原来 `Q:` 这样的开头基础上，添加一个小写的字母 `h` 到字母 `q或Q` 后面即可
+Cornell note-taking 里还有遮住 answer 来回忆 question 的情况，这个功能是由后面会讲到的 Visual studio code 的扩展来完成的，用法很简单，在原来 `Q:` 这样的开头基础上，添加一个小写的字母 `h` 到字母 `q或Q` 后面即可，示例
+
+```text
+Qh: this is a hidden question?
+```
 
 当然，要实现隐藏，还需要在你的 Visual studio code 的配色设置里，将 `cornell.question.hidden` 这个 token 的颜色设置成和背景色一样的颜色，通过这种取巧的方式来实现**隐藏**的目的
 
