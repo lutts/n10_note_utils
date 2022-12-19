@@ -399,6 +399,20 @@ class py_text_normalizer:
             self.idx += 2
             self.cur_char = ellipsis_punc
 
+    def context_after_cur_idx(self):
+        search_pos = self.idx + 1
+        while search_pos < self.line_len:
+            c = self.line[search_pos]
+            search_pos += 1
+            if is_full_width_char(c):
+                return FULL_WIDTH_CONTEXT
+            elif c == regular_space or char_is_punctuation(c):
+                continue
+            else:
+                return HALF_WIDTH_CONTEXT
+
+        return NONE_CONTEXT
+
     def process_punctuation(self):
         #logging.debug("is punc")
         if self.cur_char in left_parens:
@@ -431,19 +445,7 @@ class py_text_normalizer:
         
         if not self.cur_context:
             #logging.debug("env not determinied")
-            search_pos = self.idx + 1
-            while search_pos < self.line_len:
-                c = self.line[search_pos]
-                search_pos += 1
-                if is_full_width_char(c):
-                    self.cur_context = FULL_WIDTH_CONTEXT
-                    break
-                elif c == regular_space or char_is_punctuation(c):
-                    continue
-                else:
-                    self.cur_context = HALF_WIDTH_CONTEXT
-                    break
-            
+            self.cur_context = self.context_after_cur_idx()
             #logging.debug("env searched: {}".format(self.cur_context))
             if not self.cur_context:
                 #logging.debug("using prev dev: {}".format(self.prev_context))
