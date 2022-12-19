@@ -75,8 +75,9 @@ extra_stops = '」﹂”』’》）］｝〕〗〙〛〉】' + right_parens + r
 all_stops = stops + extra_stops
 
 puncs_need_space_after = '.?!,;:'
+puncs_no_space_before = '.?!,;:' + right_parens
 number_delimiters = ',:.'
-puncs_unaware_space = '"#$%&\'*+-/=@\\^`|~' + ellipsis_punc
+puncs_unaware_space = '"#$%&\'*+-/=@\\^`|~_' + ellipsis_punc
 
 contraction_suffix_re = re.compile(r'\s*(d|m|s|t|re|ve|ll)(\s+|$)')
 o_clock_re = re.compile(r"o\s*’\s*clock(\s+|$)", re.IGNORECASE)
@@ -100,7 +101,6 @@ half_punc_to_full = {
     ',': '\uFF0C',
     ':': '\uFF1A',
     ';': '\uFF1B',
-    '_': '\uFF3F',
 
     '!': '\uFF01',
     '?': '\uFF1F',
@@ -112,6 +112,7 @@ full_punc_to_half = {
     '\uFF1A': ':',
     '\uFF1B': ';',
     '\uFF3F': '_',
+    '\uFF5E': '~',
 
     '\uFF01': '!',
     '\uFF1F': '?',
@@ -274,25 +275,32 @@ class py_text_normalizer:
         if self.prev_char == regular_space:
             pop_space = False
             if self.prev_is_full_width and cur_is_full_width:
+                # 前后都是全角
                 #logging.debug("remove whitespapce between full width chars")
                 pop_space = True
             if is_punc and cur_is_full_width:
+                # c 是全角标点，(前面肯定是半角)
                 pop_space = True
 
                 if c in all_smart_quotes:
+                    # 引号前的标点按原样
                     pop_space = self.prev_space_is_auto_added
 
                     if c in right_smart_quotes and not self.prev_is_punc:
+                        # 右引号前面不需要空格，除非前面是标点
                         pop_space = True
             elif is_punc and self.prev_is_punc:
+                # c 是半角标点，前面也是标点
                 pop_space = True
 
                 prev_prev_char = self.normalized_chars[-2]
                 if c == '\\':
+                    # 转义符
                     pop_space = self.prev_space_is_auto_added
                 elif prev_prev_char == '[' and c == ']':
                     pop_space = False
                 elif c in left_parens or c in all_quotes:
+                    # 左括号前面
                     pop_space = self.prev_space_is_auto_added
                 # elif c in '+-':
                 #     prev_prev_char = self.normalized_chars[-2]
@@ -308,24 +316,36 @@ class py_text_normalizer:
             elif is_punc and self.prev_is_full_width:
                 if c in puncs_unaware_space:
                     pop_space = self.prev_space_is_auto_added
+            # 到了这一步之后，只有这几种可能：
+            # 1）c 是半角标点并且前面是半角字符，
+            # 2）c 是半角字符，前面可能是全角、半角、标点,
+            # 3）c 是全角字符，并且前面是半角
             elif not self.prev_is_full_width and not cur_is_full_width:
+                # 1) c是半角标点，前面是半角字符
+                # 2) c是半角字符，前面是半角标点
+                # 3) c是半角字符，前面是半角字符
+                # 默认为保持原样
                 pop_space = self.prev_space_is_auto_added
 
                 if c in left_parens:
                     pop_space = False
-                elif c in puncs_need_space_after or c in right_parens:
+                elif c in puncs_no_space_before:
                     pop_space = True
                 elif not self.char_is_in_abbr(c):
                     prev_prev_char = self.normalized_chars[-2]
                     if prev_prev_char in puncs_need_space_after:
                         pop_space = False
+                        # 点，逗号，冒号：如果前后都是数字，则不自动添加空格
                         if self.prev_space_is_auto_added and prev_prev_char in number_delimiters and len(self.normalized_chars) >= 3:
                             ppp_char = self.normalized_chars[-3]
                             if char_is_number(ppp_char) and char_is_number(c):
                                 pop_space = True
             elif not is_punc:
+                # 1) c 是半角字符，前面是全角字符
+                # 2) c 是全角字符，前面是半角字符
                 prev_prev_char = self.normalized_chars[-2]
                 if prev_prev_char in left_smart_quotes:
+                    # 左引号后面如果不是标点，则不需要空格
                     pop_space = True
                 elif is_full_char and prev_prev_char in puncs_unaware_space:
                     pop_space = self.prev_space_is_auto_added
@@ -550,7 +570,7 @@ def test():
         "$：不确定环境测试",
 
         "不确定环境测试。_中文。＿english._中文":
-        "不确定环境测试｡＿中文。_english.＿中文",
+        "不确定环境测试｡_中文。_english._中文",
 
         ".。？！!()":
         ".。？！!()",
