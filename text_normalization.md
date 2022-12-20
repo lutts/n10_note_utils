@@ -214,8 +214,6 @@
 * o'clock for *of the clock*
 * Y'all for You all
 
-Y'all 的情形比较难区分，不考虑
-
 ### 处理算法
 
 ```text
