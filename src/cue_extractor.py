@@ -7,7 +7,7 @@ from markdown_utils import uniqe_name
 
 in_paragraph_re = re.compile(r'^(\s*[-=]{3,}\s*$|[ ]{4,}\S)')
 level_1_header_re = re.compile(r'[ ]{,3}#[ ]')
-qid_re = re.compile(r'{#q[0-9]{,4}}$')
+qid_re = re.compile(r'{#q[0-9]{1,4}}$')
 qid_len = len("{#q0000}\n")
 q_re = re.compile(r'^(q|Q): ')
 a_re = re.compile(r'^(a|A): *')
@@ -74,7 +74,7 @@ def parse_cue(cue_filepath) -> dict[str, qa_entity]:
 
 
 def random_qid():
-    return "{{#q{}}}".format(int(random.random() * 10000))
+    return "{{#q{}}}".format(random.randint(1000, 9999))
 
 
 def append_qid(line, qid):
