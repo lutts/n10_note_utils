@@ -68,6 +68,7 @@ left_smart_quotes = "\u2018\u201c"
 right_smart_quotes = "\u2019\u201d"
 all_smart_quotes = left_smart_quotes + right_smart_quotes
 right_single_quote = '\u2019'
+contraction_quote = right_single_quote + "'"
 all_quotes = all_smart_quotes + "'\""
 
 stops = hanzi.stops + '.?!'
@@ -80,7 +81,8 @@ number_delimiters = ',:.'
 puncs_unaware_space = '"#$%&\'*+-/=@\\^`|~_' + ellipsis_punc
 
 contraction_suffix_re = re.compile(r'\s*(d|m|s|t|re|ve|ll)(?=[^a-zA-Z]|$)')
-o_clock_re = re.compile(r"o\s*’\s*clock(\s+|$)", re.IGNORECASE)
+o_clock_re = re.compile(r"o\s*[’']\s*clock(\s+|$)", re.IGNORECASE)
+y_all_re = re.compile(r"y\s*[’']\s*all(\s+|$)", re.IGNORECASE)
 blank_line_re = re.compile(r'^\s*$')
 
 
@@ -423,7 +425,7 @@ class py_text_normalizer:
             self.add_char(self.cur_char, add_space_after=True)
             return
 
-        if self.cur_char == right_single_quote and not self.sentence_end_context and self.cur_context == HALF_WIDTH_CONTEXT:
+        if self.cur_char in contraction_quote and not self.sentence_end_context and self.cur_context == HALF_WIDTH_CONTEXT:
             is_contraction = False
             if self.idx + 1 < self.line_len:
                 m = contraction_suffix_re.match(self.line, self.idx + 1)
@@ -435,9 +437,17 @@ class py_text_normalizer:
                     if self.line[start_pos] == regular_space:
                         start_pos -= 1
                 if start_pos >= 0:
-                    m = o_clock_re.match(self.line, start_pos)
-                    if m:
-                        is_contraction = True
+                    check_more = True
+                    if start_pos > 0:
+                        if self.line[start_pos - 1] != regular_space:
+                            check_more = False
+
+                    if check_more:
+                        m = o_clock_re.match(self.line, start_pos)
+                        if m:
+                            is_contraction = True
+                        elif y_all_re.match(self.line, start_pos):
+                            is_contraction = True
             if is_contraction:
                 self.add_char("'")
                 if self.line[self.idx + 1] == regular_space:
@@ -609,6 +619,24 @@ def test():
 
         "‘one bull’ s head":
         "‘one bull's head",
+
+        "bull'    s eye":
+        "bull's eye",
+
+        "1 o’clock after":
+        "1 o'clock after",
+
+        "foo’clock after":
+        "foo’clock after",
+
+        "Y’   all fool":
+        "Y'all fool",
+
+        "fly’all fool":
+        "fly’all fool",
+
+        "Y’ally fool":
+        "Y’ally fool",
 
         "Am Not  Ain’     t We Have  We’ve Are Not  Aren’t We Will  We’ll Let Us  Let’s What Are  What’re Can Not  Can’t Might Have  Might’ve Could Have  Could’ve Might Not  Mightn’t What Is  What’s Could Not  Couldn’t Must Have  Must’ve What Have  What’ve Do Not  Don’t Must Not  Mustn’t What Will  What’ll Does Not  Doesn’t Need Not  Needn’t When Is  When’s Of the Clock  O’clock When Will  When’ll Ought Not  Oughtn’t Where Are  Where’re Where Is  Where’s She Is  She’s Where Have  Where’ve She Will  She’ll Where Will  Where’ll Should Have  Should’ve Why Are  Why’re Has Not  Hasn’t Should Not  Shouldn’t Why Is  Why’s Have Not  Haven’t Why Have  Why’ve He Is  He’s That Is  That’s Why Will  Why’ll He Will  He’ll That Will  That’ll Who Is  Who’s How Are  How’re That Would  That’d Who Have  Who’ve How Is  How’s There Is  There’s Who Will  Who’ll How Have  How’ve They Are  They’re Will Not  Won’t I Am  I’m They Have  They’ve I Had  I’d They Will  They’ll Would Not  Wouldn’t I Have  I’ve I Will  I’ll We Are  We’re You Are  You’re Is Not  Isn’t It Is  It’s You Have  You’ve It Will  It’ll You Will  You’ll are not	aren’t cannot	can’t could not	couldn’t did not	didn’t do not	don’t does not	doesn’t had not	hadn’t have not	haven’t he is	he’s he has	he’s he will	he’ll he would	he’d here is	here’s I am	I’m I have	I’ve I will	I’ll I would	I’d I had	I’d is not	isn’t it is	it’s it has	it’s it has	it’s it will	it’ll must not	mustn’t she is	she’s she has	she’s she will	she’ll she would	she’d she had	she’d should not	shouldn’t that is	that’s there is	there’s they are	they’re they have	they’ve they will	they’ll they would	they’d they had	they’d was not	wasn’t we are	we’re we have	we’ve we will	we’ll we would	we’d we had	we’d were not	weren’t what is	what’s where is	where’s who is	who’s who will	who’ll will not	won’t would not	wouldn’t you are	you’re you have	you’ve you will	you’ll you would	you’d you had	you’d":
         "Am Not Ain't We Have We've Are Not Aren't We Will We'll Let Us Let's What Are What're Can Not Can't Might Have Might've Could Have Could've Might Not Mightn't What Is What's Could Not Couldn't Must Have Must've What Have What've Do Not Don't Must Not Mustn't What Will What'll Does Not Doesn't Need Not Needn't When Is When's Of the Clock O'clock When Will When'll Ought Not Oughtn't Where Are Where're Where Is Where's She Is She's Where Have Where've She Will She'll Where Will Where'll Should Have Should've Why Are Why're Has Not Hasn't Should Not Shouldn't Why Is Why's Have Not Haven't Why Have Why've He Is He's That Is That's Why Will Why'll He Will He'll That Will That'll Who Is Who's How Are How're That Would That'd Who Have Who've How Is How's There Is There's Who Will Who'll How Have How've They Are They're Will Not Won't I Am I'm They Have They've I Had I'd They Will They'll Would Not Wouldn't I Have I've I Will I'll We Are We're You Are You're Is Not Isn't It Is It's You Have You've It Will It'll You Will You'll are not aren't cannot can't could not couldn't did not didn't do not don't does not doesn't had not hadn't have not haven't he is he's he has he's he will he'll he would he'd here is here's I am I'm I have I've I will I'll I would I'd I had I'd is not isn't it is it's it has it's it has it's it will it'll must not mustn't she is she's she has she's she will she'll she would she'd she had she'd should not shouldn't that is that's there is there's they are they're they have they've they will they'll they would they'd they had they'd was not wasn't we are we're we have we've we will we'll we would we'd we had we'd were not weren't what is what's where is where's who is who's who will who'll will not won't would not wouldn't you are you're you have you've you will you'll you would you'd you had you'd",
