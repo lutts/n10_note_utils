@@ -37,7 +37,7 @@ def delay_to_worker_thread(callback):
     return delay_to_worker
 
 
-def ask_open_filename(multiple=False, filetypes=["md"]):
+def ask_open_filename(multiple=False, filetypes:list=["md"]):
     def get_filetype_tuple(extension):
         if "md" == extension:
             return ("markdown files", "*.md")
@@ -46,12 +46,38 @@ def ask_open_filename(multiple=False, filetypes=["md"]):
         elif "*.*" == extension:
             return ("all files", "*.*")
 
+    initial_file = clipboard_util.get_text()
+    if initial_file.startswith('"') and initial_file.endswith('"'):
+        initial_file = initial_file[1:-1]
+    if not os.path.exists(initial_file):
+        initial_dir = None
+        initial_file = None
+    elif os.path.isdir(initial_file):
+        initial_dir = initial_file
+        initial_file = None
+    else:
+        initial_dir = os.path.dirname(initial_file)
+        initial_file = os.path.basename(initial_file)
+
+    if initial_file:
+        _, ext = os.path.splitext(initial_file)
+        ext = ext[1:]
+
+        if ext not in filetypes:
+            initial_file = None
+            initial_dir = None
+        else:
+            filetypes.remove(ext)
+            filetypes.insert(0, ext)
+
     filetypes.append("*.*")
     filetypes_opts = tuple([get_filetype_tuple(ext) for ext in filetypes])
     
     filepaths = filedialog.askopenfilename(title="Select file",
                                       multiple=multiple,
-                                      filetypes=filetypes_opts)
+                                      filetypes=filetypes_opts,
+                                      initialdir=initial_dir,
+                                      initialfile=initial_file)
     print("user selected files:")
     print(str(filepaths))
 
