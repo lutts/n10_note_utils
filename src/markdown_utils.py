@@ -301,7 +301,10 @@ class markdown_processor:
             line = self.process_newline_in_table_cell(line)
             processed_markdown_lines.append(line)
 
-        raw_html = self.render_markdown_with_parser(processed_markdown_lines)
+        return self.render_markdown_with_parser(processed_markdown_lines)
+
+    def markdown_to_html_body_with_extras(self, markdown_lines):
+        raw_html = self.markdown_to_html_body(markdown_lines)
         return self.process_html_body_extras(raw_html)
 
     common_css_style = """
@@ -380,14 +383,14 @@ class markdown_processor:
         return full_html
 
     def markdown_to_full_html(self, markdown_lines):
-        html_body = self.markdown_to_html_body(markdown_lines)
+        html_body = self.markdown_to_html_body_with_extras(markdown_lines)
         if not html_body:
             return None
 
         return self.html_body_to_full_html(html_body)
 
     def markdown_to_html_with_inline_style(self, markdown_lines):
-        html_body = self.markdown_to_html_body(markdown_lines)
+        html_body = self.markdown_to_html_body_with_extras(markdown_lines)
         if not html_body:
             return None
         
