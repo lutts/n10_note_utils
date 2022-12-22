@@ -1,5 +1,5 @@
 {
-	"webroot": "D:\\Data\\supermemo\\collections\\webroot",
+	"webroot": "D:\\Data\\supermemo\\webroot",
 	"temp_notes_dir": "D:\\temp\\notes",
 	"tesseract_cmd": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
 	"foxit_filename_region": "34, 0, 2641, 48",
