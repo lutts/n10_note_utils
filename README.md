@@ -130,6 +130,7 @@
 * **Capslock + l**: 列出 markdown 中的 LaTex 公式
 * **Capslock + u**: 转换 markdown 为 supermemo html 格式
 * **Capslock + q**: 转换 markdown 为 supermemo Q&A 格式
+* **Capslock + f**: 转换 markdown 为 supermemo Q&A 格式，并按预先约定好的格式添加发音音频
 * **Capslock + r**: 从 markdown 中抽取 Cornell Question 生成 `cue.md`, 为 recite 服务
 * **Capslock + n**: 启动 PC 端的剪贴板管理器 notes monitor
 * **Capslock + s**: 启动 supermemo 及相关的 http server
@@ -625,7 +626,9 @@ supermemo 对内联图片的支持乱七八糟，因此在将 markdown 转为 su
 
 可以将文本文件转为 supermemo Q&A, 代替 supermemo 的 extract 功能
 
-* 使用 `---` 来分隔 item
+转换前原始文件的样式可以参见 `test/qa_test.md`
+
+* 如果没有使用 `Q:` 或 `q:` 开头，则需要使用 `---` 来分隔 item
 * 可以使用 markdown 语法
 * 可以显式指定 q 和 a, 但格式不必像 supermemo Q&A 的格式那样严格 (参见下面示例中的 `q:` 和 `a:`)
 * 使用 `{{xxx}}` 来表示一个 extract, 如果有多个 `{{xxx}}`, 则一个 item 分生成多个 supermemo Q&A item
@@ -652,6 +655,16 @@ a: the differences are:
 
 people who are in **positive** moods may find it {{harder}}(easier or harder?) to ignore {{irrelevant}} information
 ```
+
+### Supermemo Vocabulary Builder
+
+这个功能类似于生成 Q&A 文件，但会按预先约定的格式添加发音音频，示例参见 `test\vocabulary builder.md`
+
+发音识别格式：`/ xxx /(audio: yyy.wav)`
+
+xxx 可以是任意字符串，通常是单词音标。`audio:` 后面是音频文件名，音频文件需要放在 webroot 配置项指定的目录的 `pronunciation` 子目录下
+
+开发这个功能主要是因为 Supermemo 添加音频太麻烦了
 
 ## Cornell 笔记辅助功能
 
