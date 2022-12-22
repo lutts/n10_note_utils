@@ -353,6 +353,16 @@ def extract_questions():
     generate_cornell_cue(filename)
 
 
+@delay_to_worker_thread
+def generate_vocabulary_flashcard():
+    print("generate vocabulary card")
+    filename = ask_open_filename()
+    if not filename:
+        return
+
+    generate_qa_file(filename,  add_audio=True)
+
+
 def get_capslock_state():
     hllDll = ctypes.WinDLL ("User32.dll")
     VK_CAPITAL = 0x14
@@ -387,6 +397,7 @@ hotkeys = {
     'c': copy_plain_text,
     'd': look_up_dictionary,
     'e': triggle_italic,
+    'f': generate_vocabulary_flashcard,
     'h': insert_date_time,
     'i': send_markdown_to_the_brain,
     'l': list_markdown_latex_equations,

@@ -122,7 +122,10 @@ def generate_qa_markdown(filename):
     return (title, qa_markdown_lines)
 
 
-def convert_html_to_qa_text(title, html_body):
+audio_player_javascript = '<script> function playMyAudio(elem_id){document.getElementById(elem_id).play();}</script>'
+
+
+def convert_html_to_qa_text(title, html_body, add_audio_player=False):
     qa_text = []
 
     q_re = re.compile(r'<p>(q|Q): *')
@@ -142,6 +145,8 @@ def convert_html_to_qa_text(title, html_body):
                 in_fenced_code = False
         elif q_re.match(line):
             if qa_line:
+                if add_audio_player:
+                    qa_line += audio_player_javascript
                 qa_text.append(qa_line)
                 qa_text.append('')
 
@@ -149,6 +154,8 @@ def convert_html_to_qa_text(title, html_body):
             qa_line = 'Q: ' + title + qa_line
         elif a_re.match(line):
             if qa_line:
+                if add_audio_player:
+                    qa_line += audio_player_javascript
                 qa_text.append(qa_line)
             qa_line = a_re.sub(r'A: <p>', line,  count=1)
         elif qa_line:
@@ -157,16 +164,32 @@ def convert_html_to_qa_text(title, html_body):
                 in_fenced_code = True
     
     if qa_line:
+        if add_audio_player:
+            qa_line += audio_player_javascript
         qa_text.append(qa_line)
         qa_text.append('')
     
     return '\n'.join(qa_text)
 
 
-def generate_qa_file(filename):
+pronunciation_re = re.compile('/\s*(?P<pron>[^/]*)\s*/\s*(?:\(audio:\s*(?P<audio_filename>[a-zA-Z0-9_-]+\.[a-zA-Z]+)\))?')
+
+
+def add_audio_player_button(pron_matchobj):
+    pron = pron_matchobj.group('pron')
+    audio_filename = pron_matchobj.group('audio_filename')
+    audio_id, _ = os.path.splitext(audio_filename)
+    src_url = "http://localhost:9999/pronunciation/" + audio_filename
+    return f'<embed id="{audio_id}" src="{src_url}" autostart="false" hidden="true" /><button onClick="playMyAudio(\'{audio_id}\')">/{pron}\U0001F50A/</button>'
+
+
+def generate_qa_file(filename, add_audio=False):
     title, qa_markdown_lines = generate_qa_markdown(filename)
     if not qa_markdown_lines:
         return
+
+    if add_audio:
+        qa_markdown_lines = [pronunciation_re.sub(add_audio_player_button, line) for line in qa_markdown_lines]
 
     #print(qa_markdown_lines)
     try:
@@ -175,7 +198,7 @@ def generate_qa_file(filename):
         html_body = add_prefix_to_local_images(
             html_body, markdown_processor_mode.SUPERMEMO, os.path.dirname(filename))
         #print(html_body)
-        qa_text = convert_html_to_qa_text(title, html_body)
+        qa_text = convert_html_to_qa_text(title, html_body, add_audio_player=add_audio)
 
         split_filepath = os.path.splitext(filename)
         qa_text_file = uniqe_name(split_filepath[0] + ".html")
@@ -195,7 +218,7 @@ def main():
         sys.exit(1)
 
     filename = args[0]
-    generate_qa_file(filename)
+    generate_qa_file(filename, add_audio=True)
     
 
 # Main body
