@@ -67,7 +67,7 @@ class Block:
         clozes = [i[0] for i in clozes_hints]
         hints = ['<span>' + i[1] + '</span>' if i[1] else i[1] for i in clozes_hints]
 
-        supermemo_cloze = '<span class="cloze">[...]</span>'
+        supermemo_cloze = '<span style="background-color:#ffff00;color:red;font-weight:bold">[...]</span>'
 
         for i in range(len(clozes)):
             if i > 0:
@@ -130,7 +130,7 @@ def convert_html_to_qa_text(title, html_body):
     hr_re = re.compile('<hr\s*/?>')
 
     if title:
-        title = '<strong><font color=blue>' + title + ' : </font></strong>'
+        title = '<strong><font color="blue">' + title + ' : </font></strong>'
 
     qa_line = ''
     in_fenced_code = False
