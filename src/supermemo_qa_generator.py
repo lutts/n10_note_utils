@@ -168,13 +168,13 @@ def generate_qa_file(filename):
     if not qa_markdown_lines:
         return
 
-    print(qa_markdown_lines)
+    #print(qa_markdown_lines)
     try:
         processor = markdown_processor(markdown_processor_mode.SUPERMEMO, filename)
         html_body = processor.markdown_to_html_body(qa_markdown_lines)
         html_body = add_prefix_to_local_images(
             html_body, markdown_processor_mode.SUPERMEMO, os.path.dirname(filename))
-        print(html_body)
+        #print(html_body)
         qa_text = convert_html_to_qa_text(title, html_body)
 
         split_filepath = os.path.splitext(filename)
