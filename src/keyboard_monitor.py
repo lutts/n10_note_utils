@@ -37,15 +37,7 @@ def delay_to_worker_thread(callback):
     return delay_to_worker
 
 
-def ask_open_filename(multiple=False, filetypes:list=["md"]):
-    def get_filetype_tuple(extension):
-        if "md" == extension:
-            return ("markdown files", "*.md")
-        elif "txt" == extension:
-            return ("text files", "*.txt")
-        elif "*.*" == extension:
-            return ("all files", "*.*")
-
+def get_dir_file_from_clipboard():
     initial_file = clipboard_util.get_text()
     if initial_file.startswith('"') and initial_file.endswith('"'):
         initial_file = initial_file[1:-1]
@@ -59,6 +51,19 @@ def ask_open_filename(multiple=False, filetypes:list=["md"]):
         initial_dir = os.path.dirname(initial_file)
         initial_file = os.path.basename(initial_file)
 
+    return (initial_dir, initial_file) 
+
+
+def ask_open_filename(multiple=False, filetypes:list=["md"]):
+    def get_filetype_tuple(extension):
+        if "md" == extension:
+            return ("markdown files", "*.md")
+        elif "txt" == extension:
+            return ("text files", "*.txt")
+        elif "*.*" == extension:
+            return ("all files", "*.*")
+
+    initial_dir, initial_file = get_dir_file_from_clipboard()
     if initial_file:
         _, ext = os.path.splitext(initial_file)
         ext = ext[1:]
@@ -82,6 +87,11 @@ def ask_open_filename(multiple=False, filetypes:list=["md"]):
     print(str(filepaths))
 
     return filepaths
+
+
+def ask_directory(title):
+    initial_dir, _ = get_dir_file_from_clipboard()
+    return filedialog.askdirectory(title=title, initialdir=initial_dir)
 
 
 http_server_dict:dict[str, subprocess.Popen] = {}
@@ -303,7 +313,7 @@ def start_note_monitor():
     is_running = notes_monitor_proc is not None and notes_monitor_proc.poll() is None
 
     if not is_running:
-        notes_dir = filedialog.askdirectory(title="Select Notes Directory")
+        notes_dir = ask_directory(title="Select Notes Directory")
         if not notes_dir:
             print("no notes dir selected, do nothing")
             return
