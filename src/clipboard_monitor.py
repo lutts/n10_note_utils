@@ -163,10 +163,10 @@ class py_clipboard_monitor:
                 self._clipboard_thread.join(0.25)
 
     @staticmethod
-    def wait_for_change(timeout=None, prev_text=''):
+    def wait_for_change(timeout=None, prev_text='', content_getter=clipboard_util.get_text):
         start_time = time.time()
         while True:
-            clipboard_text = clipboard_util.get_text()
+            clipboard_text = content_getter()
             if clipboard_text is not None and clipboard_text != prev_text:
                 return clipboard_text
 
