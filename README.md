@@ -136,10 +136,10 @@
 * **Capslock + s**: 启动 supermemo 及相关的 http server
 * **Capslock + m**: 转换剪贴板中的 markdown 为 html 格式
 * **Capslock + c**: 类似于 Ctrl+c, 但拷贝的结果永远是纯文本
-* **Capslock + w**: 类似于 Ctrl+c，但只对 HTML 起作用，用于从浏览器将网页拷贝为 markdown 格式
 * **Capslock + d**: Ctrl+c, 然后查询 GoldenDict 词典，需要将 GoldenDict 的 hotkey 设置为 Ctrl+Alt+Shift+C
 * **Capslock + v**: 类似于 Ctrl+v, 但会对文本进行基于中文、英文、markdown 的规范化
 * **Capslock + b**: 类似于 Ctrl+v, 但会将粘贴的文本转换为 theBrain 的 markdown 格式
+* **Capslock + w**: 类似于 Ctrl+v，将剪贴板里的 HTML 转换为 markdown 格式再粘帖
 * **Capslock + e**: 即 Ctrl + i, 用于 markdown 将选中文本转为斜体 (Emphasis), 右手握住鼠标时，左手单手 Ctrl+i 太难按了
 * **Capslock + h**: 插入当前年月日时间，例如：`2022年12月04日 23:45:55`
 * **Capslock + t**: 即 ctrl+shift+f12, 用于将 supermemo 的 html component 转换为 text component

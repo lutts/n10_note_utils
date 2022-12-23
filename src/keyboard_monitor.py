@@ -14,7 +14,7 @@ import keyboard
 from markdown2clipboard import markdown_to_clipboard
 from clipboard_utils import clipboard_util, cf_html_helper
 from clipboard_monitor import py_clipboard_monitor
-from normalize_clipboard import do_normlize_clipboard
+from normalize_clipboard import do_normlize_clipboard, clipboard_html_to_markdown
 from normalize_clipboard_thebrain import do_normlize_clipboard_thebrain
 from note_processor import process_files
 from markdown_to_other_app import send_markdown
@@ -24,7 +24,6 @@ from supermemo_qa_generator import generate_qa_file
 from send_markdown_to_thebrain_from_ahk import do_send_markdown_to_the_brain
 from cue_extractor import generate_cornell_cue
 from playsound import play_success_sound
-from  html_to_markdown import copy_html_as_markdown
 
 
 worker_queue = queue.Queue()
@@ -375,9 +374,10 @@ def generate_vocabulary_flashcard():
 
 
 @delay_to_worker_thread
-def do_copy_html_as_markdown():
+def do_paste_html_as_markdown():
     print("copy html as markdown")
-    copy_html_as_markdown()
+    clipboard_html_to_markdown()
+    keyboard.send("ctrl+v")
 
 
 def get_capslock_state():
@@ -428,7 +428,7 @@ hotkeys = {
     't': supermemo_component_to_plain,
     'u': send_markdown_to_supermemo,
     'v': normalized_paste,
-    'w': do_copy_html_as_markdown,
+    'w': do_paste_html_as_markdown,
     '1': copy_as_markdown_header1,
     '2': copy_as_markdown_header2,
     '3': copy_as_markdown_header3,
