@@ -3,7 +3,7 @@
 
 import sys
 import logging
-from note_processor import RawNoteProcessor
+from note_processor import normalize_markdown_text
 from clipboard_utils import clipboard_util
 
 def do_normlize_clipboard():
@@ -13,12 +13,8 @@ def do_normlize_clipboard():
     if not raw_text:
         return
 
-    processor = RawNoteProcessor(raw_text = raw_text)
-    processor.process()
-
-    if processor.markdown_lines:
-        processor.markdown_lines[-1] = processor.markdown_lines[-1].rstrip()
-        clipboard_util.put_text("".join(processor.markdown_lines))
+    norm_text = normalize_markdown_text(raw_text)
+    clipboard_util.put_text(norm_text)
 
 
 if __name__ == "__main__":

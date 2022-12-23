@@ -389,6 +389,10 @@ class RawNoteProcessStage1(NoteProcessStage1):
     def process(self):
         block = NoteBlock()
         block.lines = self.raw_text.splitlines(keepends=True)
+        if block.lines:
+            while not block.lines[0].strip():
+                block.lines.pop(0)
+
         self.block_list.append(block)
 
 
@@ -746,6 +750,25 @@ def process_files(fullpaths):
         processor.write()
     except Exception as e:
         traceback.print_exc()
+
+
+def normalize_markdown_text(raw_text, no_bold_in_header=False):
+    processor = RawNoteProcessor(raw_text)
+    processor.process()
+
+    md_lines = processor.markdown_lines
+    if md_lines:
+        if no_bold_in_header:
+            for idx in range(len(md_lines)):
+                line = md_lines[idx]
+                if py_markdown_normalizer.atx_header_re.match(line):
+                    md_lines[idx] = py_markdown_normalizer.asterisk_bold_re.sub(r'\2\3', line)
+
+        md_lines[-1] = md_lines[-1].rstrip()
+
+        return ''.join(md_lines)
+    else:
+        return None
 
 
 def raw_test():

@@ -60,9 +60,11 @@ class py_markdown_normalizer:
     code_fence_re = regex.compile(r' {,3}(`{3,}|~{3,})(.*)')
     front_matter_re = regex.compile(r'-{3,}')
 
+    asterisk_bold_re = regex.compile(r'(\*\*)(.*?)(\*?)\1')
+
     list_markers_re = regex.compile(r'[ ]*(?P<markdown_marker>[-*+]|[0-9]+\.|Q:|q:|A:|a:)[ ]')
     blockquote_re = regex.compile(r'[ ]{,3}(?P<quote_marker>>(?:$|[> ]*))')
-    markdown_header_re = regex.compile(r'[ ]{,3}(?P<header_marker>#{1,6})[ ]')
+    atx_header_re = regex.compile(r'[ ]{,3}(?P<header_marker>#{1,6})[ ]')
     level_1_header_re = regex.compile(r'[ ]{,3}#[ ]')
     maybe_table_re = regex.compile(r'[ ]{,3}\|')
     table_line_re = regex.compile(r'^[ ]{,3}\|[ ]*|[ ]*(?<=[^\\])\|[ ]*')
@@ -93,7 +95,7 @@ class py_markdown_normalizer:
         if self._is_in_math_context(line):
             return py_markdown_normalizer.MATH_LINE
 
-        m = py_markdown_normalizer.markdown_header_re.match(line)
+        m = py_markdown_normalizer.atx_header_re.match(line)
         if m:
             self.last_markdown_prefix = m.group(0)
             return m.group(1)
@@ -227,7 +229,7 @@ class py_markdown_normalizer:
         if not markdown_prefix:
             # res = [py_markdown_normalizer.list_markers_re,
             #        py_markdown_normalizer.blockquote_re,
-            #        py_markdown_normalizer.markdown_header_re,
+            #        py_markdown_normalizer.atx_header_re,
             #        py_markdown_normalizer.leading_whitespaces_re]
             # for r in res:
             #     m = r.match(line)

@@ -223,10 +223,13 @@ class clipboard_util:
 
         cf_html = cf_html_helper.get_cf_html()
         clipboard_data = clipboard_util.get_data(cf_html)
-        html_helper = cf_html_helper()
-        html_helper.decode(clipboard_data)
+        if clipboard_data:
+            html_helper = cf_html_helper()
+            html_helper.decode(clipboard_data)
 
-        return html_helper.html
+            return html_helper.html
+        else:
+            return None
 
     @staticmethod
     def get_image():
