@@ -130,7 +130,7 @@
 * **Capslock + l**: 列出 markdown 中的 LaTex 公式
 * **Capslock + u**: 转换 markdown 为 supermemo html 格式
 * **Capslock + q**: 转换 markdown 为 supermemo Q&A 格式
-* **Capslock + f**: 转换 markdown 为 supermemo Q&A 格式，并按预先约定好的格式添加发音音频
+* **Capslock + f**: 转换 markdown 为 supermemo Q&A 格式，并按预先约定好的格式添加发音音频，用于制作 Vocabulary Flashcard
 * **Capslock + r**: 从 markdown 中抽取 Cornell Question 生成 `cue.md`, 为 recite 服务
 * **Capslock + n**: 启动 PC 端的剪贴板管理器 notes monitor
 * **Capslock + s**: 启动 supermemo 及相关的 http server
