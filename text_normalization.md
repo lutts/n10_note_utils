@@ -197,9 +197,14 @@
 
 示例：
 
-* 亚里士多德 (Aristotle) 如何如何
-* 功利主义的功利译自英文词 utility, 大致就是 useful (有用) 的意思。
-* 柏拉图 (Plato, 公元前 4 世纪) 是古希腊人。
+* 空格+半角括号
+  * 亚里士多德 (Aristotle) 如何如何
+  * 功利主义的功利译自英文词 utility, 大致就是 useful(有用) 的意思。
+  * 柏拉图 (Plato, 公元前 4 世纪) 是古希腊人。
+* 全角括号
+  * 亚里士多德（Aristotle）如何如何
+  * 功利主义的功利译自英文词 utility, 大致就是 useful（有用）的意思。
+  * 柏拉图（Plato, 公元前 4 世纪）是古希腊人。
 * 中文“english”
 
 所以在我 (梁海) 看来，中西文混排时应当根据该标点 (the certain punctuation) 所处的环境 (environment、context 或 condition) 来确定用哪一个书写系统 (according to Glossary of Unicode Terms, a writing system is a set of rules for using one (or more) scripts to write a particular language) 的标点样式。

@@ -63,6 +63,7 @@ regular_space = ' '
 
 left_parens = '([{<'
 right_parens = ')]}>'
+all_parens = left_parens + right_parens
 
 left_smart_quotes = "\u2018\u201c"
 right_smart_quotes = "\u2019\u201d"
@@ -188,6 +189,16 @@ class py_text_normalizer:
 
         return "".join(chars)
 
+    def next_non_space_char(self):
+        if self.idx + 1 < self.line_len:
+            n_char = self.line[self.idx + 1]
+            if n_char != regular_space:
+                return n_char
+
+            return self.line[self.idx + 2]
+        else:
+            return None
+
     def space_allowed(self, is_punc):
         if not self.normalized_chars:
             return False
@@ -275,13 +286,14 @@ class py_text_normalizer:
             cur_is_full_width = is_full_char
 
         if self.prev_char == regular_space:
+            # 注：运行至此，前面不可能是 left_parens 及除智能引号之外的全角标点
             pop_space = False
             if self.prev_is_full_width and cur_is_full_width:
-                # 前后都是全角
+                # c 是全角字符或标点，前面是全角字符或标点
                 #logging.debug("remove whitespapce between full width chars")
                 pop_space = True
             if is_punc and cur_is_full_width:
-                # c 是全角标点，(前面肯定是半角)
+                # c 是全角标点，前面是半角字符或标点
                 pop_space = True
 
                 if c in all_smart_quotes:
@@ -316,21 +328,26 @@ class py_text_normalizer:
                 elif c in puncs_unaware_space:
                     pop_space = self.prev_space_is_auto_added
             elif is_punc and self.prev_is_full_width:
+                # c 是半角标点，前面是全角字符
                 if c in puncs_unaware_space:
                     pop_space = self.prev_space_is_auto_added
             # 到了这一步之后，只有这几种可能：
             # 1）c 是半角标点并且前面是半角字符，
-            # 2）c 是半角字符，前面可能是全角、半角、标点,
-            # 3）c 是全角字符，并且前面是半角
+            # 2）c 是半角字符，前面可能是全角字符、半角字符、全角标点、半角标点
+            # 3）c 是全角字符，并且前面是半角字符、半角标点
             elif not self.prev_is_full_width and not cur_is_full_width:
-                # 1) c是半角标点，前面是半角字符
-                # 2) c是半角字符，前面是半角标点
-                # 3) c是半角字符，前面是半角字符
+                # 1) c 是半角标点，前面是半角字符
+                # 2) c 是半角字符，前面是半角标点
+                # 3) c 是半角字符，前面是半角字符
                 # 默认为保持原样
                 pop_space = self.prev_space_is_auto_added
 
                 if c in left_parens:
-                    pop_space = False
+                    n_char = self.next_non_space_char()
+                    if n_char and char_is_full_width(n_char):
+                        pop_space = self.prev_space_is_auto_added
+                    else:
+                        pop_space = False
                 elif c in puncs_no_space_before:
                     pop_space = True
                 elif not self.char_is_in_abbr(c):
@@ -343,14 +360,14 @@ class py_text_normalizer:
                             if char_is_number(ppp_char) and char_is_number(c):
                                 pop_space = True
             elif not is_punc:
-                # 1) c 是半角字符，前面是全角字符
-                # 2) c 是全角字符，前面是半角字符
+                # 1) c 是半角字符，前面是全角字符、智能引号
+                # 2) c 是全角字符，前面是半角字符、半角标点
                 prev_prev_char = self.normalized_chars[-2]
                 if prev_prev_char in left_smart_quotes:
                     # 左引号后面如果不是标点，则不需要空格
                     pop_space = True
                 elif is_full_char and prev_prev_char in puncs_unaware_space:
-                    pop_space = self.prev_space_is_auto_added
+                        pop_space = self.prev_space_is_auto_added
 
             #logging.debug("remove space before puncs, pop_space={}".format(pop_space))
             if pop_space:
@@ -575,10 +592,16 @@ def test():
         '亚里士多德 (Aristotle) 如何如何',
 
         '功利主义的功利译自英文词utility，大致就是useful（有用）的意思。':
-        '功利主义的功利译自英文词 utility, 大致就是 useful (有用) 的意思。',
+        '功利主义的功利译自英文词 utility, 大致就是 useful(有用) 的意思。',
 
         'Hey Jane, 周 末 要 不要一起 吃早茶，叫上Jennie和Jone, 预计花费100元':
         'Hey Jane, 周末要不要一起吃早茶，叫上 Jennie 和 Jone, 预计花费 100 元',
+        
+        'the bony(骨头) bump(隆起) directly':
+        'the bony(骨头) bump(隆起) directly',
+
+        'the bony (骨头) bump (隆起) directly behind':
+        'the bony (骨头) bump (隆起) directly behind',
 
         "$: 不确定环境测试":
         "$：不确定环境测试",
