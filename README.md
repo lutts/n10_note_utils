@@ -109,21 +109,15 @@
 
 ### 程序快捷键
 
-每次都要到脚本目录下运行脚本有点麻烦，因此我定义了很多快捷键，有两种快捷键实现方式，你可以选择其中一种使用：
+每次都要到脚本目录下运行脚本有点麻烦，因此我定义了很多快捷键，纯 python 实现，位于我的脚本的 src 目录下，有两种启动方式：
 
-1. 纯 python 实现，位于我的脚本的 src 目录下，有两种启动方式：
-   1. `notes_ui.pyw`: 启动一个简单的 GUI 窗口，除了快捷键外，一些功能可以通过点击按钮
-      1. 缺点：不能放到另一个桌面，一旦执行需要弹出文件选择框的命令，就会切换桌面，有点不便
-   2. `keyboard_monitor.py`: 启动一个 windows console, 只支持快捷键，没有按钮
-2. AutoHotKey 实现，需要安装 AutoHotKey, 安装方法后面会详说
-
-推荐使用纯 python 实现的快捷键，不需要安装额外的 AutoHotKey, 而且因为是定制实现，比 AutoHotKey 运行更稳定，没有 AutoHotKey 的一些 Bug.
+ 1. `notes_ui.pyw`: 启动一个简单的 GUI 窗口，除了快捷键外，一些功能可以通过点击按钮
+    1. 缺点：不能放到另一个桌面，一旦执行需要弹出文件选择框的命令，就会切换桌面，有点不便
+ 2. `keyboard_monitor.py`: 启动一个 windows console, 只支持快捷键，没有按钮
 
 使用纯 python 实现的快捷键，执行会弹出文件选择对话框的命令时，如果当前剪贴板里有文件路径 (比如右键“复制文件地址”)，则会自动定位到相应的文件夹或文件。因此你可以使用右键“复制文件地址”这种方式来避免一层一层地再一次找文件。
 
-我的快捷键都是使用 Caps Lock 实现的，Caps Lock 不常用，正好利用起来，如果你不是程序员，不建议修改快捷键定义。如果你想自定义快捷键，那就需要安装 AutoHotKey 来实现了
-
-我定义的快捷键汇总如下：
+我的快捷键都是使用 Caps Lock 实现的，Caps Lock 不常用，正好利用起来，快捷键汇总如下：
 
 * **Capslock + p**: 整理读书笔记
 * **Capslock + o**: 转换 markdown 为 onenote 格式
@@ -503,28 +497,6 @@ region 的指定格式为：left, top, right, bottom
 
 安装完 python 就可以从运行我的脚本了
 
-### AutoHotKey
-
-AutoHotKey 的作用就是你可以定制一个快捷键来执行一些脚本，省得每次都要打开命令行
-
-AutoHotKey 可以从它官网下载：<https://www.autohotkey.com/>
-
-我的脚本 ahk 目录下有个 `MyHotScripts.ahk`, 不过你暂时不能直接运行，需要稍加修改
-
-打开 `MyHotScripts.ahk`, 在第 11 行找到类似以下内容：
-
-```txt
-PYTHON_UTILS_DIR := "D:\Data\python\projects\note_utils\"
-```
-
-将其中的路径改为脚本的目录路径。
-
-如果需要在系统开机的时候自动启动，将 `MyHotScripts.ahk` 复制或者链接到以下目录：
-
-```txt
-C:\Users\<你的用户名>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
-```
-
 ## 关于 markdown
 
 使用 markdown 有以下优点：
@@ -621,8 +593,6 @@ supermemo 对内联图片的支持乱七八糟，因此在将 markdown 转为 su
 要注意的是，生成的 HTML 中的路径是诸如 `http:localhost:9999/xxx.png` 这样的形式的，并不是写死的 windows 路径，因此都开启 supermemo 的时候也需要同时开启一个 http server, 虽然有点不方便，但通过快捷键可以同时启动这 supermemo 和 http server, 所以问题不大：
 
 * **Caps Lock + s**: 启动 supermemo, 然后再启动一个以指定的 webroot 目录为根目录的 python http server
-
-如果你使用的是 AutoHotKey 方式的快捷键实现，因为脚本中的可执行文件路径是写死的，需要修改 `MyHotScripts.ahk` 中的 RunSupermemo 实现，将里面的路径改为你的路径
 
 ### supermemo Q&A 支持
 
