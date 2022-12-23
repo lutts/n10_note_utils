@@ -50,7 +50,7 @@ class cf_html_helper:
 
         start_html = int(m.group(2))
         basic_header = clipboard_data[0:start_html].decode("UTF-8")
-        print("basic_header: " + basic_header)
+        #print("basic_header: " + basic_header)
         matches = self.BASIC_HTML_FORMAT_HEADER_RE.match(basic_header)
         if matches:
             self.cf_html_version = matches.group(1)
@@ -85,7 +85,7 @@ class cf_html_helper:
 
                 key = m.group(1)
                 value = m.group(2)
-                print("key: " + key + ", value: " + value)
+                #print("key: " + key + ", value: " + value)
 
                 if key == 'StartFragment':
                     start_frag = int(value)
