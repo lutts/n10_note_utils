@@ -7,7 +7,7 @@ from clipboard_monitor import py_clipboard_monitor
 from note_processor import RawNoteProcessor
 
 
-def copy_html_to_markdown():
+def copy_html_as_markdown():
     from markdownify import markdownify
 
     success = clipboard_util.put_text("")

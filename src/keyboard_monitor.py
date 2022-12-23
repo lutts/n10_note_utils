@@ -24,7 +24,7 @@ from supermemo_qa_generator import generate_qa_file
 from send_markdown_to_thebrain_from_ahk import do_send_markdown_to_the_brain
 from cue_extractor import generate_cornell_cue
 from playsound import play_success_sound
-from  html_to_markdown import copy_html_to_markdown
+from  html_to_markdown import copy_html_as_markdown
 
 
 worker_queue = queue.Queue()
@@ -374,6 +374,12 @@ def generate_vocabulary_flashcard():
     generate_qa_file(filename,  add_audio=True)
 
 
+@delay_to_worker_thread
+def do_copy_html_as_markdown():
+    print("copy html as markdown")
+    copy_html_as_markdown()
+
+
 def get_capslock_state():
     hllDll = ctypes.WinDLL ("User32.dll")
     VK_CAPITAL = 0x14
@@ -422,7 +428,7 @@ hotkeys = {
     't': supermemo_component_to_plain,
     'u': send_markdown_to_supermemo,
     'v': normalized_paste,
-    'w': copy_html_to_markdown,
+    'w': do_copy_html_as_markdown,
     '1': copy_as_markdown_header1,
     '2': copy_as_markdown_header2,
     '3': copy_as_markdown_header3,
