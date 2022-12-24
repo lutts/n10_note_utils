@@ -72,17 +72,17 @@ class py_clipboard_monitor:
             self._on_update(seq_no, clips)
 
         for clip in clips:
-            if clip[0] == 'text' and self._on_text:
+            if self._on_text and clip[0] == 'text':
                 self._on_text(seq_no, clip[1])
 
-            if clip[0] == 'image' and self._on_image:
+            if self._on_image and clip[0] == 'image':
                 try:
                     img = ImageGrab.grabclipboard()
                     self._on_image(seq_no, img)
                 except:
                     pass
 
-            if clip[0] == 'html' and self._on_html:
+            if self._on_html and clip[0] == 'html':
                 self._on_html(seq_no, clip[1])
 
         if clips and self._on_finished:
