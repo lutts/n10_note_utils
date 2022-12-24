@@ -3,8 +3,10 @@
 
 import sys
 import logging
+import re
 from note_processor import normalize_markdown_text
 from clipboard_utils import clipboard_util
+import css_inline
 
 def do_normlize_clipboard():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
@@ -19,10 +21,23 @@ def do_normlize_clipboard():
 
 def markdownify_convert(html, **options):
     #md = markdownify(html, heading_style="ATX", strip=['a', 'style'])
-
     from markdownify import MarkdownConverter
     from bs4 import BeautifulSoup
+
+    inliner = css_inline.CSSInliner(remove_style_tags=True)
+    html = inliner.inline(html)
+
     soup = BeautifulSoup(html, "html.parser")
+    els = soup.find_all(style=re.compile('font-style\s*:\s*italic'))
+    if els:
+        for node in els:
+            node.name = "em"
+    
+    els = soup.find_all(style=re.compile('font-weight\s*:\s*(bold|[789][0-9]{2})'))
+    if els:
+        for node in els:
+            node.name = "strong"
+    
     for data in soup(['style', 'script']):
         # Remove tags
         data.decompose()
