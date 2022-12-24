@@ -194,7 +194,10 @@ class clipboard_util:
             #     pass
         finally:
             if cb_opened:
-                win32clipboard.CloseClipboard()
+                try:
+                    win32clipboard.CloseClipboard()
+                except:
+                    pass
 
         return clipboard_data
 
@@ -253,7 +256,10 @@ class clipboard_util:
             return False
         finally:
             if cb_opened:
-                win32clipboard.CloseClipboard()
+                try:
+                    win32clipboard.CloseClipboard()
+                except:
+                    pass
 
     def put_data(data_list) -> bool:
         success = clipboard_util._put_data(data_list)

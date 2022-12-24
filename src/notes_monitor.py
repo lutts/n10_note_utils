@@ -196,6 +196,51 @@ def append_note(seq_no, note, filename_caps, page_number_caps):
         f.write('\n'.join(note.splitlines()))
 
 
+class LookupDictionaryDecorator:
+    def decorate(self, text):
+        return None
+
+
+lookup_dictionary_decorator = LookupDictionaryDecorator()
+
+
+class MarkdownHeaderDecorator:
+    def __init__(self, marker):
+        self.marker = marker
+
+    def decorate(self, text):
+        return self.marker + ' ' + text
+
+
+class DecoratorWraper:
+    def __init__(self):
+        self.cur_decorator = None
+        self.last_text = None
+
+    def decorate(self, text):
+        if self.cur_decorator:
+            text = self.cur_decorator.decorate(text)
+            self.cur_decorator = None
+        elif text == '{{LookupGoldenDictionary}}':
+            self.cur_decorator = lookup_dictionary_decorator
+            return None
+        elif text in ['#', '##', '###', '####', '#####', '######']:
+            self.cur_decorator = MarkdownHeaderDecorator(text)
+            return None
+
+        if text:
+            if text == self.last_text:
+                print('duplicate text, ignore')
+                text = None
+            else:
+                self.last_text = text
+
+        return text
+
+
+decorator = DecoratorWraper()
+
+
 def on_text(seq_no, text):
     if should_seqno_ignored(seq_no):
         print('ignore seqno ' + str(seq_no))
@@ -203,30 +248,9 @@ def on_text(seq_no, text):
 
     print("on text, seq_no: " + str(seq_no))
 
-    global last_text
-    if last_text == text:
-        print('duplicate text, ignore')
+    text = decorator.decorate(text)
+    if not text:
         return
-    else:
-        last_text = text
-
-    global lookup_dictionary_seq_begin
-    global ignore_seqno
-    if text == '{{LookupGoldenDictionary}}':
-        lookup_dictionary_seq_begin = True
-        return
-    elif lookup_dictionary_seq_begin:
-        lookup_dictionary_seq_begin = False
-        ignore_seqno = seq_no
-        return
-    
-    global saved_text
-    if text in ['#', '##', '###', '####', '#####', '######']:
-        saved_text = text
-        return
-    elif saved_text:
-        text = saved_text + ' ' + text
-        saved_text = None
 
     filename_caps, page_number_caps = grab_page_number_and_filename_image()
     global q
