@@ -202,11 +202,17 @@ class DecoratorWraper:
     def __init__(self):
         self.cur_decorator = None
         self.last_text = None
+        self.last_decorator_removed_text = None
         self.last_timestamp = 0
 
     def decorate(self, timestamp, text):
+        deco_result = text
         if self.cur_decorator:
-            text = self.cur_decorator.decorate(text)
+            deco_result = self.cur_decorator.decorate(text)
+            if not deco_result:
+                self.last_decorator_removed_text = text
+            else:
+                self.last_decorator_removed_text = None
             self.cur_decorator = None
         elif text == '{{LookupGoldenDictionary}}':
             self.cur_decorator = lookup_dictionary_decorator
@@ -215,14 +221,18 @@ class DecoratorWraper:
             self.cur_decorator = MarkdownHeaderDecorator(text)
             return None
 
-        if text:
-            if text == self.last_text:
-                logging.debug('duplicate text, ignore')
-                text = None
+        if deco_result:
+            if deco_result == self.last_text:
+                logging.debug("duplicate text, ignore")
+                deco_result = None
+            elif timestamp - self.last_timestamp < 0.5 and text == self.last_decorator_removed_text:
+                deco_result = None
             else:
-                self.last_text = text
+                self.last_text = deco_result
 
-        return text
+        self.last_timestamp = timestamp
+
+        return deco_result
 
 
 decorator = DecoratorWraper()
@@ -322,7 +332,7 @@ def start_notes_monitor(notes_dir: str = None):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     #logging.basicConfig(level=logging.DEBUG)
 
     notes_dir = None

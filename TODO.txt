@@ -38,88 +38,64 @@ on_html -> 转为markdown写入Notes.md -> on_text，如果此时html值之 前�
 
 这种处理流程有一个缺点：如果先遇到text，则不能立即写入文件，需要等待下一次的剪贴板变化，如果用户不再拷贝文字了，就要想办法在适当的时机写入，所以这里还涉及到定时器，这个定时器的时间该是多长呢？以adobe acrobat的一次流程为准，这是目前遇最复杂的， 大约400ms， 500ms是比较好的
 
-1671894407.7902896: update message received: 10320
-num clips: 0
-1671894407.8305204: update message received: 10325
-close clipboard error
-get clipboard content failed
-WNDPROC return value cannot be converted to LRESULT
-TypeError: WPARAM is simple, so must be an int object (got NoneType)
-1671894407.8416722: update message received: 10328
-num clips: 1
-on text, seq_no: 10328
-window title: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
-page number and filename image grabed.
-extract_filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
-filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf
-1671894408.1203141: update message received: 10328
-clipboard sequence number not changed, ignore
-WNDPROC return value cannot be converted to LRESULT
-TypeError: WPARAM is simple, so must be an int object (got NoneType)
-page number ocr: WF
+DEBUG:root:1671899443.3339784: update message received: 10539
+DEBUG:root:num clips: 0
+DEBUG:root:1671899443.3614051: update message received: 10544
+DEBUG:root:close clipboard error
+DEBUG:root:get clipboard content failed
+DEBUG:root:1671899443.3664033: update message received: 10546
+DEBUG:root:num clips: 1
+DEBUG:root:on text, seq_no: 10546
+DEBUG:root:window title: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
+DEBUG:root:page number and filename image grabed.
+DEBUG:root:extract_filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
+DEBUG:root:filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf
+DEBUG:root:1671899443.5955203: update message received: 10547
+DEBUG:root:num clips: 1
+DEBUG:root:on text, seq_no: 10547
+DEBUG:root:duplicate text, ignore
+DEBUG:root:page number ocr: WF
 
-page number: None
-page number ocr: 99 (114 of 353)
+DEBUG:root:page number: None
+DEBUG:root:page number ocr: 99 (114 of 353)
 
-page number: 114
-
-
-----------------------
-1671894451.0102723: update message received: 10334
-num clips: 0
-1671894451.0401735: update message received: 10339
-close clipboard error
-get clipboard content failed
-WNDPROC return value cannot be converted to LRESULT
-TypeError: WPARAM is simple, so must be an int object (got NoneType)
-1671894451.0401735: update message received: 10341
-num clips: 1
-on text, seq_no: 10342
-window title: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
-page number and filename image grabed.
-extract_filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
-filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf
-1671894451.2868586: update message received: 10342
-clipboard sequence number not changed, ignore
-WNDPROC return value cannot be converted to LRESULT
-TypeError: WPARAM is simple, so must be an int object (got NoneType)
-page number ocr: WF
-
-page number: None
-page number ocr: 99 (114 of 353)
-
-page number: 114
-
------
-
-
-1671896358.292684: update message received: 10394
-num clips: 0
-1671896358.340153: update message received: 10399
-close clipboard error
-get clipboard content failed
-WNDPROC return value cannot be converted to LRESULT
-TypeError: WPARAM is simple, so must be an int object (got NoneType)
-1671896358.340153: update message received: 10401
-num clips: 1
-on text, seq_no: 10401
-window title: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
-page number and filename image grabed.
-1671896358.6864548: update message received: 10402
-extract_filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
-filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf
-num clips: 1
-on text, seq_no: 10402
-duplicate text, ignore            ---> 查词典的时候，无法区分这个是自动的还是人工的，怎么办？时间太我接近，则认为是一伙的
-page number ocr: WF
-
-page number: None
-page number ocr: 99 (114 of 353)
-
-page number: 114
+DEBUG:root:page number: 114
+DEBUG:playsound:Starting
+DEBUG:playsound:Returning
 
 
 ---------
+
+look up dictionary:
+
+DEBUG:root:1671899554.6089692: update message received: 10581
+DEBUG:root:num clips: 1
+DEBUG:root:on text, seq_no: 10581
+DEBUG:root:1671899554.669958: update message received: 10582
+DEBUG:root:num clips: 0
+DEBUG:root:1671899554.6939604: update message received: 10587
+DEBUG:root:close clipboard error
+DEBUG:root:get clipboard content failed
+DEBUG:root:1671899554.6999586: update message received: 10589
+DEBUG:root:num clips: 1
+DEBUG:root:on text, seq_no: 10589
+DEBUG:root:1671899554.7029595: update message received: 10590
+DEBUG:root:num clips: 1
+DEBUG:root:on text, seq_no: 10590
+DEBUG:root:window title: Dialog
+DEBUG:root:page number and filename image grabed.
+DEBUG:root:extract_filename: Dialog
+DEBUG:root:filename: Dialog
+DEBUG:root:page number ocr: WF
+
+DEBUG:root:page number: None
+DEBUG:root:page number ocr: 99 (114 of 353)
+
+DEBUG:root:page number: 114
+DEBUG:playsound:Starting
+DEBUG:playsound:Returning
+
+------
 
 
 on_update如何实现呢？
