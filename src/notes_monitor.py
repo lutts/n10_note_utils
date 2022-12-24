@@ -16,12 +16,6 @@ from clipboard_monitor import py_clipboard_monitor
 from playsound import play_success_sound
 
 
-saved_text = None
-last_text = ""
-
-lookup_dictionary_seq_begin = False
-ignore_seqno = 0
-
 q = queue.Queue()
 
 single_book_mode : bool = False
@@ -59,15 +53,6 @@ def set_current_filename(filename):
         ebook_filename_lock.acquire()
         ebook_filename = filename
         ebook_filename_lock.release()
-
-
-def should_seqno_ignored(seqno):
-    global ignore_seqno
-    if seqno == ignore_seqno:
-        return True
-    else:
-        ignore_seqno = 0
-        return False
 
 
 def grab_page_number_and_filename_image():
@@ -242,10 +227,6 @@ decorator = DecoratorWraper()
 
 
 def on_text(seq_no, text):
-    if should_seqno_ignored(seq_no):
-        print('ignore seqno ' + str(seq_no))
-        return
-
     print("on text, seq_no: " + str(seq_no))
 
     text = decorator.decorate(text)
@@ -266,10 +247,6 @@ def save_image(seq_no, img):
 
 
 def on_image(seq_no, img):
-    if should_seqno_ignored(seq_no):
-        print('ignore seqno ' + str(seq_no))
-        return
-
     print("on image, seq_no: " + str(seq_no))
     global q
     q.put(('image', seq_no, img))
