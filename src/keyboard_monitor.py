@@ -39,6 +39,9 @@ def delay_to_worker_thread(callback):
 
 def get_dir_file_from_clipboard():
     initial_file = clipboard_util.get_text()
+    if not initial_file:
+        return (None, None)
+
     if initial_file.startswith('"') and initial_file.endswith('"'):
         initial_file = initial_file[1:-1]
     if not os.path.exists(initial_file):
