@@ -7,6 +7,7 @@ import win32clipboard
 import threading
 import ctypes
 import time
+import logging
 from PIL import ImageGrab
 from clipboard_utils import cf_html_helper, clipboard_util
 
@@ -52,47 +53,49 @@ class py_clipboard_monitor:
             None)
 
     def on_clipboard_update(self, hwnd: int, msg: int, wparam: int, lparam: int):
-        print("update message received: " +
+        logging.debug(str(time.time()) + ": update message received: " +
                 str(win32clipboard.GetClipboardSequenceNumber()))
+
+        timestamp = time.time()
 
         seq_no, clips, retcode = self._get_clipboard_content()
         if retcode == -1:
-            print("get clipboard content failed")
+            logging.debug("get clipboard content failed")
             return
         
         if seq_no == self.last_seq_no:
-            print("clipboard sequence number not changed, ignore")
+            logging.debug("clipboard sequence number not changed, ignore")
             return
         else:
             self.last_seq_no = seq_no
 
-        print("num clips: " + str(len(clips)))
+        logging.debug("num clips: " + str(len(clips)))
 
         if self._on_update:
-            self._on_update(seq_no, clips)
+            self._on_update(timestamp, seq_no, clips)
 
         for clip in clips:
             if self._on_text and clip[0] == 'text':
-                self._on_text(seq_no, clip[1])
+                self._on_text(timestamp, seq_no, clip[1])
 
             if self._on_image and clip[0] == 'image':
                 try:
                     img = ImageGrab.grabclipboard()
-                    self._on_image(seq_no, img)
+                    self._on_image(timestamp, seq_no, img)
                 except:
                     pass
 
             if self._on_html and clip[0] == 'html':
-                self._on_html(seq_no, clip[1])
+                self._on_html(timestamp, seq_no, clip[1])
 
         if clips and self._on_finished:
-            self._on_finished(seq_no, clips)
+            self._on_finished(timestamp, seq_no, clips)
 
         return 0
 
     def _process_message(self, hwnd: int, msg: int, wparam: int, lparam: int):
         WM_CLIPBOARDUPDATE = 0x031D
-        print('msg: ' + hex(msg))
+        logging.debug('msg: ' + hex(msg))
         if msg == WM_CLIPBOARDUPDATE:
             self.on_clipboard_update(hwnd, msg, wparam, lparam)
 
@@ -137,14 +140,14 @@ class py_clipboard_monitor:
                 if win32clipboard.IsClipboardFormatAvailable(win32con.CF_BITMAP):
                     clips.append(('image', None))
         except:
-            print("open clipboard failed")
+            logging.debug("open clipboard failed")
             retcode = -1
         finally:
             if cb_opened:
                 try:
                     win32clipboard.CloseClipboard()
                 except:
-                    print("close clipboard error")
+                    logging.debug("close clipboard error")
                     retcode = -1
 
         return (seq_no, clips, retcode)

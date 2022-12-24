@@ -8,6 +8,7 @@ import threading
 import queue
 import json
 import uuid
+import logging
 import pytesseract
 import win32ui
 from PIL import ImageGrab, Image
@@ -65,7 +66,7 @@ def grab_page_number_and_filename_image():
 
     fw = win32ui.GetForegroundWindow()
     cur_filename = fw.GetWindowText()
-    print("window title: " + str(cur_filename))
+    logging.debug("window title: " + str(cur_filename))
 
     if not cur_filename:
         cur_filename = get_current_filename()
@@ -80,7 +81,7 @@ def grab_page_number_and_filename_image():
     else:
         filename_caps = [cur_filename]
 
-    print('page number and filename image grabed.')
+    logging.debug('page number and filename image grabed.')
 
     return (filename_caps, page_number_caps)
 
@@ -95,7 +96,7 @@ def get_page_number(page_number_cap):
 
     page_number_ocr = pytesseract.image_to_string(
         page_number_cap, lang='eng')
-    print("page number ocr: " + page_number_ocr)
+    logging.debug("page number ocr: " + page_number_ocr)
     m = page_number_re.search(page_number_ocr)
     if m:
         page_number = m.group(1)
@@ -106,7 +107,7 @@ def get_page_number(page_number_cap):
         else:
             page_number = None
 
-    print("page number: " + str(page_number))
+    logging.debug("page number: " + str(page_number))
 
     return page_number
 
@@ -115,7 +116,7 @@ filename_re = re.compile(r'(.*?)\s+-\s+(福\s*昕\s*阅\s*读\s*器|Adobe\s*Acro
 
 
 def extract_filename(filename_ocr):
-    print("extract_filename: " + filename_ocr)
+    logging.debug("extract_filename: " + filename_ocr)
     filename = filename_ocr.strip()
     m = filename_re.search(filename)
     if m:
@@ -124,14 +125,14 @@ def extract_filename(filename_ocr):
     if filename:
         set_current_filename(filename)
 
-    print("filename: " + str(filename))
+    logging.debug("filename: " + str(filename))
 
     return filename
 
 
 def get_filename(filename_cap):
     if isinstance(filename_cap, str):
-        # print("str cap: " + filename_cap)
+        # logging.debug("str cap: " + filename_cap)
         filename = extract_filename(filename_cap)
         if filename:
             return filename
@@ -154,7 +155,7 @@ def get_note_header(filename_caps, page_number_caps):
             break
 
     if not filename:
-        print("failed OCR file name")
+        logging.debug("failed OCR file name")
         filename = "untitled"
 
     page_number = None
@@ -164,7 +165,7 @@ def get_note_header(filename_caps, page_number_caps):
             break
 
     if not page_number:
-        print("failed OCR page number")
+        logging.debug("failed OCR page number")
         page_number = 0
 
     cur_time = time.strftime('%Y年%m月%d日 %H:%M:%S', time.localtime())
@@ -201,8 +202,9 @@ class DecoratorWraper:
     def __init__(self):
         self.cur_decorator = None
         self.last_text = None
+        self.last_timestamp = 0
 
-    def decorate(self, text):
+    def decorate(self, timestamp, text):
         if self.cur_decorator:
             text = self.cur_decorator.decorate(text)
             self.cur_decorator = None
@@ -215,7 +217,7 @@ class DecoratorWraper:
 
         if text:
             if text == self.last_text:
-                print('duplicate text, ignore')
+                logging.debug('duplicate text, ignore')
                 text = None
             else:
                 self.last_text = text
@@ -226,10 +228,10 @@ class DecoratorWraper:
 decorator = DecoratorWraper()
 
 
-def on_text(seq_no, text):
-    print("on text, seq_no: " + str(seq_no))
+def on_text(timestamp, seq_no, text):
+    logging.debug("on text, seq_no: " + str(seq_no))
 
-    text = decorator.decorate(text)
+    text = decorator.decorate(timestamp, text)
     if not text:
         return
 
@@ -246,8 +248,8 @@ def save_image(seq_no, img):
     #append_note(seq_no, '![x](' + img_filename + ')')
 
 
-def on_image(seq_no, img):
-    print("on image, seq_no: " + str(seq_no))
+def on_image(timestamp, seq_no, img):
+    logging.debug("on image, seq_no: " + str(seq_no))
     global q
     q.put(('image', seq_no, img))
 
@@ -320,6 +322,9 @@ def start_notes_monitor(notes_dir: str = None):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
+
     notes_dir = None
     if len(sys.argv) > 1:
         notes_dir = sys.argv[1]
