@@ -227,7 +227,8 @@ class MarkdownHeaderDecorator:
         self.marker = marker
 
     def decorate(self, text):
-        return self.marker + ' ' + text
+        header_text = self.marker + ' ' + text
+        return py_markdown_normalizer.asterisk_bold_re.sub(r'\2\3', header_text)
 
 
 list_markers_re = re.compile(r'(?P<leading_space>[ ]*)(\*{1,2})(?P<marker>[0-9]+\.|Q:|q:|A:|a:)\2')

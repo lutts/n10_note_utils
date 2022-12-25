@@ -12,7 +12,6 @@ import css_inline
 def do_normlize_clipboard():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     raw_text = clipboard_util.get_text()
-
     if not raw_text:
         return
 

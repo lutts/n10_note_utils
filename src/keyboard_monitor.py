@@ -12,13 +12,13 @@ from tkinter import filedialog
 import traceback
 import keyboard
 from markdown2clipboard import markdown_to_clipboard
-from clipboard_utils import clipboard_util, cf_html_helper
+from clipboard_utils import clipboard_util
 from clipboard_monitor import py_clipboard_monitor
 from normalize_clipboard import do_normlize_clipboard, clipboard_html_to_markdown
 from normalize_clipboard_thebrain import do_normlize_clipboard_thebrain
 from note_processor import process_files
 from markdown_to_other_app import send_markdown
-from markdown_utils import markdown_processor, markdown_processor_mode, uniqe_name
+from markdown_utils import markdown_processor, markdown_processor_mode
 import settings
 from supermemo_qa_generator import generate_qa_file
 from send_markdown_to_thebrain_from_ahk import do_send_markdown_to_the_brain
@@ -135,16 +135,24 @@ def supermemo_component_to_plain():
     keyboard.send("ctrl+shift+f12")
 
 
+def keyboard_copy_text(guard_str=""):
+    success = clipboard_util.put_text(guard_str)
+    if success:
+        py_clipboard_monitor.wait_for_text(expect_text=guard_str, timeout=1)
+    keyboard.send("ctrl+c")
+    if success:
+        text = py_clipboard_monitor.wait_for_change(timeout=1, prev_text=guard_str)
+    else:
+        time.sleep(0.2)
+        text = clipboard_util.get_text
+
+    return text
+
+
 @delay_to_worker_thread
 def copy_plain_text():
     print("copy plain text")
-    success = clipboard_util.put_text("")
-    keyboard.send("ctrl+c")
-    if success:
-        text = py_clipboard_monitor.wait_for_change(1)
-    else:
-        time.sleep(0.1)
-        text = clipboard_util.get_text()
+    text = keyboard_copy_text()
     clipboard_util.put_text(text)
 
 
@@ -152,7 +160,7 @@ def copy_as_markdown_header(header_marker):
     print("copy as markdown header: " + header_marker)
     success = clipboard_util.put_text(header_marker)
     if success:
-        py_clipboard_monitor.wait_for_text(header_marker, 1)
+        py_clipboard_monitor.wait_for_text(expect_text=header_marker, timeout=1)
     else:
         time.sleep(0.1)
     keyboard.send("ctrl+c")
@@ -196,10 +204,10 @@ def look_up_dictionary():
     if not success:
         return
     else:
-        py_clipboard_monitor.wait_for_text(marker, 1)
+        py_clipboard_monitor.wait_for_text(expect_text=marker, timeout=1)
     keyboard.send("ctrl+c")
     #time.sleep(0.6)
-    py_clipboard_monitor.wait_for_change(2, marker)
+    py_clipboard_monitor.wait_for_change(timeout=2, prev_text=marker)
     keyboard.send("ctrl+alt+shift+c")
 
 
@@ -351,9 +359,10 @@ def triggle_italic():
 def insert_date_time():
     print("insert date time")
     cur_time = time.strftime('%Y年%m月%d日 %H:%M:%S', time.localtime())
-    clipboard_util.put_text(cur_time)
-    py_clipboard_monitor.wait_for_text(cur_time, 2)
-    keyboard.send("ctrl+v")
+    success = clipboard_util.put_text(cur_time)
+    if success:
+        py_clipboard_monitor.wait_for_text(expect_text=cur_time, timeout=2)
+        keyboard.send("ctrl+v")
 
 
 @delay_to_worker_thread
@@ -380,6 +389,15 @@ def generate_vocabulary_flashcard():
 def do_paste_html_as_markdown():
     print("copy html as markdown")
     clipboard_html_to_markdown()
+    keyboard.send("ctrl+v")
+
+
+@delay_to_worker_thread
+def normalize_vscode_line():
+    print("normalize current vs code line")
+    keyboard_copy_text()
+    keyboard.send("ctrl+shift+k")
+    do_normlize_clipboard()
     keyboard.send("ctrl+v")
 
 
@@ -432,6 +450,7 @@ hotkeys = {
     'u': send_markdown_to_supermemo,
     'v': normalized_paste,
     'w': do_paste_html_as_markdown,
+    '=': normalize_vscode_line,
     '1': copy_as_markdown_header1,
     '2': copy_as_markdown_header2,
     '3': copy_as_markdown_header3,

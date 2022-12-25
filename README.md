@@ -136,6 +136,7 @@
 * **Capslock + v**: 类似于 Ctrl+v, 对剪贴板里的文本进行中文、英文、markdown 规范化后再粘帖
 * **Capslock + b**: 类似于 Ctrl+v, 将剪贴板里的文本转换为 theBrain 的 markdown 格式再粘帖
 * **Capslock + w**: 类似于 Ctrl+v，将剪贴板里的 HTML 转换为 commonmark markdown 格式再粘帖
+* **Capslock + =**: 规范化visual studio code中当前光标所在的行
 * **Capslock + e**: 即 Ctrl + i, 用于 markdown 将选中文本转为斜体 (Emphasis), 右手握住鼠标时，左手单手 Ctrl+i 太难按了
 * **Capslock + h**: 插入当前年月日时间，例如：`2022年12月04日 23:45:55`
 * **Capslock + t**: 即 ctrl+shift+f12, 用于将 supermemo 的 html component 转换为 text component
