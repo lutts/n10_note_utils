@@ -12,6 +12,40 @@ from PIL import ImageGrab
 from clipboard_utils import cf_html_helper, clipboard_util
 
 
+class ClipboardContent:
+    def __init__(self):
+        self.clips = {}
+
+    def get_text(self):
+        return self.clips.get('text')
+
+    def set_text(self, text):
+        self.clips['text'] = text
+
+    def get_html(self):
+        return self.clips.get('html')
+
+    def set_html(self, html):
+        self.clips['html'] = html
+
+    def get_image(self):
+        if 'image' in self.clips:
+            img = self.clips['image']
+            if not img:
+                try:
+                    img = ImageGrab.grabclipboard()
+                    self.clips['image'] = img
+                except:
+                    pass
+
+            return img
+        else:
+            return None
+
+    def set_image(self, img=None):
+        self.clips['image'] = img
+
+
 class py_clipboard_monitor:
     def __init__(self,
                  on_text=None,
@@ -69,26 +103,29 @@ class py_clipboard_monitor:
         else:
             self.last_seq_no = seq_no
 
-        logging.debug("num clips: " + str(len(clips)))
+        try:
+            if self._on_update:
+                self._on_update(timestamp, seq_no, clips)
 
-        if self._on_update:
-            self._on_update(timestamp, seq_no, clips)
+            if self._on_text:
+                text = clips.get_text()
+                if text:
+                    self._on_text(timestamp, seq_no, text)
 
-        if self._on_text and 'text' in clips:
-            self._on_text(timestamp, seq_no, clips['text'])
+            if self._on_html:
+                html = clips.get_html()
+                if html:
+                    self._on_html(timestamp, seq_no, html)
 
-        if self._on_html and 'html' in clips:
-            self._on_html(timestamp, seq_no, clips['html'])
+            if self._on_image:
+                img = clips.get_image()
+                if img:
+                    self._on_image(timestamp, seq_no, img)
 
-        if self._on_image and 'image' in clips:
-            try:
-                img = ImageGrab.grabclipboard()
-                self._on_image(timestamp, seq_no, img)
-            except:
-                pass
-
-        if clips and self._on_finished:
-            self._on_finished(timestamp, seq_no, clips)
+            if clips and self._on_finished:
+                self._on_finished(timestamp, seq_no, clips)
+        except:
+            logging.exception("error occured when process clipboard content", exc_info=True)
 
         return 0
 
@@ -105,7 +142,7 @@ class py_clipboard_monitor:
         # time.sleep(0.5)
 
         seq_no = 0
-        clips = {}
+        clips = ClipboardContent()
         retcode = 0
 
         cb_opened = False
@@ -118,18 +155,18 @@ class py_clipboard_monitor:
                 if win32clipboard.IsClipboardFormatAvailable(win32con.CF_UNICODETEXT):
                     text = win32clipboard.GetClipboardData(
                         win32con.CF_UNICODETEXT)
-                    clips['text'] = text
+                    clips.set_text(text)
                 elif win32clipboard.IsClipboardFormatAvailable(win32con.CF_TEXT):
                     text_bytes = win32clipboard.GetClipboardData(
                         win32con.CF_TEXT)
                     text = text_bytes.decode()
-                    clips['text'] = text
+                    clips.set_text(text)
 
             if self._on_html or self._on_update:
                 if cf_html_helper.is_html_available():
                     cf_html = cf_html_helper.get_cf_html()
                     clipboard_data = win32clipboard.GetClipboardData(cf_html)
-                    clips['html'] = clipboard_data
+                    clips.set_html(clipboard_data)
 
             # if win32clipboard.IsClipboardFormatAvailable(win32con.CF_HDROP):
             #    files = win32clipboard.GetClipboardData(win32con.CF_HDROP)
@@ -137,7 +174,7 @@ class py_clipboard_monitor:
 
             if self._on_image or self._on_update:
                 if win32clipboard.IsClipboardFormatAvailable(win32con.CF_BITMAP):
-                    clips['image'] = None
+                    clips.set_image()
         except:
             logging.debug("open clipboard failed")
             retcode = -1

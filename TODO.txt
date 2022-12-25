@@ -63,6 +63,35 @@ DEBUG:root:page number: 114
 DEBUG:playsound:Starting
 DEBUG:playsound:Returning
 
+----
+
+大段文字:
+
+DEBUG:root:1671930800.790385: update message received: 10859
+DEBUG:root:num clips: 0
+DEBUG:root:1671930800.8397841: update message received: 10864
+DEBUG:root:open clipboard failed
+DEBUG:root:close clipboard error
+DEBUG:root:get clipboard content failed
+DEBUG:root:1671930800.8599205: update message received: 10867
+DEBUG:root:num clips: 1
+DEBUG:root:on text, seq_no: 10867
+DEBUG:root:window title: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
+DEBUG:root:page number and filename image grabed.
+DEBUG:root:extract_filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf - Adobe Acrobat Pro DC (64-bit)
+DEBUG:root:filename: Martin H. Manser, David Pickering, Rosalind Fergusson, Jonathon Green, Jenny Roberts, Elizabeth McLaren Kirkpatrick - Good Word Guide_ The Fast Way to Correct English_ Spelling, Punctuation, Grammar a.pdf
+DEBUG:root:1671930801.1080282: update message received: 10867
+DEBUG:root:clipboard sequence number not changed, ignore
+DEBUG:root:page number ocr: WF
+
+DEBUG:root:page number: None
+DEBUG:root:page number ocr: 99 (114 of 353)
+
+DEBUG:root:page number: 114
+DEBUG:playsound:Starting
+DEBUG:playsound:Returning
+
+
 
 ---------
 
@@ -101,21 +130,22 @@ DEBUG:playsound:Returning
 on_update如何实现呢？
 
 -> 内容发生改变（注意：不是seqno发生改变）即意味着一个新的session的开始，计时器复位
--> 计时器到0时，将内容放入queue  (session.finish())
--> 如果能提前确定内容，则可以提前放入queue，session销毁，等待用户的下一次拷贝
-	-> 尽管session会销毁，但是last_text仍然会保留，如果用户拷贝的内容重户，会跳过，不会创建session
-	-> 如果计时器到0和确定内容在同一时间，如何避免冲突？
-	-> 如果计时器到0 finish之后，随后的clipboard update的内容和前一个session相关怎么办？ (所以last_html也要保留，即：前一个session不能销毁，只是finish()后将timer停掉而已，last_session)
--> decorator修饰后的结果如果是none，则不需要创建transaction
+-> 计时器到0时，调用session.finish()
+	-> session存入last_session
+	-> 如果计时器到0 finish之后，随后的clipboard update的内容和前一个session相关怎么办？
+-> 遇到image，也会强制调用session.finish()
+    -> 如果恰好和计时器到0同时，如何处理冲突？
+-> session.finish: 
+    * 如果cur_decorator不为none，则decorate，如果deco_result为none，不放入queue，也不会更新last_session，而是放入last_decorator_removed_session中
+    * 如果没有cur_decorator或者有但是deco_result不为None，则放入queue，更新last_session
+-> image无条件放入，不涉及session
+-> {{lookupdictionary}}这样的字符串不涉及session，只会更新当cur_decorator
+
+
+-----> 注：这个处理流程意味着，除非有image的介入，否则我们处理每个拷贝的时间都是固定的0.5s时长，0.5秒够么？如果用户拷贝了大量文本，session的时间会不会超过0.5s? 是否要根据文本长度进行时间微调？做笔记的时候会选很大段的文字？
 	
 	
 两个session相等的条件：
 
 * 如果有html和text: 则需要两者都相等
 * 如果只有html和text之一，则任意一个匹配都认为相等
-
-
-查字典这种情形怎么办？
-
-* 这种情形是意味着前一个session要finish()，但不必为{{lookupdictionary}}这个text创建session
-* 会创建一个decorator，用于修饰下一个transaction
