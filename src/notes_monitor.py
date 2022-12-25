@@ -355,6 +355,8 @@ class ClipSession:
         if note:
             on_text(note)
 
+        self.timer.cancel()
+
     def finish(self):
         with self.lock:
             self.finish_locked()
