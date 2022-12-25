@@ -129,14 +129,16 @@ DEBUG:playsound:Returning
 
 on_update如何实现呢？
 
--> 内容发生改变（注意：不是seqno发生改变）即意味着一个新的session的开始，计时器复位
+-> 内容发生改变（注意：不是seqno发生改变）即意味着一个新的session的开始, finish()当前session, 创建一个新的session
 -> 计时器到0时，调用session.finish()
-	-> session存入last_session
-	-> 如果计时器到0 finish之后，随后的clipboard update的内容和前一个session相关怎么办？
+-> 因为html优先级高，如果一上来就遇到html，则可以立即finish()
+-> 已经finish()了的session不会销毁，而是充当一个“黑洞”，如果后续的内容和它匹配，则会被无声无息地吞噬掉
+    -> 要注意decorator的影响，特别是lookup dictionary
+-> 已经finish()了的session再次调用finish()不会有任何操作
 -> 遇到image，也会强制调用session.finish()
     -> 如果恰好和计时器到0同时，如何处理冲突？
 -> session.finish: 
-    * 如果cur_decorator不为none，则decorate，如果deco_result为none，不放入queue，也不会更新last_session，而是放入last_decorator_removed_session中
+    * 如果cur_decorator不为none，则decorate，如果deco_result为none，不放入queue
     * 如果没有cur_decorator或者有但是deco_result不为None，则放入queue，更新last_session
 -> image无条件放入，不涉及session
 -> {{lookupdictionary}}这样的字符串不涉及session，只会更新当cur_decorator
@@ -147,5 +149,6 @@ on_update如何实现呢？
 	
 两个session相等的条件：
 
+* 如果时间隔得过长，则不认为相等
 * 如果有html和text: 则需要两者都相等
 * 如果只有html和text之一，则任意一个匹配都认为相等

@@ -8,6 +8,7 @@ from note_processor import normalize_markdown_text
 from clipboard_utils import clipboard_util
 import css_inline
 
+
 def do_normlize_clipboard():
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     raw_text = clipboard_util.get_text()
@@ -19,7 +20,7 @@ def do_normlize_clipboard():
     clipboard_util.put_text(norm_text)
 
 
-def markdownify_convert(html, **options):
+def markdownify_convert(html):
     #md = markdownify(html, heading_style="ATX", strip=['a', 'style'])
     from markdownify import MarkdownConverter
     from bs4 import BeautifulSoup
@@ -42,7 +43,7 @@ def markdownify_convert(html, **options):
         # Remove tags
         data.decompose()
   
-    return MarkdownConverter(**options).convert_soup(soup)
+    return MarkdownConverter(heading_style="ATX", strip=['a']).convert_soup(soup)
 
 
 def clipboard_html_to_markdown():
@@ -50,7 +51,7 @@ def clipboard_html_to_markdown():
     if not html:
         return
 
-    md = markdownify_convert(html, heading_style="ATX", strip=['a'])
+    md = markdownify_convert(html)
     md = normalize_markdown_text(md, no_bold_in_header=True)
     if md:
         clipboard_util.put_text(md)

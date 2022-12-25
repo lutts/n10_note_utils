@@ -13,8 +13,11 @@ import pytesseract
 import win32ui
 from PIL import ImageGrab, Image
 import settings
+from clipboard_utils import cf_html_helper
 from clipboard_monitor import py_clipboard_monitor
 from playsound import play_success_sound
+from normalize_clipboard import markdownify_convert
+from markdown_normalizer import py_markdown_normalizer
 
 
 q = queue.Queue()
@@ -66,7 +69,7 @@ def grab_page_number_and_filename_image():
 
     fw = win32ui.GetForegroundWindow()
     cur_filename = fw.GetWindowText()
-    logging.debug("window title: " + str(cur_filename))
+    logging.debug("window title: %s", str(cur_filename))
 
     if not cur_filename:
         cur_filename = get_current_filename()
@@ -96,7 +99,7 @@ def get_page_number(page_number_cap):
 
     page_number_ocr = pytesseract.image_to_string(
         page_number_cap, lang='eng')
-    logging.debug("page number ocr: " + page_number_ocr)
+    logging.debug("page number ocr: %s", str(page_number_ocr))
     m = page_number_re.search(page_number_ocr)
     if m:
         page_number = m.group(1)
@@ -107,7 +110,7 @@ def get_page_number(page_number_cap):
         else:
             page_number = None
 
-    logging.debug("page number: " + str(page_number))
+    logging.debug("page number: %s", str(page_number))
 
     return page_number
 
@@ -116,7 +119,7 @@ filename_re = re.compile(r'(.*?)\s+-\s+(福\s*昕\s*阅\s*读\s*器|Adobe\s*Acro
 
 
 def extract_filename(filename_ocr):
-    logging.debug("extract_filename: " + filename_ocr)
+    logging.debug("extract_filename: %s", filename_ocr)
     filename = filename_ocr.strip()
     m = filename_re.search(filename)
     if m:
@@ -125,7 +128,7 @@ def extract_filename(filename_ocr):
     if filename:
         set_current_filename(filename)
 
-    logging.debug("filename: " + str(filename))
+    logging.debug("filename: %s", str(filename))
 
     return filename
 
@@ -173,13 +176,42 @@ def get_note_header(filename_caps, page_number_caps):
     return cur_time + ' 摘自<<' + filename + '>> 第' + str(page_number) + '页\n'
 
 
-def append_note(seq_no, note, filename_caps, page_number_caps):
+def append_note(note, filename_caps, page_number_caps):
     note_header = get_note_header(filename_caps, page_number_caps)
     notes_filepath = os.path.join(monitor_notes_dir, 'notes.txt')
     with open(notes_filepath, 'a', encoding='utf_8_sig') as f:
         f.write('\n\n')
         f.write(note_header)
         f.write('\n'.join(note.splitlines()))
+
+
+last_note = None
+
+def on_text(text):
+    global last_note
+    if last_note:
+        if text == last_note:
+            return
+        else:
+            last_note = text
+
+    filename_caps, page_number_caps = grab_page_number_and_filename_image()
+    global q
+    q.put(('text', text, filename_caps, page_number_caps))
+
+
+def save_image(seq_no, img):
+    img_filename = str(seq_no) + '.png'
+    img_filepath = os.path.join(monitor_notes_dir, img_filename)
+    img.save(img_filepath, 'PNG')
+
+    #append_note(seq_no, '![x](' + img_filename + ')')
+
+
+def on_image(seq_no, img):
+    logging.debug("on image, seq_no: %s", str(seq_no))
+    global q
+    q.put(('image', seq_no, img))
 
 
 class LookupDictionaryDecorator:
@@ -198,70 +230,182 @@ class MarkdownHeaderDecorator:
         return self.marker + ' ' + text
 
 
-class DecoratorWraper:
-    def __init__(self):
-        self.cur_decorator = None
-        self.last_text = None
-        self.last_decorator_removed_text = None
-        self.last_timestamp = 0
+list_markers_re = re.compile(r'(?P<leading_space>[ ]*)(\*{1,2})(?P<marker>[0-9]+\.|Q:|q:|A:|a:)\2')
 
-    def decorate(self, timestamp, text):
-        deco_result = text
-        if self.cur_decorator:
-            deco_result = self.cur_decorator.decorate(text)
-            if not deco_result:
-                self.last_decorator_removed_text = text
-            else:
-                self.last_decorator_removed_text = None
-            self.cur_decorator = None
-        elif text == '{{LookupGoldenDictionary}}':
-            self.cur_decorator = lookup_dictionary_decorator
-            return None
-        elif text in ['#', '##', '###', '####', '#####', '######']:
-            self.cur_decorator = MarkdownHeaderDecorator(text)
+def decode_html_to_markdown(clip_html):
+    md = None
+    try:
+        html_helper = cf_html_helper()
+        html_helper.decode(clip_html)
+        md = markdownify_convert(html_helper.html)
+    except:
+        pass
+
+    if md:
+        md_lines = md.splitlines(keepends=True)
+        while not md_lines[0].strip():
+            md_lines.pop(0)
+
+        if not md_lines:
             return None
 
-        if deco_result:
-            if deco_result == self.last_text:
-                logging.debug("duplicate text, ignore")
-                deco_result = None
-            elif timestamp - self.last_timestamp < 0.5 and text == self.last_decorator_removed_text:
-                deco_result = None
+        while not md_lines[-1].strip():
+            md_lines.pop()
+
+        if not md_lines:
+            return None
+
+        for idx in range(len(md_lines)):
+            line = md_lines[idx]
+            m = list_markers_re.match(line)
+            if m:
+                leading_space = m.group('leading_space')
+                marker = m.group('marker')
+                line = leading_space + marker + line[m.end():]
+                md_lines[idx] = line
+            
+            if py_markdown_normalizer.atx_header_re.match(line):
+                md_lines[idx] = py_markdown_normalizer.asterisk_bold_re.sub(r'\2\3', line)
+
+        return ''.join(md_lines)
+    else:
+        return None
+        
+
+class ClipSession:
+    def __init__(self, decorator=None):
+        self.lock = threading.Lock()
+        self.timestamp = None
+        self.decorator = decorator
+        self.html = None
+        self.markdown = None
+        self.text = None
+        self.finished = False
+
+        self.timer = threading.Timer(0.5, self.finish)
+
+    def cancel_timer(self):
+        self.timer.cancel()
+
+    def update(self, timestamp, seq_no, clips):
+        if not self.timestamp:
+            self.timestamp =  timestamp
+            self.timer.start()
+        elif timestamp - self.timestamp > 1:
+            return True
+
+        clip_html = clips.get_html()
+        clip_markdown = None
+        if clip_html:
+            clip_markdown = decode_html_to_markdown(clip_html)
+            #logging.debug("decode |%s| got |%s|", clip_html, clip_markdown)
+        clip_text = clips.get_text()
+
+        if self.content_changed(clip_html, clip_text):
+            #logging.debug("content changed, finish cur session")
+            self.finish()
+            return True
+
+        with self.lock:
+            self.html = clip_html
+            self.markdown = clip_markdown
+            self.text = clip_text
+
+            if self.markdown:
+                #logging.debug("markdown found, finish cur session")
+                self.finish_locked()
+
+    def content_changed(self, clip_html, clip_text):
+        if self.html is not None and self.text is not None:
+            if self.html == clip_html and self.text == clip_text:
+                return False
             else:
-                self.last_text = deco_result
+                return True
+        elif self.html is not None:
+            if self.html == clip_html:
+                return False
+            else:
+                return True
+        elif self.text is not None:
+            if self.text == clip_text:
+                return False
+            else:
+                return True
+        else:
+            return False
 
-        self.last_timestamp = timestamp
+    def finish_locked(self):
+        if self.finished:
+            return
+        self.finished = True
 
-        return deco_result
+        note = self.markdown
+        if not note:
+            if self.text:
+                note = self.text
+            elif self.html:
+                note = self.html
+
+        if not note:
+            return
+
+        if self.decorator:
+            note = self.decorator.decorate(note)
+
+        if note:
+            on_text(note)
+
+    def finish(self):
+        with self.lock:
+            self.finish_locked()
 
 
-decorator = DecoratorWraper()
-
-
-def on_text(timestamp, seq_no, text):
-    logging.debug("on text, seq_no: " + str(seq_no))
-
-    text = decorator.decorate(timestamp, text)
+def detect_decorator(clips):
+    text = clips.get_text()
     if not text:
+        return None
+
+    if text == '{{LookupGoldenDictionary}}':
+        return lookup_dictionary_decorator
+    elif text in ['#', '##', '###', '####', '#####', '######']:
+        return MarkdownHeaderDecorator(text)
+    
+    return None
+
+
+cur_session = None
+
+
+def on_update(timestamp, seq_no, clips):
+    global cur_session
+
+    if not clips.clips:
         return
 
-    filename_caps, page_number_caps = grab_page_number_and_filename_image()
-    global q
-    q.put(('text', seq_no, text, filename_caps, page_number_caps))
+    decorator = detect_decorator(clips)
+    if decorator:
+        if cur_session:
+            #logging.debug("decorator found, finish cur session")
+            cur_session.finish()
+        cur_session = ClipSession(decorator)
+        return
 
+    image = clips.get_image()
+    if image:
+        if cur_session:
+            #logging.debug("image found, finish current sesion")
+            cur_session.finish()
+        cur_session = ClipSession()
+        on_image(seq_no, image)
+        return
+    
+    session_changed = True
+    if cur_session:
+        session_changed = cur_session.update(timestamp, seq_no, clips)
 
-def save_image(seq_no, img):
-    img_filename = str(seq_no) + '.png'
-    img_filepath = os.path.join(monitor_notes_dir, img_filename)
-    img.save(img_filepath, 'PNG')
-
-    #append_note(seq_no, '![x](' + img_filename + ')')
-
-
-def on_image(timestamp, seq_no, img):
-    logging.debug("on image, seq_no: " + str(seq_no))
-    global q
-    q.put(('image', seq_no, img))
+    if session_changed:
+        cur_session = ClipSession()
+        cur_session.update(timestamp, seq_no,  clips)
 
 
 def worker():
@@ -325,9 +469,7 @@ def start_notes_monitor(notes_dir: str = None):
     # Turn-on the worker thread.
     threading.Thread(target=worker, daemon=True).start()
 
-    monitor = py_clipboard_monitor(
-        on_text=on_text,
-        on_image=on_image)
+    monitor = py_clipboard_monitor(on_update=on_update)
     monitor.listen()
 
 

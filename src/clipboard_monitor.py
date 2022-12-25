@@ -87,8 +87,8 @@ class py_clipboard_monitor:
             None)
 
     def on_clipboard_update(self, hwnd: int, msg: int, wparam: int, lparam: int):
-        logging.debug(str(time.time()) + ": update message received: " +
-                str(win32clipboard.GetClipboardSequenceNumber()))
+        logging.debug("%f: update message received: %s", time.time(),
+                      str(win32clipboard.GetClipboardSequenceNumber()))
 
         timestamp = time.time()
 
@@ -131,7 +131,7 @@ class py_clipboard_monitor:
 
     def _process_message(self, hwnd: int, msg: int, wparam: int, lparam: int):
         WM_CLIPBOARDUPDATE = 0x031D
-        logging.debug('msg: ' + hex(msg))
+        #logging.debug('msg: ' + hex(msg))
         if msg == WM_CLIPBOARDUPDATE:
             self.on_clipboard_update(hwnd, msg, wparam, lparam)
 
