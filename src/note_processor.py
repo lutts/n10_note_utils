@@ -752,7 +752,7 @@ def process_files(fullpaths):
         traceback.print_exc()
 
 
-def normalize_markdown_text(raw_text, no_bold_in_header=False):
+def normalize_markdown_text(raw_text, no_bold_in_header=False, keep_last_end=False):
     processor = RawNoteProcessor(raw_text)
     processor.process()
 
@@ -764,7 +764,8 @@ def normalize_markdown_text(raw_text, no_bold_in_header=False):
                 if py_markdown_normalizer.atx_header_re.match(line):
                     md_lines[idx] = py_markdown_normalizer.asterisk_bold_re.sub(r'\2\3', line)
 
-        md_lines[-1] = md_lines[-1].rstrip()
+        if not keep_last_end:
+            md_lines[-1] = md_lines[-1].rstrip()
 
         return ''.join(md_lines)
     else:

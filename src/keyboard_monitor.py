@@ -396,8 +396,11 @@ def do_paste_html_as_markdown():
 def normalize_vscode_line():
     print("normalize current vs code line")
     keyboard_copy_text()
+    keyboard.send('home')
+    time.sleep(0.01)
     keyboard.send("ctrl+shift+k")
-    do_normlize_clipboard()
+    time.sleep(0.01)
+    do_normlize_clipboard(keep_last_end=True)
     keyboard.send("ctrl+v")
 
 

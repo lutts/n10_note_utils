@@ -9,13 +9,13 @@ from clipboard_utils import clipboard_util
 import css_inline
 
 
-def do_normlize_clipboard():
+def do_normlize_clipboard(keep_last_end=False):
     #logging.basicConfig(filename='D:\\logs\\n10.log', filemode='w', level=logging.DEBUG)
     raw_text = clipboard_util.get_text()
     if not raw_text:
         return
 
-    norm_text = normalize_markdown_text(raw_text)
+    norm_text = normalize_markdown_text(raw_text, keep_last_end=keep_last_end)
     clipboard_util.put_text(norm_text)
 
 
