@@ -15,6 +15,24 @@ from clipboard_utils import clipboard_util
 import settings
 
 
+def get_image_root(img_dir):
+    webroot = settings.get_webroot()
+    imgroot = None
+    if webroot:
+        imgroot = settings.get_imgroot(img_dir)
+        if not imgroot:
+            imgroot = str(uuid.uuid4())
+            settings.save_imgroot(img_dir, imgroot)
+
+        try:
+            join_path = os.path.join(webroot, imgroot)
+            if not os.path.exists(join_path):
+                os.mkdir(join_path)
+        except:
+            imgroot = None
+
+    return imgroot
+
 def add_prefix_to_local_images(html, mode, img_dir, img_prefix=None):
     if not img_prefix:
         if mode == markdown_processor_mode.SUPERMEMO:
@@ -34,26 +52,16 @@ def add_prefix_to_local_images(html, mode, img_dir, img_prefix=None):
     else:
         webroot = settings.get_webroot()
         imgroot = None
-        if webroot:
-            imgroot = settings.get_imgroot(img_dir)
-            if not imgroot:
-                imgroot = str(uuid.uuid4())
-                settings.save_imgroot(img_dir, imgroot)
-
-            try:
-                join_path = os.path.join(webroot, imgroot)
-                if not os.path.exists(join_path):
-                    os.mkdir(join_path)
-            except:
-                imgroot = None
-        
         img_idx = 0
-
         img_orig_url_to_seq_url = {}
 
         def modify_image_url(matchobj):
+            nonlocal imgroot
             nonlocal img_idx
             nonlocal img_orig_url_to_seq_url
+
+            if not imgroot:
+                imgroot = get_image_root(img_dir)
 
             img_idx += 1
             tag = matchobj.group("tag")
