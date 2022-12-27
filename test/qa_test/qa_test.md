@@ -2,6 +2,23 @@
 
 Q: **emotion** is a complex reaction pattern, by which an individual attempts to deal with a {{**personally significant**}} matter or event.
 
+| table | test |
+| --- | --- |
+| table | test |
+
+Q: math {{latex}} test
+
+$$\frac{1}{\left(\sqrt{\phi\sqrt{5}}-\phi\right)e^{\frac{2}{5}\pi}}=
+ 1+\frac{e^{-2\pi}} {
+   1+\frac{e^{-4\pi}} {
+     1+\frac{e^{-6\pi}} {
+       1+\frac{e^{-8\pi}} {
+         1+\cdots
+       }
+     }
+   }
+}$$
+
 q: what's the difference between emotion and mood? (hint: contingency between responses and events, duration, intensity) {#q1234}
 
 a: the differences are:

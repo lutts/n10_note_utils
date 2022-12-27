@@ -194,7 +194,7 @@ def generate_qa_file(filename, add_audio=False):
     #print(qa_markdown_lines)
     try:
         processor = markdown_processor(markdown_processor_mode.SUPERMEMO, filename)
-        html_body = processor.markdown_to_html_body(qa_markdown_lines)
+        html_body = processor.markdown_to_html_with_inline_style(qa_markdown_lines, with_extras=False)
         html_body = add_prefix_to_local_images(
             html_body, markdown_processor_mode.SUPERMEMO, os.path.dirname(filename))
         #print(html_body)
@@ -218,7 +218,7 @@ def main():
         sys.exit(1)
 
     filename = args[0]
-    generate_qa_file(filename, add_audio=True)
+    generate_qa_file(filename, add_audio=False)
     
 
 # Main body
