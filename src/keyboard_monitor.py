@@ -21,7 +21,6 @@ from markdown_to_other_app import send_markdown
 from markdown_utils import markdown_processor, markdown_processor_mode
 import settings
 from supermemo_qa_generator import generate_qa_file
-from send_markdown_to_thebrain_from_ahk import do_send_markdown_to_the_brain
 from cue_extractor import generate_cornell_cue
 from playsound import play_success_sound
 
@@ -270,18 +269,6 @@ def send_markdown_to_supermemo():
     start_http_server_for_supermemo()
 
 
-
-@delay_to_worker_thread
-def send_markdown_to_the_brain():
-    print("send markdown to the brain")
-    filename = ask_open_filename()
-    if not filename:
-        return
-
-    do_send_markdown_to_the_brain(filename)
-    run_http_server(os.path.dirname(filename), "8888")
-
-
 @delay_to_worker_thread
 def normalized_paste():
     print("normalized paste")
@@ -429,7 +416,6 @@ hotkeys = {
     'd': look_up_dictionary,
     'e': triggle_italic,
     'h': insert_date_time,
-    'i': send_markdown_to_the_brain,
     'l': list_markdown_latex_equations,
     'm': clipboard_markdown_to_html,
     'n': start_note_monitor,
