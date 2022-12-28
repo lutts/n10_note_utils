@@ -123,14 +123,14 @@ def generate_qa_markdown(filename):
 
 
 audio_player_javascript = '<script> function playMyAudio(elem_id){document.getElementById(elem_id).play();}</script>'
+audio_player_func_name = 'playMyAudio'
 
 
-def convert_html_to_qa_text(title, html_body, add_audio_player=False):
+def convert_html_to_qa_text(title, html_body):
     qa_text = []
 
     q_re = re.compile(r'<p>(q|Q): *')
     a_re = re.compile(r'<p>(a|A): *')
-    hr_re = re.compile('<hr\s*/?>')
 
     if title:
         title = '<strong><font color="blue">' + title + ' : </font></strong>'
@@ -145,7 +145,7 @@ def convert_html_to_qa_text(title, html_body, add_audio_player=False):
                 in_fenced_code = False
         elif q_re.match(line):
             if qa_line:
-                if add_audio_player:
+                if audio_player_func_name in qa_line:
                     qa_line += audio_player_javascript
                 qa_text.append(qa_line)
                 qa_text.append('')
@@ -154,7 +154,7 @@ def convert_html_to_qa_text(title, html_body, add_audio_player=False):
             qa_line = 'Q: ' + title + qa_line
         elif a_re.match(line):
             if qa_line:
-                if add_audio_player:
+                if audio_player_func_name in qa_line:
                     qa_line += audio_player_javascript
                 qa_text.append(qa_line)
             qa_line = a_re.sub(r'A: <p>', line,  count=1)
@@ -164,7 +164,7 @@ def convert_html_to_qa_text(title, html_body, add_audio_player=False):
                 in_fenced_code = True
     
     if qa_line:
-        if add_audio_player:
+        if audio_player_func_name in qa_line:
             qa_line += audio_player_javascript
         qa_text.append(qa_line)
         qa_text.append('')
@@ -172,7 +172,7 @@ def convert_html_to_qa_text(title, html_body, add_audio_player=False):
     return '\n'.join(qa_text)
 
 
-pronunciation_re = re.compile('/\s*(?P<pron>[^/]*)\s*/\s*(?:\(audio:\s*(?P<audio_filename>[a-zA-Z0-9_-]+\.[a-zA-Z]+)\))?')
+pronunciation_re = re.compile('/\s*(?P<pron>[^/]*)\s*/\s*\(audio:\s*(?P<audio_filename>[a-zA-Z0-9_-]+\.[a-zA-Z0-9]+)\)')
 
 
 def add_audio_player_button(pron_matchobj):
@@ -188,8 +188,7 @@ def generate_qa_file(filename, add_audio=False):
     if not qa_markdown_lines:
         return
 
-    if add_audio:
-        qa_markdown_lines = [pronunciation_re.sub(add_audio_player_button, line) for line in qa_markdown_lines]
+    qa_markdown_lines = [pronunciation_re.sub(add_audio_player_button, line) for line in qa_markdown_lines]
 
     #print(qa_markdown_lines)
     try:
@@ -198,7 +197,7 @@ def generate_qa_file(filename, add_audio=False):
         html_body = add_prefix_to_local_images(
             html_body, markdown_processor_mode.SUPERMEMO, os.path.dirname(filename))
         #print(html_body)
-        qa_text = convert_html_to_qa_text(title, html_body, add_audio_player=add_audio)
+        qa_text = convert_html_to_qa_text(title, html_body)
 
         split_filepath = os.path.splitext(filename)
         qa_text_file = uniqe_name(split_filepath[0] + ".html")
