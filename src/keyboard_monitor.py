@@ -376,16 +376,6 @@ def extract_questions():
 
 
 @delay_to_worker_thread
-def generate_vocabulary_flashcard():
-    print("generate vocabulary card")
-    filename = ask_open_filename()
-    if not filename:
-        return
-
-    generate_qa_file(filename,  add_audio=True)
-
-
-@delay_to_worker_thread
 def do_paste_html_as_markdown():
     print("copy html as markdown")
     clipboard_html_to_markdown()
@@ -438,7 +428,6 @@ hotkeys = {
     'c': copy_plain_text,
     'd': look_up_dictionary,
     'e': triggle_italic,
-    'f': generate_vocabulary_flashcard,
     'h': insert_date_time,
     'i': send_markdown_to_the_brain,
     'l': list_markdown_latex_equations,

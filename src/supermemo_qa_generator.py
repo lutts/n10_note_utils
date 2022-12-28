@@ -183,7 +183,7 @@ def add_audio_player_button(pron_matchobj):
     return f'<embed id="{audio_id}" src="{src_url}" autostart="false" hidden="true" /><button onClick="playMyAudio(\'{audio_id}\')">/{pron}\U0001F50A/</button>'
 
 
-def generate_qa_file(filename, add_audio=False):
+def generate_qa_file(filename):
     title, qa_markdown_lines = generate_qa_markdown(filename)
     if not qa_markdown_lines:
         return
@@ -217,7 +217,7 @@ def main():
         sys.exit(1)
 
     filename = args[0]
-    generate_qa_file(filename, add_audio=False)
+    generate_qa_file(filename)
     
 
 # Main body
