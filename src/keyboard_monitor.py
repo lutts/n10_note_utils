@@ -410,12 +410,22 @@ def worker():
 
 threading.Thread(target=worker, daemon=True).start()
 
+
+def enter_waiting_second_key_state():
+    if second_hotkeys:
+        print("Waiting for second key of chord...")
+        return WaitingSecondKeyDownState()
+    else:
+        return InitState()
+
+
 hotkeys = {
     'b': normalized_paste_the_brain,
     'c': copy_plain_text,
     'd': look_up_dictionary,
     'e': triggle_italic,
     'h': insert_date_time,
+    'k': enter_waiting_second_key_state,
     'l': list_markdown_latex_equations,
     'm': clipboard_markdown_to_html,
     'n': start_note_monitor,
@@ -437,12 +447,27 @@ hotkeys = {
     '6': copy_as_markdown_header6
 }
 
+# def printhaha():
+#     print("haha")
+
+second_hotkeys = {
+#    'p': printhaha,
+}
+
 def do_hotkey(key_name):
     # print("do hotkey " + key_name)
     try:
-        hotkeys[key_name]()
+        return hotkeys[key_name]()
     except Exception as e:
         print("do hotkey failed for " + key_name)
+        traceback.print_exc()
+
+
+def do_second_hotkey(key_name):
+    try:
+        return second_hotkeys[key_name]()
+    except:
+        print("do second hotkey failed for " + key_name)
         traceback.print_exc()
 
 
@@ -467,12 +492,37 @@ class InitState(State):
             return self
 
 
-class TimeoutState(State):
-    def __init__(self):
-        self.start_time = time.time()
+class DoHotKeyState(State):
+    def __init__(self, key_name):
+        super().__init__()
+        ret = self.on_do_hotkey(key_name)
+        if ret:
+            self.state = ret
+        else:
+            self.state = InitState()
+
+    def on_do_hotkey(self, key_name):
+        return do_hotkey(key_name)
 
     def on_event(self, event: keyboard.KeyboardEvent):
-        if time.time() - self.start_time > 0.5:
+        return self.state.on_event(event)
+
+    def should_continue(self):
+        return False
+
+
+class DoSecondHotkeyState(DoHotKeyState):
+    def on_do_hotkey(self, key_name):
+        return do_second_hotkey(key_name)
+
+
+class TimeoutState(State):
+    def __init__(self, timeout=0.5):
+        self.start_time = time.time()
+        self.timeout = timeout
+
+    def on_event(self, event: keyboard.KeyboardEvent):
+        if time.time() - self.start_time > self.timeout:
             #print("timeout")
             return InitState().on_event(event)
         else:
@@ -523,7 +573,7 @@ class HotKeyUpState(TimeoutState):
 
     def handle_event(self, event: keyboard.KeyboardEvent):
         if event.event_type == keyboard.KEY_UP and event.scan_code == caps_lock_scan_code:
-            do_hotkey(self.name)
+            return DoHotKeyState(self.name)
         
         return InitState()
 
@@ -538,12 +588,42 @@ class CapsLockUpState(TimeoutState):
 
     def handle_event(self, event: keyboard.KeyboardEvent):
         if event.event_type == keyboard.KEY_UP and event.name.lower() == self.name:
-            do_hotkey(self.name)
-        
+            return DoHotKeyState(self.name)
+
         return InitState()
 
 
+class WaitingSecondKeyDownState(TimeoutState):
+    def __init__(self):
+        super().__init__(1)
+
+    def handle_event(self, event: keyboard.KeyboardEvent):
+        lower_name = event.name.lower()
+        if event.event_type == keyboard.KEY_DOWN and lower_name in second_hotkeys:
+            return SecondKeyDownState(lower_name)
+        else:
+            return InitState()
+
+
+class SecondKeyDownState(TimeoutState):
+    def __init__(self, key_name):
+        super().__init__(1)
+        self.name = key_name
+
+    def handle_event(self, event: keyboard.KeyboardEvent):
+        lower_name = event.name.lower()
+        ret = None
+        if event.event_type == keyboard.KEY_UP and lower_name == self.name:
+            return DoSecondHotkeyState(lower_name)
+
+        return InitState()
+
+    def should_continue(self):
+        return False
+
+
 cur_state = InitState()
+
 
 def do_keyboard_hook(event: keyboard.KeyboardEvent):
     global cur_state
