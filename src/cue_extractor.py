@@ -11,8 +11,8 @@ qid_re = re.compile(r'{#q[0-9]{1,4}}$')
 qid_len = len("{#q0000}\n")
 q_re = re.compile(r'^(q|Q): ')
 a_re = re.compile(r'^(a|A): *')
-check_answer_prefix = '[check answer]('
-check_answer_template = check_answer_prefix + '{}#L{})\n'
+check_answer_prefix = '[check answer](<'
+check_answer_template = check_answer_prefix + '{}#L{}>)\n'
 
 
 class qa_entity:
