@@ -24,7 +24,7 @@ def markdownify_convert(html):
     from markdownify import MarkdownConverter
     from bs4 import BeautifulSoup
 
-    inliner = css_inline.CSSInliner(remove_style_tags=True)
+    inliner = css_inline.CSSInliner()
     html = inliner.inline(html)
 
     soup = BeautifulSoup(html, "html.parser")

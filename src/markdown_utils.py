@@ -396,7 +396,7 @@ class markdown_processor:
         
         full_html = self.html_body_to_full_html(html_body, for_inline=True)
 
-        inliner = css_inline.CSSInliner(remove_style_tags=True)
+        inliner = css_inline.CSSInliner()
         html_body = inliner.inline(full_html)
 
         r = regex.compile(r'(<html>.*?<body[^>]*>|</body>.*?</html>)', regex.DOTALL)
