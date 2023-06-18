@@ -21,7 +21,7 @@ Psychology's great strength is that it uses scientific observation to systematic
 ### markdown 会被保留
 
 ```python
-        inliner = css_inline.CSSInliner(remove_style_tags=True)
+        inliner = css_inline.CSSInliner()
         inlined_html = inliner.inline(full_html)
         PutHtml(inlined_html, joined_markdown_text)
 ```

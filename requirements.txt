@@ -1,4 +1,4 @@
-css-inline
+css-inline==0.10.1
 markdown-it-py
 mdit-py-plugins
 pathlib2

@@ -657,7 +657,7 @@ class NotesWriter:
             joined_markdown_text = None
 
         if full_html:
-            inliner = css_inline.CSSInliner(remove_style_tags=True)
+            inliner = css_inline.CSSInliner()
             inlined_html = inliner.inline(full_html)
         else:
             inlined_html = None
